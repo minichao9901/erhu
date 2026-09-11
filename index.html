@@ -115,6 +115,20 @@
   .levelBar{flex:1;height:5px;border-radius:4px;background:#0c141d;border:1px solid var(--line);overflow:hidden;}
   .levelFill{height:100%;width:0%;background:linear-gradient(90deg,#2dd4bf,#22c55e 70%,#f59e0b);transition:width .06s linear;}
 
+  /* ---------- 音阶练习 ---------- */
+  .scaleBtn{
+    width:100%;margin-top:12px;padding:14px 10px;border-radius:14px;
+    border:1px solid rgba(129,140,248,.5);
+    background:linear-gradient(180deg,rgba(129,140,248,.20),rgba(129,140,248,.08));
+    color:#e8eaff;font-size:15px;font-weight:600;font-family:inherit;letter-spacing:.3px;
+    -webkit-appearance:none;appearance:none;cursor:pointer;transition:transform .06s,background .15s;
+  }
+  .scaleBtn:active{transform:scale(.99);}
+  .scaleBtn.playing{
+    background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(245,158,11,.08));
+    border-color:rgba(245,158,11,.6);color:#ffe2ac;
+  }
+
   details{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px 13px;font-size:13.5px;line-height:1.65;color:var(--dim);}
   details+details{margin-top:10px;}
   summary{cursor:pointer;color:var(--text);font-weight:600;font-size:14px;list-style:none;}
@@ -162,6 +176,9 @@
     <span id="levelTxt">静音</span>
   </div>
 
+  <!-- 音阶练习：来回往复播放当前调的音阶，箭头逐个落在对应音位上 -->
+  <button class="scaleBtn" id="scaleBtn">▶ 音阶练习 · 上下行来回（每音 1 秒）</button>
+
   <!-- 调 -->
   <div class="label"><span>调（决定面板上的简谱数字）</span><span id="chordTxt">15 弦</span></div>
   <div class="seg" id="keySeg">
@@ -193,6 +210,7 @@
     <ul>
       <li>手机离琴 20–40 cm，别贴在琴筒上（会爆音）。</li>
       <li><b style="color:#e8eef6">点面板上任意一个音位圆圈，喇叭就会把那个音发出来</b>——听音找把位、对音准都靠它，不需要麦克风权限。再点一次停止。</li>
+      <li><b style="color:#e8eef6">「音阶练习」</b>会从内弦空弦开始，把<b>低 2 个八度</b>的音阶上行、下行来回放，每个音 1 秒，箭头逐个落在对应音位上。跟着箭头练音准，或者先听熟再自己拉。换个调，音阶的音也跟着换。</li>
       <li>拉响一个音，面板上会出现<b style="color:#e8eef6">箭头</b>。箭头压住哪个音位圆圈，就说明你拉的是那个音。</li>
       <li>箭头正好停在圆圈中心 → 音准；偏上偏下都会有偏移量，<b style="color:#22c55e">变绿</b>即进入 ±5 音分。</li>
       <li>先练一个把位，每个把位的音阶都稳了再串起来练换把。</li>
@@ -207,6 +225,7 @@
     <p><b>间距按半音等比</b>：全音的间距是半音的两倍，所以 <b>3→4</b>、<b>7→1̇</b> 这类半音会明显挨得更近，旁边有小括线标出来——这就是实际演奏时这两根手指要并拢的位置。一眼就能看出哪些音要并、哪些要分开。</p>
     <p><b>两根弦的半音位置不一样</b>，所以两列不是完全对齐的：内弦的半音对在 3→4 和 7→1，外弦的在 7→1̇ 和 3̇→4̇。原因是——大调音阶从主音往上数 6 级是大七度（11 个半音），从属音往上数 6 级是小七度（10 个半音），指距本来就不同。面板按真实指距画，不硬对齐。</p>
     <p><b>点音位圆圈可以听音</b>：面板上每个圆圈都能点，点了就用喇叭发出那个音的实际频率，方便你按面板找把位、或直接跟着唱。播放时圆圈变琥珀色，提示条会显示这个音的音名和频率。</p>
+    <p><b>音阶练习</b>走的是内弦这条线（低 2 个八度，15 个音），上行到顶再折返下行，来回往复。它会按当前调的音阶来放——1=D 是 D 大调音阶，1=G 放的就是 G 大调的那串音（第 7 个音会是 C 而不是 C#）。</p>
     <p>三个把位以「1」和「5」为起点划分，每 5 个音位一个把位：</p>
     <ul>
       <li><b style="color:#5eead4">第一把位</b>：内弦 1–5（D4–A4）/ 外弦 5–2̇（A4–E5）</li>
@@ -467,7 +486,7 @@
   var elBanner = $('banner'), elNoteName = $('noteName'), elJp = $('jpBox'), elCents = $('cents'),
       elFreqLine = $('freqLine'), elStart = $('startBtn'), elLevelFill = $('levelFill'),
       elLevelTxt = $('levelTxt'), elDiag = $('diag'), elCopy = $('copyBtn'),
-      elRefD = $('refD'), elRefA = $('refA'), elHint = $('boardHint'),
+      elRefD = $('refD'), elRefA = $('refA'), elHint = $('boardHint'), elScale = $('scaleBtn'),
       elChord = $('chordTxt'), elHdrSub = $('hdrSub'), svg = $('board');
   var NS = 'http://www.w3.org/2000/svg';
 
@@ -515,6 +534,7 @@
 
   var slotsInner = [], slotsOuter = [];
   var boardEls = { inner: [], outer: [], arrow: null, ring: null, alt: null };
+  var tapBadge = null;        // 正在被"点击试听"高亮的音位（音阶练习不能用它挡箭头）
 
   function currentKey() {
     for (var i = 0; i < KEY_DEFS.length; i++) if (KEY_DEFS[i].id === keyId) return KEY_DEFS[i];
@@ -657,6 +677,7 @@
 
   function startTuner() {
     if (running) { stopTuner(); return; }
+    if (scaleOn) stopScale();          // 开麦前先停音阶，否则喇叭声音会被当成琴声
     if (!envCheck()) return;
     if (HAS_GUM && navigator.permissions && navigator.permissions.query) {
       try {
@@ -774,7 +795,7 @@
     opts = opts || {};
     var ctx;
     try { ctx = unlockAudio(); } catch (e) { showBanner('err', '<b>浏览器不支持 Web Audio API。</b>'); return; }
-    if (playing && playing.key === opts.key) { stopTone(); return; }   // 再点一次 = 停
+    if (!opts.retrigger && playing && playing.key === opts.key) { stopTone(); return; }   // 再点一次 = 停
     stopTone();
     // 真正要出声时才切到 playback：这个类别会忽略静音拨片（放音必需），
     // 但也会接管系统音频会话，所以不能一进页面就抢
@@ -918,6 +939,7 @@
       key: which + '-' + i,
       duration: 2400,
       onStart: function () {
+        tapBadge = b;
         b.circle.setAttribute('stroke', '#f59e0b');
         b.circle.setAttribute('stroke-width', 2.6);
         b.circle.setAttribute('fill', 'rgba(245,158,11,.22)');
@@ -925,7 +947,7 @@
         elHint.textContent = '♪ ' + s.name + ' · ' + (which === 'inner' ? '内弦' : '外弦') +
           ' 第' + (bandOf(i) + 1) + '把位 · ' + s.freq.toFixed(2) + ' Hz';
       },
-      onEnd: function () { resetBadge(b); elHint.textContent = HINT_DEFAULT; }
+      onEnd: function () { tapBadge = null; resetBadge(b); elHint.textContent = HINT_DEFAULT; }
     });
   }
 
@@ -1008,7 +1030,8 @@
      面板更新
      ======================================================================= */
   function setTarget(hit) {
-    if (playing) { boardEls.ring.setAttribute('opacity', 0); return; }   // 正在发声时不覆盖音位高亮
+    // 只有"点击音位试听"那种高亮才需要保护，音阶练习的箭头必须照常显示
+    if (tapBadge) { boardEls.ring.setAttribute('opacity', 0); return; }
     boardEls.inner.concat(boardEls.outer).forEach(resetBadge);
     if (!hit) { boardEls.ring.setAttribute('opacity', 0); return; }
     var b = boardEls[hit.which][hit.index];   // hit.list 是音位数据，图形元素在 boardEls 里
@@ -1047,8 +1070,8 @@
     rafId = requestAnimationFrame(loop);
     if (!analyser || !audioCtx) return;
 
-    if (playing) {
-      elFreqLine.textContent = '♪ 发声播放中…先跟着听准，再拉弦核对';
+    if (playing || scaleOn) {
+      elFreqLine.textContent = '♪ 播放中…先跟着听准，再拉弦核对';
       return;
     }
     if (audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e) {} return; }
@@ -1106,6 +1129,84 @@
     return { list: list, which: which, index: r.index, slot: r.slot, cents: r.cents };
   }
 
+  /** 简谱数字的 HTML（上加点=高八度、下加点=低八度） */
+  function jpHtml(s) {
+    return (s.dots > 0 ? '<span class="dt">' + jpDots(s.dots) + '</span>' : '') +
+           '<span>' + s.degree + '</span>' +
+           (s.dots < 0 ? '<span class="dt">' + jpDots(s.dots) + '</span>' : '');
+  }
+
+  /** 把读数条设置成某个音位（试听 / 音阶练习用），箭头精确落在它上面 */
+  function showSlot(which, i, hintText) {
+    var arr = which === 'outer' ? slotsOuter : slotsInner;
+    var s = arr[i], b = boardEls[which][i];
+    if (!s || !b) return;
+    var hit = { which: which, index: i, slot: s, cents: 0, inTune: true, y: b.y };
+    setTarget(hit);
+    setArrow(hit);
+    elNoteName.textContent = s.name;
+    elNoteName.className = 'noteName live ok';
+    elJp.className = 'jp ok';
+    elJp.innerHTML = jpHtml(s);
+    elCents.className = 'cents ok';
+    elCents.innerHTML = '0.0<span class="u">音分</span>';
+    if (hintText) elFreqLine.textContent = hintText;
+  }
+
+  /* =======================================================================
+     音阶练习：低 2 个八度（内弦空弦 → 高八度），上行 → 下行 → 来回往复
+     ======================================================================= */
+  var scaleOn = false, scaleStep = 0, scaleDir = 1, scaleTimer = null;
+  var SCALE_MS = 1000;
+  var SCALE_IDLE_TEXT = '▶ 音阶练习 · 上下行来回（每音 1 秒）';
+
+  function stopScale() {
+    scaleOn = false;
+    if (scaleTimer) { clearTimeout(scaleTimer); scaleTimer = null; }
+    elScale.textContent = SCALE_IDLE_TEXT;
+    elScale.classList.remove('playing');
+    stopTone();
+    if (!running) {                       // 没在调音就把读数清干净
+      elNoteName.textContent = '--'; elNoteName.className = 'noteName';
+      elJp.className = 'jp'; elJp.innerHTML = '–';
+      elCents.className = 'cents'; elCents.innerHTML = '--<span class="u">音分</span>';
+      elFreqLine.textContent = '点击「开始调音」，允许麦克风后拉响琴弦';
+      setArrow(null); setTarget(null);
+    }
+  }
+
+  function scaleTick() {
+    if (!scaleOn) return;
+    var n = slotsInner.length;            // 15 个音 = 2 个八度
+    if (scaleStep < 0 || scaleStep >= n) { stopScale(); return; }
+    var s = slotsInner[scaleStep];
+
+    // 发这个音（留 100ms 间隙，音与音分得开）
+    playTone(s.freq, { key: 'scale', duration: SCALE_MS - 100, retrigger: true, volume: 0.32 });
+    // 箭头精确落到这个音位上，读数同步显示
+    showSlot('inner', scaleStep,
+      '音阶练习 ' + (scaleStep + 1) + '/' + n + ' · ' + (scaleDir > 0 ? '上行 ↑' : '下行 ↓') +
+      ' · ' + s.freq.toFixed(2) + ' Hz');
+
+    scaleTimer = setTimeout(function () {
+      if (!scaleOn) return;
+      scaleStep += scaleDir;
+      if (scaleStep >= n) { scaleStep = n - 2; scaleDir = -1; }       // 到顶折返
+      else if (scaleStep < 0) { scaleStep = 1; scaleDir = 1; }        // 到底折返
+      scaleTick();
+    }, SCALE_MS);
+  }
+
+  function toggleScale() {
+    if (scaleOn) { stopScale(); return; }
+    if (running) stopTuner();             // 开麦时不能同时放音阶，先停调音
+    scaleOn = true; scaleStep = 0; scaleDir = 1;
+    elScale.textContent = '■ 停止音阶练习';
+    elScale.classList.add('playing');
+    elHint.textContent = '音阶练习中 · 箭头会逐个落在每个音的位置上';
+    scaleTick();
+  }
+
   function render(freq) {
     var hit = pickTarget(freq);
     var cents = hit.cents;
@@ -1118,10 +1219,7 @@
     elNoteName.textContent = s.name;
     elNoteName.className = 'noteName live' + (inTune ? ' ok' : '');
     elJp.className = 'jp' + (inTune ? ' ok' : '');
-    // 简谱八度点：上加点=高八度（span 在上面），下加点=低八度（span 在下面）
-    elJp.innerHTML = (s.dots > 0 ? '<span class="dt">' + jpDots(s.dots) + '</span>' : '') +
-                     '<span>' + s.degree + '</span>' +
-                     (s.dots < 0 ? '<span class="dt">' + jpDots(s.dots) + '</span>' : '');
+    elJp.innerHTML = jpHtml(s);
     var cTxt = cents.toFixed(1);
     if (cTxt === '-0.0') cTxt = '0.0';
     elCents.className = 'cents ' + (inTune ? 'ok' : (cents < 0 ? 'low' : 'high'));
@@ -1188,13 +1286,16 @@
      ======================================================================= */
   elStart.addEventListener('click', startTuner);
 
+  elScale.addEventListener('click', toggleScale);
+
   Array.prototype.forEach.call(document.querySelectorAll('#keySeg button'), function (b) {
     b.addEventListener('click', function () {
       Array.prototype.forEach.call(document.querySelectorAll('#keySeg button'), function (x) { x.classList.remove('on'); });
       b.classList.add('on');
       keyId = b.getAttribute('data-key');
       smoothing = [];
-      stopTone();          // 面板要重建，先把正在发的音停掉
+      if (scaleOn) stopScale();        // 换调要重排音阶，先停
+      stopTone();                      // 面板要重建，先把正在发的音停掉
       buildBoard();
       setTarget(null); setArrow(null);
       updateDiag();
@@ -1263,7 +1364,7 @@
     }
     if (!document.hidden) updateDiag();
   });
-  window.addEventListener('pagehide', function () { if (running) stopTuner(); });
+  window.addEventListener('pagehide', function () { if (scaleOn) stopScale(); if (running) stopTuner(); });
 
   /* =======================================================================
      启动
@@ -1292,9 +1393,11 @@
     board: function () { return boardEls; },
     // 调试用：直接渲染一个频率，不需要麦克风（便于截图核对箭头位置）
     demo: function (freq) { render(freq); },
+    scale: { toggle: toggleScale, stop: stopScale, tick: scaleTick, setIdleText: function (t) { SCALE_IDLE_TEXT = t; } },
     state: function () {
       return {
         running: running, mode: mode, keyId: keyId, playing: !!playing,
+        scaleOn: scaleOn, scaleStep: scaleStep, scaleDir: scaleDir,
         sampleRate: audioCtx ? audioCtx.sampleRate : null,
         ctxState: audioCtx ? audioCtx.state : null,
         sessionType: (typeof navigator !== 'undefined' && navigator.audioSession) ? navigator.audioSession.type : null,
