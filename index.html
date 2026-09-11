@@ -215,6 +215,17 @@
   </details>
 
   <details>
+    <summary>点了音位没声音？（iPhone 最常见）</summary>
+    <ul>
+      <li><b>先看 iPhone 左侧那个静音拨片。</b>这是头号原因——iOS 默认把网页音频归到"环境"类别，静音开关一开就完全没有声音。本页已经主动把音频会话切成"播放"类别来绕开它，但个别系统版本仍会被拦。</li>
+      <li><b>再点一次音位。</b>Safari 规定音频必须由用户手势解锁：页面在你第一次触摸时会尝试解锁，如果那一下没成功，第二次点就会响。</li>
+      <li>检查是不是<b>插着耳机或连着蓝牙音箱</b>，声音跑到那边去了。</li>
+      <li>用音量键确认<b>媒体音量</b>不是 0（注意不是铃声音量）。</li>
+      <li>还是不行：把下面的「诊断信息」展开，看<b>音频上下文</b>是不是 running、<b>音频会话类别</b>是什么，截图发我最快。</li>
+    </ul>
+  </details>
+
+  <details>
     <summary>打不开麦克风？常见原因</summary>
     <p><b>iPhone 必须满足两个条件才能用麦克风：HTTPS 网页 + 你亲手点「允许」。</b></p>
     <ul>
@@ -535,20 +546,56 @@
   /* =======================================================================
      音频
      ======================================================================= */
+  /**
+   * iOS 音频会话类别：
+   *  - 'playback'      放音用。会忽略侧边静音拨片（像音乐 App 一样走扬声器）。
+   *                    默认的 'auto'/'ambient' 类别只要静音开关一开就完全没声音。
+   *  - 'play-and-record' 开麦时必须用这个，否则录音会打断放音。
+   * 切换失败不报错，只影响音量策略，不影响功能。
+   */
+  function setAudioSession(t) {
+    try { if (navigator.audioSession && navigator.audioSession.type !== t) navigator.audioSession.type = t; }
+    catch (e) {}
+  }
+
   function ensureCtx() {
     if (!audioCtx) {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) throw new Error('浏览器不支持 Web Audio API');
       audioCtx = new AC();
-      try { if (navigator.audioSession) navigator.audioSession.type = 'play-and-record'; } catch (e) {}
+      setAudioSession('playback');
       audioCtx.onstatechange = function () {
-        if (running && audioCtx.state === 'suspended') {
+        // Safari 的音频上下文除了 suspended 还会变成 interrupted（被电话/其它 App 抢走会话）
+        if (audioCtx.state !== 'running') {
           elFreqLine.textContent = '音频被系统暂停了，轻点页面任意处恢复…';
         }
+        updateDiag();
       };
     }
-    if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+    // 关键：不只处理 suspended。iOS 上从后台切回来常常是 'interrupted'，
+    // 老代码只 resume('suspended') 就会一直哑着——这正是"第一次响、再打开不响"的元凶之一
+    if (audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e) {} }
     return audioCtx;
+  }
+
+  /** 用户手势里解锁音频：创建上下文 + resume，必须在同一个手势调用栈内 */
+  function unlockAudio() {
+    var ctx = ensureCtx();
+    if (!micStream) setAudioSession('playback');   // 正在开麦时保持 play-and-record，别打架
+    if (ctx.state !== 'running') { try { ctx.resume(); } catch (e) {} }
+    return ctx;
+  }
+
+  /** 播放前自检：如果 350ms 后仍然没 running，多半是静音拨片或者还没解锁 */
+  function playbackHealthCheck() {
+    setTimeout(function () {
+      if (audioCtx && audioCtx.state !== 'running') {
+        showBanner('warn', '<b>点了音位但没听到声音？</b>',
+          '① 看 iPhone 左侧的<b>静音拨片</b>——拨到静音时 iOS 默认不播网页声音；' +
+          '② 再点一次音位（Safari 需要一次手势来解锁音频）；' +
+          '③ 如果插着耳机或连着蓝牙音箱，声音会跑到那边去。');
+      }
+    }, 350);
   }
 
   function requestWakeLock() {
@@ -584,6 +631,7 @@
     if (micSource) { try { micSource.disconnect(); } catch (e) {} micSource = null; }
     if (micStream) { try { micStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} micStream = null; }
     analyser = null; rawBuf = null; decBuf = null; smoothing = [];
+    setAudioSession('playback');     // 关麦后回到放音会话，静音拨片不再拦声音
     if (wakeLock) { try { wakeLock.release(); } catch (e) {} wakeLock = null; }
     if (!silent) {
       elStart.textContent = '开始调音';
@@ -659,6 +707,8 @@
     micSource.connect(analyser);
 
     rawBuf = new Float32Array(analyser.fftSize);
+    // 开麦后必须切到 play-and-record：否则参考音/点击发声会被录音会话打断
+    setAudioSession('play-and-record');
     // 不做降采样：实测 24kHz 在 1568Hz 处最大误差 4.87 音分（正好卡在 ±5 判绿门槛上），
     // 48kHz 全量检测最大误差 1.30 音分，而开销只有约 1% 单核——精度远比省这点算力重要
     DECIMATE = 1;
@@ -714,8 +764,7 @@
   function playTone(freq, opts) {
     opts = opts || {};
     var ctx;
-    try { ctx = ensureCtx(); } catch (e) { showBanner('err', '<b>浏览器不支持 Web Audio API。</b>'); return; }
-    try { ctx.resume(); } catch (e) {}
+    try { ctx = unlockAudio(); } catch (e) { showBanner('err', '<b>浏览器不支持 Web Audio API。</b>'); return; }
     if (playing && playing.key === opts.key) { stopTone(); return; }   // 再点一次 = 停
     stopTone();
 
@@ -741,6 +790,7 @@
     playing = { gain: gain, oscs: oscs, key: opts.key, onEnd: opts.onEnd };
     if (opts.onStart) opts.onStart();
     playTimer = setTimeout(stopTone, dur);
+    playbackHealthCheck();
   }
 
   /* =======================================================================
@@ -956,7 +1006,7 @@
       elFreqLine.textContent = '♪ 发声播放中…先跟着听准，再拉弦核对';
       return;
     }
-    if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} return; }
+    if (audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e) {} return; }
 
     frameCount++;
     if (ts - lastDetect < 38) return;
@@ -1073,7 +1123,9 @@
       'UA: ' + UA,
       'iOS: ' + IS_IOS + '  iOS-Safari: ' + IS_IOS_SAFARI + '  套壳内核: ' + IOS_SHELL,
       'getUserMedia: ' + HAS_GUM + '  像素比: ' + (window.devicePixelRatio || 1),
-      '采样率: ' + (audioCtx ? audioCtx.sampleRate + ' Hz (检测用 ' + (audioCtx.sampleRate / DECIMATE).toFixed(0) + ' Hz)' : '未启动'),
+      '音频上下文: ' + (audioCtx ? audioCtx.state : '未创建') +
+        '  采样率: ' + (audioCtx ? audioCtx.sampleRate + ' Hz (检测用 ' + (audioCtx.sampleRate / DECIMATE).toFixed(0) + ' Hz)' : '未启动'),
+      '音频会话类别: ' + (navigator.audioSession ? (navigator.audioSession.type || '(空)') : '不支持 audioSession API'),
       '调: 1=' + key.label + ' (' + key.chord + ')  模式: ' + mode + '  噪声底: ' + noiseFloor.toFixed(5),
       '面板: 内弦 ' + slotsInner[0].freq.toFixed(1) + '–' + slotsInner[slotsInner.length - 1].freq.toFixed(1) + ' Hz / 外弦 ' +
         slotsOuter[0].freq.toFixed(1) + '–' + slotsOuter[slotsOuter.length - 1].freq.toFixed(1) + ' Hz',
@@ -1152,13 +1204,16 @@
 
   ['touchstart', 'click'].forEach(function (ev) {
     document.addEventListener(ev, function () {
-      if (audioCtx && audioCtx.state === 'suspended' && running) { try { audioCtx.resume(); } catch (e) {} }
+      // 任何一次触摸都先把音频解锁：Safari 只认手势，
+      // 提前解锁能让后面点音位立即出声，也顺手救回 interrupted 状态
+      if (!audioCtx) { try { unlockAudio(); } catch (e) {} }
+      else if (audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e) {} }
     }, { passive: true });
   });
 
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden && running) {
-      if (audioCtx && audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+      if (audioCtx && audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e) {} }
       requestWakeLock(); lastDetect = 0;
     }
     if (!document.hidden) updateDiag();
@@ -1195,6 +1250,8 @@
       return {
         running: running, mode: mode, keyId: keyId, playing: !!playing,
         sampleRate: audioCtx ? audioCtx.sampleRate : null,
+        ctxState: audioCtx ? audioCtx.state : null,
+        sessionType: (typeof navigator !== 'undefined' && navigator.audioSession) ? navigator.audioSession.type : null,
         slotsInner: slotsInner, slotsOuter: slotsOuter
       };
     }
