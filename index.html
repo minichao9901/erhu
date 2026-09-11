@@ -655,12 +655,12 @@
   }
 
   /** 播放前自检：如果 350ms 后仍然没 running，多半是静音拨片或者还没解锁 */
-  function playbackHealthCheck() {
+  function playbackHealthCheck(what) {
     setTimeout(function () {
       if (audioCtx && audioCtx.state !== 'running') {
-        showBanner('warn', '<b>点了音位但没听到声音？</b>',
+        showBanner('warn', '<b>' + (what || '点了音位') + '，但没听到声音？</b>',
           '① 看 iPhone 左侧的<b>静音拨片</b>——拨到静音时 iOS 默认不播网页声音；' +
-          '② 再点一次音位（Safari 需要一次手势来解锁音频）；' +
+          '② 再点一次（Safari 需要一次手势来解锁音频）；' +
           '③ 如果插着耳机或连着蓝牙音箱，声音会跑到那边去。');
       }
     }, 350);
@@ -1269,6 +1269,7 @@
     metroNext = ctx.currentTime + 0.06;
     if (metroTimer) clearTimeout(metroTimer);
     metroLoop();
+    playbackHealthCheck('开了节拍器');   // 没起来就提示静音拨片，别让用户干等
   }
   function stopMetro() {
     metroOn = false;
