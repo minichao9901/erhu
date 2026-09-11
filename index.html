@@ -563,7 +563,6 @@
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) throw new Error('浏览器不支持 Web Audio API');
       audioCtx = new AC();
-      setAudioSession('playback');
       audioCtx.onstatechange = function () {
         // Safari 的音频上下文除了 suspended 还会变成 interrupted（被电话/其它 App 抢走会话）
         if (audioCtx.state !== 'running') {
@@ -581,7 +580,6 @@
   /** 用户手势里解锁音频：创建上下文 + resume，必须在同一个手势调用栈内 */
   function unlockAudio() {
     var ctx = ensureCtx();
-    if (!micStream) setAudioSession('playback');   // 正在开麦时保持 play-and-record，别打架
     if (ctx.state !== 'running') { try { ctx.resume(); } catch (e) {} }
     return ctx;
   }
@@ -631,7 +629,7 @@
     if (micSource) { try { micSource.disconnect(); } catch (e) {} micSource = null; }
     if (micStream) { try { micStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} micStream = null; }
     analyser = null; rawBuf = null; decBuf = null; smoothing = [];
-    setAudioSession('playback');     // 关麦后回到放音会话，静音拨片不再拦声音
+    setAudioSession('auto');         // 关麦后交还系统音频会话，不占着不放
     if (wakeLock) { try { wakeLock.release(); } catch (e) {} wakeLock = null; }
     if (!silent) {
       elStart.textContent = '开始调音';
@@ -767,6 +765,9 @@
     try { ctx = unlockAudio(); } catch (e) { showBanner('err', '<b>浏览器不支持 Web Audio API。</b>'); return; }
     if (playing && playing.key === opts.key) { stopTone(); return; }   // 再点一次 = 停
     stopTone();
+    // 真正要出声时才切到 playback：这个类别会忽略静音拨片（放音必需），
+    // 但也会接管系统音频会话，所以不能一进页面就抢
+    if (!micStream) setAudioSession('playback');
 
     var now = ctx.currentTime + 0.02;
     var gain = ctx.createGain();
