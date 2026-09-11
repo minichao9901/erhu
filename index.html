@@ -43,35 +43,41 @@
   .readout{
     display:flex;align-items:center;gap:12px;
     background:linear-gradient(180deg,var(--panel-2),var(--panel));
-    border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:10px;
+    border:1px solid var(--line);border-radius:14px;padding:8px 12px;
   }
+  /* 读数 + 开始按钮 并排一行，把纵向空间让给指板面板 */
+  .topRow{display:flex;gap:8px;align-items:stretch;margin-bottom:6px;}
+  .topRow .readout{flex:1;min-width:0;display:flex;align-items:center;gap:10px;}
   .noteName{
-    font-size:38px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;
-    min-width:2.2ch;text-align:center;color:var(--dim-2);transition:color .15s ease;
+    font-size:32px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;
+    min-width:2.1ch;text-align:center;color:var(--dim-2);transition:color .15s ease;
   }
   .noteName.ok{color:var(--ok);text-shadow:0 0 22px rgba(34,197,94,.45);}
   .noteName.live{color:var(--text);}
   .jp{
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    min-width:44px;height:44px;border-radius:11px;background:#0d1620;border:1px solid var(--line);
-    font-size:20px;font-weight:700;color:var(--dim-2);line-height:1;
+    min-width:38px;height:38px;border-radius:10px;background:#0d1620;border:1px solid var(--line);
+    font-size:18px;font-weight:700;color:var(--dim-2);line-height:1;
   }
   .jp.ok{color:var(--ok);border-color:rgba(34,197,94,.5);}
   .jp .dt{font-size:9px;line-height:1;letter-spacing:1px;color:var(--dim-2);}
   .mid{flex:1;min-width:0;}
-  .cents{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.05;color:var(--dim);}
+  .cents{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.05;color:var(--dim);flex:1;text-align:right;}
   .cents.ok{color:var(--ok);} .cents.low{color:var(--flat);} .cents.high{color:var(--sharp);}
-  .cents .u{font-size:12px;color:var(--dim-2);font-weight:400;margin-left:3px;}
-  .freqLine{font-size:11.5px;color:var(--dim-2);font-variant-numeric:tabular-nums;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cents .u{font-size:11.5px;color:var(--dim-2);font-weight:400;margin-left:3px;}
+  /* 频率行独立占满宽度，和开始按钮同宽，不会被挤到截断 */
+  .freqLine{font-size:11.5px;color:var(--dim-2);font-variant-numeric:tabular-nums;margin:-4px 4px 10px;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-  /* ---------- 开始按钮 ---------- */
+  /* ---------- 开始按钮（与读数并排的窄条） ---------- */
   .big{
-    width:100%;padding:14px;border-radius:14px;border:1px solid rgba(45,212,191,.5);
+    flex:0 0 86px;padding:8px 4px;border-radius:14px;border:1px solid rgba(45,212,191,.5);
     background:linear-gradient(180deg,rgba(45,212,191,.22),rgba(45,212,191,.09));
-    color:#eafffb;font-size:16.5px;font-weight:650;font-family:inherit;letter-spacing:.5px;
-    -webkit-appearance:none;appearance:none;cursor:pointer;margin-bottom:10px;transition:transform .06s;
+    color:#eafffb;font-size:15px;font-weight:650;font-family:inherit;letter-spacing:.5px;
+    line-height:1.25;word-break:break-all;
+    -webkit-appearance:none;appearance:none;cursor:pointer;transition:transform .06s;
   }
-  .big:active{transform:scale(.99);}
+  .big:active{transform:scale(.97);}
   .big.stop{background:linear-gradient(180deg,rgba(239,68,68,.22),rgba(239,68,68,.08));border-color:rgba(239,68,68,.45);color:#ffe4e4;}
   .big[disabled]{opacity:.5;}
 
@@ -133,22 +139,21 @@
 
   <div id="banner" class="banner hide"></div>
 
-  <!-- 读数 -->
-  <div class="readout">
-    <div id="noteName" class="noteName">--</div>
-    <div id="jpBox" class="jp">–</div>
-    <div class="mid">
+  <!-- 读数 + 开始按钮 并排 -->
+  <div class="topRow">
+    <div class="readout">
+      <div id="noteName" class="noteName">--</div>
+      <div id="jpBox" class="jp">–</div>
       <div id="cents" class="cents">--<span class="u">音分</span></div>
-      <div id="freqLine" class="freqLine">点击「开始调音」，允许麦克风后拉响琴弦</div>
     </div>
+    <button class="big" id="startBtn">开始调音</button>
   </div>
-
-  <button class="big" id="startBtn">开始调音</button>
+  <div id="freqLine" class="freqLine">点击「开始调音」，允许麦克风后拉响琴弦</div>
 
   <!-- 指板面板 -->
   <div class="boardWrap">
-    <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 456" preserveAspectRatio="xMidYMid meet"></svg>
-    <div class="hint" id="boardHint">两根弦 · 三个把位 · 箭头指到哪儿就是哪个音</div>
+    <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 516" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="hint" id="boardHint">点任意音位可发声 · 箭头指到哪儿就是哪个音</div>
   </div>
 
   <div class="levelRow">
@@ -187,6 +192,7 @@
     <summary>怎么用（30 秒上手）</summary>
     <ul>
       <li>手机离琴 20–40 cm，别贴在琴筒上（会爆音）。</li>
+      <li><b style="color:#e8eef6">点面板上任意一个音位圆圈，喇叭就会把那个音发出来</b>——听音找把位、对音准都靠它，不需要麦克风权限。再点一次停止。</li>
       <li>拉响一个音，面板上会出现<b style="color:#e8eef6">箭头</b>。箭头压住哪个音位圆圈，就说明你拉的是那个音。</li>
       <li>箭头正好停在圆圈中心 → 音准；偏上偏下都会有偏移量，<b style="color:#22c55e">变绿</b>即进入 ±5 音分。</li>
       <li>先练一个把位，每个把位的音阶都稳了再串起来练换把。</li>
@@ -198,6 +204,7 @@
   <details>
     <summary>面板说明（把位 / 简谱怎么看）</summary>
     <p>面板按<b>手指位置</b>排列：两根弦的空弦都在最上方，往下走音越来越高。所以内弦的「1」和外弦的「5」在同一高度——它们都是空弦，手指位置相同。</p>
+    <p><b>点音位圆圈可以听音</b>：面板上每个圆圈都能点，点了就用喇叭发出那个音的实际频率，方便你按面板找把位、或直接跟着唱。播放时圆圈变琥珀色，提示条会显示这个音的音名和频率。</p>
     <p>三个把位以「1」和「5」为起点划分，每 5 个音位一个把位：</p>
     <ul>
       <li><b style="color:#5eead4">第一把位</b>：内弦 1–5（D4–A4）/ 外弦 5–2̇（A4–E5）</li>
@@ -453,11 +460,12 @@
   /* =======================================================================
      面板几何
      ======================================================================= */
-  var VB_W = 360, VB_H = 456;
+  var VB_W = 360, VB_H = 516;
   // 上下各留出 ~44px 行程：箭头最大偏移 ±50 音分 × 0.7 = ±35px，
   // 首尾音位（空弦 / 最高音）也要能完整显示偏移，不能被面板边缘吃掉
-  var PAD_TOP = 48, SLOT_H = 24, PAD_BOT = 48;
+  var PAD_TOP = 48, SLOT_H = 28, PAD_BOT = 48;
   var ARROW_MIN_Y = 14, ARROW_MAX_Y = VB_H - 16;
+  var BADGE_R = 12;
   var X_INNER = 118, X_OUTER = 242;
   var ARROW_GAIN = 0.7;        // 每 1 音分对应的像素（放大显示，否则 ±5 音分肉眼看不出来）
 
@@ -479,7 +487,6 @@
   var mode = 'auto';                 // auto | D | A
   var keyId = 'D';
   var a4Cal = 440;
-  var refPlaying = null, refTimer = null;
   var smoothing = [], lastHit = 0, noiseFloor = 0.0025, confirmStop = 0;
   var rafId = 0, frameCount = 0, lastDetect = 0, wakeLock = null, micTimer = null;
   var DECIMATE = 1, FFT_SIZE = 4096, SILENCE_RATIO = 2.6, MIN_RMS = 0.0035, HOLD_MS = 900, TOL = 5;
@@ -570,6 +577,7 @@
 
   function stopTuner(silent) {
     running = false;
+    stopTone();
     if (micTimer) { clearTimeout(micTimer); micTimer = null; }
     elStart.disabled = false;
     if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
@@ -609,7 +617,7 @@
     try { ctx.resume(); } catch (e) {}
 
     elStart.disabled = true;
-    elStart.textContent = '正在请求麦克风…';
+    elStart.textContent = '请求中…';
     elFreqLine.textContent = '请在弹窗中点「允许」…';
 
     if (micTimer) clearTimeout(micTimer);
@@ -679,52 +687,60 @@
   }
 
   /* =======================================================================
-     参考音
+     发声（参考音按钮 + 点击音位都用这一套）
      ======================================================================= */
-  function stopRef() {
-    if (refTimer) { clearTimeout(refTimer); refTimer = null; }
-    if (refPlaying) {
-      var nodes = refPlaying; refPlaying = null;
+  // playing = { gain, oscs, key, endAt, onEnd }
+  // key 用来判断"再点一次同一个东西 = 停止"，onEnd 用来清掉高亮
+  var playing = null, playTimer = null;
+
+  function stopTone() {
+    if (playTimer) { clearTimeout(playTimer); playTimer = null; }
+    var p = playing;
+    playing = null;
+    if (p) {
       try {
         var t = audioCtx.currentTime;
-        nodes.gain.gain.cancelScheduledValues(t);
-        nodes.gain.gain.setTargetAtTime(0.0001, t, 0.03);
-        nodes.oscs.forEach(function (o) { try { o.stop(t + 0.14); } catch (e) {} });
+        p.gain.gain.cancelScheduledValues(t);
+        p.gain.gain.setTargetAtTime(0.0001, t, 0.03);
+        p.oscs.forEach(function (o) { try { o.stop(t + 0.14); } catch (e) {} });
       } catch (e) {}
+      if (p.onEnd) p.onEnd();
     }
     elRefD.classList.remove('playing'); elRefA.classList.remove('playing');
     elRefD.querySelector('.n').textContent = '内弦 D';
     elRefA.querySelector('.n').textContent = '外弦 A';
   }
 
-  function playRef(freq, btn, label) {
+  function playTone(freq, opts) {
+    opts = opts || {};
     var ctx;
     try { ctx = ensureCtx(); } catch (e) { showBanner('err', '<b>浏览器不支持 Web Audio API。</b>'); return; }
     try { ctx.resume(); } catch (e) {}
-    if (refPlaying && refPlaying.btn === btn) { stopRef(); return; }
-    stopRef();
+    if (playing && playing.key === opts.key) { stopTone(); return; }   // 再点一次 = 停
+    stopTone();
 
     var now = ctx.currentTime + 0.02;
     var gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.42, now + 0.06);
-    gain.gain.setTargetAtTime(0.30, now + 0.10, 0.5);
+    gain.gain.exponentialRampToValueAtTime(opts.volume || 0.42, now + 0.06);
+    gain.gain.setTargetAtTime((opts.volume || 0.42) * 0.72, now + 0.10, 0.5);
     gain.connect(ctx.destination);
 
+    // 基频 + 2/3/4 次谐波，音色接近弦乐，便于听音定弦
     var partials = [[1, 1.0], [2, 0.34], [3, 0.16], [4, 0.07]];
+    var dur = opts.duration || 3200;
     var oscs = partials.map(function (p) {
       var o = ctx.createOscillator();
       o.type = 'sine'; o.frequency.value = freq * p[0];
       var g = ctx.createGain(); g.gain.value = p[1];
       o.connect(g); g.connect(gain);
-      o.start(now); o.stop(now + 4.2);
+      o.start(now); o.stop(now + dur / 1000 + 1);
       return o;
     });
 
-    refPlaying = { gain: gain, oscs: oscs, btn: btn };
-    btn.classList.add('playing');
-    btn.querySelector('.n').textContent = label + ' · 播放中';
-    refTimer = setTimeout(function () { stopRef(); }, 3200);
+    playing = { gain: gain, oscs: oscs, key: opts.key, onEnd: opts.onEnd };
+    if (opts.onStart) opts.onStart();
+    playTimer = setTimeout(stopTone, dur);
   }
 
   /* =======================================================================
@@ -798,12 +814,59 @@
     t2.textContent = '外弦 A4';
 
     // --- 实时指示：箭头（两根弦各一个，按需显示）+ 目标圈 ---
-    boardEls.ring = mk('circle', { cx: 0, cy: 0, r: 16, fill: 'none', stroke: '#38bdf8', 'stroke-width': 2, opacity: 0 }, gLive);
+    boardEls.ring = mk('circle', { cx: 0, cy: 0, r: BADGE_R + 5, fill: 'none', stroke: '#38bdf8', 'stroke-width': 2, opacity: 0 }, gLive);
     boardEls.arrowInner = makeArrow(gLive, -1);
     boardEls.arrowOuter = makeArrow(gLive, 1);
 
+    // --- 点击热区放在最上层，保证点得中（含两颗徽标的空隙） ---
+    var gHit = mk('g', null, svg);
+    var hitRects = [];
+    [[X_INNER, 'inner'], [X_OUTER, 'outer']].forEach(function (pair) {
+      for (var i = 0; i < SLOTS_PER_STRING; i++) {
+        (function (idx) {
+          var r = mk('rect', {
+            x: pair[0] - 46, y: slotY(idx) - SLOT_H / 2, width: 92, height: SLOT_H,
+            fill: 'transparent', 'pointer-events': 'all', style: 'cursor:pointer'
+          }, gHit);
+          r.addEventListener('click', function () { onSlotTap(pair[1], idx); });
+          hitRects.push(r);
+        })(i);
+      }
+    });
+    boardEls.hit = hitRects;
+
     elChord.textContent = key.chord;
     elHdrSub.textContent = '内弦 D4 · 外弦 A4 · 1=' + key.label;
+  }
+
+  /** 点音位 -> 用喇叭把那个音发出来（不需要麦克风权限） */
+  function onSlotTap(which, i) {
+    var slots = which === 'inner' ? slotsInner : slotsOuter;
+    var s = slots[i];
+    var b = boardEls[which][i];
+    if (!s || !b) return;
+    playTone(s.freq, {
+      key: which + '-' + i,
+      duration: 2400,
+      onStart: function () {
+        b.circle.setAttribute('stroke', '#f59e0b');
+        b.circle.setAttribute('stroke-width', 2.6);
+        b.circle.setAttribute('fill', 'rgba(245,158,11,.22)');
+        b.text.setAttribute('fill', '#ffffff');
+        elHint.textContent = '♪ ' + s.name + ' · ' + (which === 'inner' ? '内弦' : '外弦') +
+          ' 第' + (bandOf(i) + 1) + '把位 · ' + s.freq.toFixed(2) + ' Hz';
+      },
+      onEnd: function () { resetBadge(b); elHint.textContent = HINT_DEFAULT; }
+    });
+  }
+
+  var HINT_DEFAULT = '点任意音位可发声 · 箭头指到哪儿就是哪个音';
+
+  function resetBadge(b) {
+    b.circle.setAttribute('stroke', 'rgba(255,255,255,.20)');
+    b.circle.setAttribute('stroke-width', 1.2);
+    b.circle.setAttribute('fill', '#0f1a25');
+    b.text.setAttribute('fill', '#b6c6d8');
   }
 
   function drawStringColumn(parent, x, slots, which, key) {
@@ -815,17 +878,17 @@
     slots.forEach(function (s, i) {
       var y = slotY(i);
       var st = BAND_STYLE[bandOf(i)];
-      mk('line', { x1: x - 14, y1: y, x2: x + 14, y2: y, stroke: 'rgba(255,255,255,.10)', 'stroke-width': 1 }, parent);
+      mk('line', { x1: x - 16, y1: y, x2: x + 16, y2: y, stroke: 'rgba(255,255,255,.10)', 'stroke-width': 1 }, parent);
       var g = mk('g', null, parent);
-      var c = mk('circle', { cx: x, cy: y, r: 11, fill: '#0f1a25', stroke: 'rgba(255,255,255,.20)', 'stroke-width': 1.2 }, g);
+      var c = mk('circle', { cx: x, cy: y, r: BADGE_R, fill: '#0f1a25', stroke: 'rgba(255,255,255,.20)', 'stroke-width': 1.2 }, g);
       var tx = mk('text', {
-        x: x, y: y + 4.5, 'text-anchor': 'middle', fill: '#b6c6d8',
-        'font-size': 12, 'font-weight': 600, 'font-family': '-apple-system,sans-serif'
+        x: x, y: y + 4.8, 'text-anchor': 'middle', fill: '#b6c6d8',
+        'font-size': 13, 'font-weight': 600, 'font-family': '-apple-system,sans-serif'
       }, g);
       tx.textContent = String(s.degree);
       if (s.dots !== 0) {
         // 八度点：上加点=高八度，下加点=低八度（简谱写法）
-        var dy = s.dots > 0 ? y - 6 : y + 7.5;
+        var dy = s.dots > 0 ? y - 6.5 : y + 8;
         for (var d = 0; d < Math.abs(s.dots); d++) {
           mk('circle', { cx: x + (d - (Math.abs(s.dots) - 1) / 2) * 5.5, cy: dy, r: 2.1, fill: st.color }, g);
         }
@@ -850,12 +913,8 @@
      面板更新
      ======================================================================= */
   function setTarget(hit) {
-    boardEls.inner.concat(boardEls.outer).forEach(function (b) {
-      b.circle.setAttribute('stroke', 'rgba(255,255,255,.20)');
-      b.circle.setAttribute('stroke-width', 1.2);
-      b.circle.setAttribute('fill', '#0f1a25');
-      b.text.setAttribute('fill', '#b6c6d8');
-    });
+    if (playing) { boardEls.ring.setAttribute('opacity', 0); return; }   // 正在发声时不覆盖音位高亮
+    boardEls.inner.concat(boardEls.outer).forEach(resetBadge);
     if (!hit) { boardEls.ring.setAttribute('opacity', 0); return; }
     var b = boardEls[hit.which][hit.index];   // hit.list 是音位数据，图形元素在 boardEls 里
     if (!b) { boardEls.ring.setAttribute('opacity', 0); return; }
@@ -893,8 +952,8 @@
     rafId = requestAnimationFrame(loop);
     if (!analyser || !audioCtx) return;
 
-    if (refPlaying) {
-      elFreqLine.textContent = '参考音播放中…先跟着听准，再拉弦核对';
+    if (playing) {
+      elFreqLine.textContent = '♪ 发声播放中…先跟着听准，再拉弦核对';
       return;
     }
     if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} return; }
@@ -972,7 +1031,7 @@
     if (cTxt === '-0.0') cTxt = '0.0';
     elCents.className = 'cents ' + (inTune ? 'ok' : (cents < 0 ? 'low' : 'high'));
     elCents.innerHTML = (cents >= 0 ? '+' : '') + cTxt + '<span class="u">音分</span>';
-    elFreqLine.textContent = freq.toFixed(1) + ' → ' + s.freq.toFixed(2) + ' Hz · ' +
+    elFreqLine.textContent = freq.toFixed(1) + ' Hz → 目标 ' + s.freq.toFixed(2) + ' Hz · ' +
       (hit.which === 'inner' ? '内弦' : '外弦') + ' 第' + (bandOf(hit.index) + 1) + '把位';
 
     setTarget(hit);
@@ -1038,6 +1097,7 @@
       b.classList.add('on');
       keyId = b.getAttribute('data-key');
       smoothing = [];
+      stopTone();          // 面板要重建，先把正在发的音停掉
       buildBoard();
       setTarget(null); setArrow(null);
       updateDiag();
@@ -1055,8 +1115,20 @@
     });
   });
 
-  elRefD.addEventListener('click', function () { playRef(slotsInner[0].freq, elRefD, '内弦 D'); });
-  elRefA.addEventListener('click', function () { playRef(slotsOuter[0].freq, elRefA, '外弦 A'); });
+  elRefD.addEventListener('click', function () {
+    playTone(slotsInner[0].freq, {
+      key: 'refD', duration: 3200,
+      onStart: function () { elRefD.classList.add('playing'); elRefD.querySelector('.n').textContent = '内弦 D · 播放中'; },
+      onEnd: function () { elRefD.classList.remove('playing'); elRefD.querySelector('.n').textContent = '内弦 D'; }
+    });
+  });
+  elRefA.addEventListener('click', function () {
+    playTone(slotsOuter[0].freq, {
+      key: 'refA', duration: 3200,
+      onStart: function () { elRefA.classList.add('playing'); elRefA.querySelector('.n').textContent = '外弦 A · 播放中'; },
+      onEnd: function () { elRefA.classList.remove('playing'); elRefA.querySelector('.n').textContent = '外弦 A'; }
+    });
+  });
 
   elCopy.addEventListener('click', function () {
     updateDiag();
@@ -1121,7 +1193,7 @@
     demo: function (freq) { render(freq); },
     state: function () {
       return {
-        running: running, mode: mode, keyId: keyId,
+        running: running, mode: mode, keyId: keyId, playing: !!playing,
         sampleRate: audioCtx ? audioCtx.sampleRate : null,
         slotsInner: slotsInner, slotsOuter: slotsOuter
       };
