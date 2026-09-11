@@ -152,7 +152,7 @@
 
   <!-- 指板面板 -->
   <div class="boardWrap">
-    <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 642" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 566" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="hint" id="boardHint">点任意音位可发声 · 箭头指到哪儿就是哪个音</div>
   </div>
 
@@ -474,11 +474,11 @@
   /* =======================================================================
      面板几何
      ======================================================================= */
-  var VB_W = 360, VB_H = 642;
+  var VB_W = 360, VB_H = 566;
   // 按半音等比排布：全音占 2 格、半音占 1 格，所以 3→4、7→1̇ 这些半音会挨得更近，
   // 一眼就能看出"这两个音手指要并拢"——和真实指距一致
-  var UNIT = 23;               // 每个半音的像素
-  var PAD_TOP = 40, PAD_BOT = 50;
+  var UNIT = 20;               // 每个半音的像素（半音格 = 一把尺子的一格）
+  var PAD_TOP = 36, PAD_BOT = 50;
   var ARROW_MIN_Y = 10, ARROW_MAX_Y = VB_H - 8;
   var BADGE_R = 9;             // 圆圈半径：小圈 + 细体字，留白多才不显挤（全音间距 46，圈占 39%）
   var X_INNER = 118, X_OUTER = 242;
@@ -945,22 +945,35 @@
       stroke: 'rgba(200,210,225,.30)', 'stroke-width': 1.6
     }, parent);
 
+    // ---- 半音刻度尺：每个半音一条横线，两根弦共用同一把尺子 ----
+    // 物理上两弦位置完全一致（都由"距空弦的半音数"决定），所以刻度线在同一高度。
+    // 有了这把均匀的尺子做参照，音位圆圈落在哪一格一目了然，也就不会显得乱了。
+    for (var st = 0; st <= lastSemis; st++) {
+      var yt = yOfSemis(st);
+      var isOct = (st % 12 === 0);
+      var isFifth = (st % 12 === 7);
+      mk('line', {
+        x1: x - 22, y1: yt, x2: x + 22, y2: yt,
+        stroke: isOct ? 'rgba(255,255,255,.26)' : (isFifth ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.115)'),
+        'stroke-width': isOct ? 1.3 : 1
+      }, parent);
+    }
+
     // 半音处画一条竖的括线，把"这两根手指要并拢"标出来（和真实指法一致）
     slots.forEach(function (s, i) {
       if (i === 0) return;
       if (s.semis - slots[i - 1].semis === 1) {
         mk('path', {
-          d: 'M' + (x - 26) + ' ' + (yOfSemis(slots[i - 1].semis) - 4) + ' h6 M' + (x - 23) + ' ' + (yOfSemis(slots[i - 1].semis) - 4) +
-             ' V' + (yOfSemis(s.semis) + 4) + ' M' + (x - 26) + ' ' + (yOfSemis(s.semis) + 4) + ' h6',
-          stroke: 'rgba(148,163,184,.45)', 'stroke-width': 1.4, fill: 'none'
+          d: 'M' + (x - 30) + ' ' + (yOfSemis(slots[i - 1].semis) - 4) + ' h6 M' + (x - 27) + ' ' + (yOfSemis(slots[i - 1].semis) - 4) +
+             ' V' + (yOfSemis(s.semis) + 4) + ' M' + (x - 30) + ' ' + (yOfSemis(s.semis) + 4) + ' h6',
+          stroke: 'rgba(148,163,184,.5)', 'stroke-width': 1.4, fill: 'none'
         }, parent);
       }
     });
 
     slots.forEach(function (s, i) {
       var y = yOfSemis(s.semis);
-      var st = BAND_STYLE[bandOf(i)];
-      mk('line', { x1: x - 13, y1: y, x2: x + 13, y2: y, stroke: 'rgba(255,255,255,.09)', 'stroke-width': 1 }, parent);
+      var band = BAND_STYLE[bandOf(i)];
       var g = mk('g', null, parent);
       var c = mk('circle', { cx: x, cy: y, r: BADGE_R, fill: '#0f1a25', stroke: 'rgba(255,255,255,.22)', 'stroke-width': 1 }, g);
       var tx = mk('text', {
@@ -972,7 +985,7 @@
         // 八度点：上加点=高八度，下加点=低八度（简谱写法）
         var dy = s.dots > 0 ? y - 5.5 : y + 6.5;
         for (var d = 0; d < Math.abs(s.dots); d++) {
-          mk('circle', { cx: x + (d - (Math.abs(s.dots) - 1) / 2) * 5, cy: dy, r: 1.7, fill: st.color }, g);
+          mk('circle', { cx: x + (d - (Math.abs(s.dots) - 1) / 2) * 5, cy: dy, r: 1.7, fill: band.color }, g);
         }
       }
       boardEls[which].push({ g: g, circle: c, text: tx, y: y, slot: s });
