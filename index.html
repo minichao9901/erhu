@@ -152,7 +152,7 @@
 
   <!-- 指板面板 -->
   <div class="boardWrap">
-    <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 516" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 642" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="hint" id="boardHint">点任意音位可发声 · 箭头指到哪儿就是哪个音</div>
   </div>
 
@@ -203,7 +203,9 @@
 
   <details>
     <summary>面板说明（把位 / 简谱怎么看）</summary>
-    <p>面板按<b>手指位置</b>排列：两根弦的空弦都在最上方，往下走音越来越高。所以内弦的「1」和外弦的「5」在同一高度——它们都是空弦，手指位置相同。</p>
+    <p>面板按<b>手指位置</b>排列：两根弦的空弦都在最上方，往下走音越来越高。</p>
+    <p><b>间距按半音等比</b>：全音的间距是半音的两倍，所以 <b>3→4</b>、<b>7→1̇</b> 这类半音会明显挨得更近，旁边有小括线标出来——这就是实际演奏时这两根手指要并拢的位置。一眼就能看出哪些音要并、哪些要分开。</p>
+    <p><b>两根弦的半音位置不一样</b>，所以两列不是完全对齐的：内弦的半音对在 3→4 和 7→1，外弦的在 7→1̇ 和 3̇→4̇。原因是——大调音阶从主音往上数 6 级是大七度（11 个半音），从属音往上数 6 级是小七度（10 个半音），指距本来就不同。面板按真实指距画，不硬对齐。</p>
     <p><b>点音位圆圈可以听音</b>：面板上每个圆圈都能点，点了就用喇叭发出那个音的实际频率，方便你按面板找把位、或直接跟着唱。播放时圆圈变琥珀色，提示条会显示这个音的音名和频率。</p>
     <p>三个把位以「1」和「5」为起点划分，每 5 个音位一个把位：</p>
     <ul>
@@ -300,7 +302,7 @@
     return { semis: oct * 12 + MAJOR_SEMI[deg], degree: deg + 1, dots: oct };
   }
 
-  /** 生成一根弦上所有音位（含频率、简谱数字、八度点数） */
+  /** 生成一根弦上所有音位（含频率、简谱数字、八度点数、距空弦的半音数） */
   function buildSlots(rootMidi, openMidi, count, a4) {
     var out = [];
     for (var i = 0; i < count; i++) {
@@ -310,6 +312,7 @@
       out.push({
         step: i, midi: midi, freq: midiToFreq(midi, a4),
         degree: d.degree, dots: d.dots,
+        semis: midi - openMidi,     // 距本弦空弦的半音数：面板按它排布，全音间距=半音的两倍
         name: NOTE_NAMES[((midi % 12) + 12) % 12] + (Math.floor(midi / 12) - 1)
       });
     }
@@ -471,16 +474,24 @@
   /* =======================================================================
      面板几何
      ======================================================================= */
-  var VB_W = 360, VB_H = 516;
-  // 上下各留出 ~44px 行程：箭头最大偏移 ±50 音分 × 0.7 = ±35px，
-  // 首尾音位（空弦 / 最高音）也要能完整显示偏移，不能被面板边缘吃掉
-  var PAD_TOP = 48, SLOT_H = 28, PAD_BOT = 48;
-  var ARROW_MIN_Y = 14, ARROW_MAX_Y = VB_H - 16;
-  var BADGE_R = 12;
+  var VB_W = 360, VB_H = 642;
+  // 按半音等比排布：全音占 2 格、半音占 1 格，所以 3→4、7→1̇ 这些半音会挨得更近，
+  // 一眼就能看出"这两个音手指要并拢"——和真实指距一致
+  var UNIT = 23;               // 每个半音的像素
+  var PAD_TOP = 40, PAD_BOT = 50;
+  var ARROW_MIN_Y = 10, ARROW_MAX_Y = VB_H - 8;
+  var BADGE_R = 9;             // 圆圈半径：小圈 + 细体字，留白多才不显挤（全音间距 46，圈占 39%）
   var X_INNER = 118, X_OUTER = 242;
   var ARROW_GAIN = 0.7;        // 每 1 音分对应的像素（放大显示，否则 ±5 音分肉眼看不出来）
 
-  function slotY(i) { return PAD_TOP + i * SLOT_H + SLOT_H / 2; }
+  function yOfSemis(semis) { return PAD_TOP + semis * UNIT + UNIT / 2; }
+  // 注意：两根弦不能用同一个 slotY(i)。大调音阶从主音数 6 级是大七度（11 个半音），
+  // 从属音数 6 级是小七度（10 个半音），所以内弦第 7 音位与外弦第 7 音位实际指距不同，
+  // 必须各用各的 semis，否则外弦的"3̇→4̇ 半音"会被画成全音。
+  function slotY(which, i) {
+    var arr = which === 'outer' ? slotsOuter : slotsInner;
+    return yOfSemis(arr[i].semis);
+  }
   function bandOf(i) { return Math.floor(i / BAND_SIZE); }
 
   var BAND_STYLE = [
@@ -834,10 +845,15 @@
     var gBoard = mk('g', null, svg);
     var gLive = mk('g', null, svg);
 
-    // --- 把位底色 + 左侧标签 ---
+    // --- 把位底色 + 左侧标签（每 5 个音位 = 纯五度 = 7 个半音，所以三个把位等高） ---
     for (var b = 0; b < 3; b++) {
-      var y0 = PAD_TOP + b * BAND_SIZE * SLOT_H;
-      var h = BAND_SIZE * SLOT_H;
+      var i0 = b * BAND_SIZE, i1 = b * BAND_SIZE + BAND_SIZE - 1;
+      if (!slotsInner[i1] || !slotsOuter[i1]) continue;
+      // 底色要同时罩住两根弦：两弦同一把位的起止半音数可能差 1（大七度/小七度）
+      var topS = Math.min(slotsInner[i0].semis, slotsOuter[i0].semis);
+      var botS = Math.max(slotsInner[i1].semis, slotsOuter[i1].semis);
+      var y0 = yOfSemis(topS) - UNIT * 0.75;
+      var h = (botS - topS) * UNIT + UNIT * 1.5;
       var st = BAND_STYLE[b];
       mk('rect', { x: 4, y: y0, width: VB_W - 8, height: h, rx: 8, fill: st.fill }, gBand);
       mk('rect', { x: 4, y: y0, width: 3, height: h, rx: 1.5, fill: st.color, opacity: .75 }, gBand);
@@ -849,10 +865,11 @@
     }
 
     // --- 简化的二胡（琴杆 + 琴筒 + 千斤 + 弓），只做背景暗示 ---
-    mk('rect', { x: 176, y: PAD_TOP - 16, width: 8, height: SLOTS_PER_STRING * SLOT_H + 30, rx: 4, fill: '#1b2734' }, gErhu);
-    mk('path', { d: 'M150 ' + (PAD_TOP + SLOTS_PER_STRING * SLOT_H + 12) + ' h60 l-10 26 h-40 z', fill: '#1b2734' }, gErhu);
+    var bottomY = yOfSemis(slotsInner[SLOTS_PER_STRING - 1].semis);
+    mk('rect', { x: 176, y: PAD_TOP - 16, width: 8, height: bottomY - PAD_TOP + 46, rx: 4, fill: '#1b2734' }, gErhu);
+    mk('path', { d: 'M150 ' + (bottomY + 26) + ' h60 l-10 26 h-40 z', fill: '#1b2734' }, gErhu);
     mk('rect', { x: 100, y: PAD_TOP - 20, width: 160, height: 5, rx: 2.5, fill: '#2a3a4c' }, gErhu);
-    mk('line', { x1: 96, y1: PAD_TOP + 26, x2: 268, y2: PAD_TOP + 130, stroke: '#243244', 'stroke-width': 3, 'stroke-linecap': 'round' }, gErhu);
+    mk('line', { x1: 96, y1: PAD_TOP + 40, x2: 268, y2: PAD_TOP + 200, stroke: '#243244', 'stroke-width': 3, 'stroke-linecap': 'round' }, gErhu);
 
     // --- 两根弦的音位 ---
     drawStringColumn(gBoard, X_INNER, slotsInner, 'inner', key);
@@ -875,8 +892,9 @@
     [[X_INNER, 'inner'], [X_OUTER, 'outer']].forEach(function (pair) {
       for (var i = 0; i < SLOTS_PER_STRING; i++) {
         (function (idx) {
+          var hh = Math.max(UNIT - 2, 18);   // 半音只隔 1 格，热区取一格高（不小于 18 保证好点）
           var r = mk('rect', {
-            x: pair[0] - 46, y: slotY(idx) - SLOT_H / 2, width: 92, height: SLOT_H,
+            x: pair[0] - 46, y: yOfSemis((pair[1] === 'outer' ? slotsOuter : slotsInner)[idx].semis) - hh / 2, width: 92, height: hh,
             fill: 'transparent', 'pointer-events': 'all', style: 'cursor:pointer'
           }, gHit);
           r.addEventListener('click', function () { onSlotTap(pair[1], idx); });
@@ -921,27 +939,40 @@
   }
 
   function drawStringColumn(parent, x, slots, which, key) {
+    var lastSemis = slots[slots.length - 1].semis;
     mk('line', {
-      x1: x, y1: PAD_TOP - 12, x2: x, y2: PAD_TOP + SLOTS_PER_STRING * SLOT_H,
+      x1: x, y1: PAD_TOP - 12, x2: x, y2: yOfSemis(lastSemis) + UNIT * 0.8,
       stroke: 'rgba(200,210,225,.30)', 'stroke-width': 1.6
     }, parent);
 
+    // 半音处画一条竖的括线，把"这两根手指要并拢"标出来（和真实指法一致）
     slots.forEach(function (s, i) {
-      var y = slotY(i);
+      if (i === 0) return;
+      if (s.semis - slots[i - 1].semis === 1) {
+        mk('path', {
+          d: 'M' + (x - 26) + ' ' + (yOfSemis(slots[i - 1].semis) - 4) + ' h6 M' + (x - 23) + ' ' + (yOfSemis(slots[i - 1].semis) - 4) +
+             ' V' + (yOfSemis(s.semis) + 4) + ' M' + (x - 26) + ' ' + (yOfSemis(s.semis) + 4) + ' h6',
+          stroke: 'rgba(148,163,184,.45)', 'stroke-width': 1.4, fill: 'none'
+        }, parent);
+      }
+    });
+
+    slots.forEach(function (s, i) {
+      var y = yOfSemis(s.semis);
       var st = BAND_STYLE[bandOf(i)];
-      mk('line', { x1: x - 16, y1: y, x2: x + 16, y2: y, stroke: 'rgba(255,255,255,.10)', 'stroke-width': 1 }, parent);
+      mk('line', { x1: x - 13, y1: y, x2: x + 13, y2: y, stroke: 'rgba(255,255,255,.09)', 'stroke-width': 1 }, parent);
       var g = mk('g', null, parent);
-      var c = mk('circle', { cx: x, cy: y, r: BADGE_R, fill: '#0f1a25', stroke: 'rgba(255,255,255,.20)', 'stroke-width': 1.2 }, g);
+      var c = mk('circle', { cx: x, cy: y, r: BADGE_R, fill: '#0f1a25', stroke: 'rgba(255,255,255,.22)', 'stroke-width': 1 }, g);
       var tx = mk('text', {
-        x: x, y: y + 4.8, 'text-anchor': 'middle', fill: '#b6c6d8',
-        'font-size': 13, 'font-weight': 600, 'font-family': '-apple-system,sans-serif'
+        x: x, y: y + 4, 'text-anchor': 'middle', fill: '#c3d0de',
+        'font-size': 11.5, 'font-weight': 400, 'font-family': '-apple-system,sans-serif'
       }, g);
       tx.textContent = String(s.degree);
       if (s.dots !== 0) {
         // 八度点：上加点=高八度，下加点=低八度（简谱写法）
-        var dy = s.dots > 0 ? y - 6.5 : y + 8;
+        var dy = s.dots > 0 ? y - 5.5 : y + 6.5;
         for (var d = 0; d < Math.abs(s.dots); d++) {
-          mk('circle', { cx: x + (d - (Math.abs(s.dots) - 1) / 2) * 5.5, cy: dy, r: 2.1, fill: st.color }, g);
+          mk('circle', { cx: x + (d - (Math.abs(s.dots) - 1) / 2) * 5, cy: dy, r: 1.7, fill: st.color }, g);
         }
       }
       boardEls[which].push({ g: g, circle: c, text: tx, y: y, slot: s });
@@ -1069,7 +1100,7 @@
     var s = hit.slot;
 
     hit.inTune = inTune;
-    hit.y = slotY(hit.index);
+    hit.y = boardEls[hit.which][hit.index].y;
 
     elNoteName.textContent = s.name;
     elNoteName.className = 'noteName live' + (inTune ? ' ok' : '');
@@ -1244,6 +1275,7 @@
     SLOTS_PER_STRING: SLOTS_PER_STRING,
     ARROW_GAIN: ARROW_GAIN,
     slotY: slotY,
+    yOfSemis: yOfSemis,
     board: function () { return boardEls; },
     // 调试用：直接渲染一个频率，不需要麦克风（便于截图核对箭头位置）
     demo: function (freq) { render(freq); },
