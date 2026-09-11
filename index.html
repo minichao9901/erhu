@@ -129,6 +129,29 @@
     border-color:rgba(245,158,11,.6);color:#ffe2ac;
   }
 
+  /* ---------- 速度 / 节拍器 ---------- */
+  .tempoRow{display:flex;align-items:center;gap:12px;margin:0 4px 8px;}
+  .bpmRange{
+    flex:1;height:5px;border-radius:3px;-webkit-appearance:none;appearance:none;
+    background:linear-gradient(90deg,#2dd4bf,#818cf8);outline:none;
+  }
+  .bpmRange::-webkit-slider-thumb{
+    -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+    background:#e8eef6;border:3px solid #0a0e13;
+    box-shadow:0 0 0 1px rgba(45,212,191,.9),0 2px 8px rgba(0,0,0,.6);
+  }
+  .bpmRange::-moz-range-thumb{
+    width:22px;height:22px;border-radius:50%;background:#e8eef6;
+    border:3px solid #0a0e13;box-shadow:0 0 0 1px rgba(45,212,191,.9);
+  }
+  .beatDots{display:flex;gap:6px;flex:0 0 auto;}
+  .beatDots i{width:10px;height:10px;border-radius:50%;background:#243141;transition:background .08s,transform .08s;}
+  .beatDots i.on{background:#2dd4bf;transform:scale(1.4);}
+  .beatDots i.on.accent{background:#facc15;}
+  .metroSeg button{font-size:13px;padding:10px 4px;}
+  .metroSeg #metroBtn{flex:1.35;font-weight:600;}
+  .metroSeg #metroBtn.playing{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.55);color:#ffd894;}
+
   details{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px 13px;font-size:13.5px;line-height:1.65;color:var(--dim);}
   details+details{margin-top:10px;}
   summary{cursor:pointer;color:var(--text);font-weight:600;font-size:14px;list-style:none;}
@@ -177,7 +200,21 @@
   </div>
 
   <!-- 音阶练习：来回往复播放当前调的音阶，箭头逐个落在对应音位上 -->
-  <button class="scaleBtn" id="scaleBtn">▶ 音阶练习 · 上下行来回（每音 1 秒）</button>
+  <button class="scaleBtn" id="scaleBtn">▶ 音阶练习 · 上下行来回</button>
+
+  <!-- 速度 / 节拍器：音阶一音一拍，跟节拍器自动对齐 -->
+  <div class="label"><span>速度（节拍器与音阶共用）</span><span id="bpmTxt">60 BPM</span></div>
+  <div class="tempoRow">
+    <input type="range" id="bpmRange" class="bpmRange" min="0" max="8" step="1" value="0"
+           aria-label="速度 BPM">
+    <div class="beatDots" id="beatDots"><i></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="seg metroSeg" id="metroSeg">
+    <button id="metroBtn">节拍器 关</button>
+    <button data-rate="2">2拍/音</button>
+    <button data-rate="1" class="on">1拍/音</button>
+    <button data-rate="0.5">½拍/音</button>
+  </div>
 
   <!-- 调 -->
   <div class="label"><span>调（决定面板上的简谱数字）</span><span id="chordTxt">15 弦</span></div>
@@ -210,7 +247,8 @@
     <ul>
       <li>手机离琴 20–40 cm，别贴在琴筒上（会爆音）。</li>
       <li><b style="color:#e8eef6">点面板上任意一个音位圆圈，喇叭就会把那个音发出来</b>——听音找把位、对音准都靠它，不需要麦克风权限。再点一次停止。</li>
-      <li><b style="color:#e8eef6">「音阶练习」</b>会从内弦空弦开始，把<b>低 2 个八度</b>的音阶上行、下行来回放，每个音 1 秒，箭头逐个落在对应音位上。跟着箭头练音准，或者先听熟再自己拉。换个调，音阶的音也跟着换。</li>
+      <li><b style="color:#e8eef6">「音阶练习」</b>会从内弦空弦开始，把<b>低 2 个八度</b>的音阶上行、下行来回放，箭头逐个落在对应音位上。跟着箭头练音准，或者先听熟再自己拉。换个调，音阶的音也跟着换。</li>
+      <li><b style="color:#e8eef6">速度</b>在下面调（60–140 BPM）。音阶是<b>一音一拍</b>，所以调速度就是调音阶快慢；打开节拍器，咔哒声会和音阶的每个音自动对齐——跟着咔哒练，节奏和音准一起抓。</li>
       <li>拉响一个音，面板上会出现<b style="color:#e8eef6">箭头</b>。箭头压住哪个音位圆圈，就说明你拉的是那个音。</li>
       <li>箭头正好停在圆圈中心 → 音准；偏上偏下都会有偏移量，<b style="color:#22c55e">变绿</b>即进入 ±5 音分。</li>
       <li>先练一个把位，每个把位的音阶都稳了再串起来练换把。</li>
@@ -487,6 +525,7 @@
       elFreqLine = $('freqLine'), elStart = $('startBtn'), elLevelFill = $('levelFill'),
       elLevelTxt = $('levelTxt'), elDiag = $('diag'), elCopy = $('copyBtn'),
       elRefD = $('refD'), elRefA = $('refA'), elHint = $('boardHint'), elScale = $('scaleBtn'),
+      elBpmTxt = $('bpmTxt'), elBpmRange = $('bpmRange'), elBeatDots = $('beatDots'), elMetro = $('metroBtn'),
       elChord = $('chordTxt'), elHdrSub = $('hdrSub'), svg = $('board');
   var NS = 'http://www.w3.org/2000/svg';
 
@@ -1154,11 +1193,98 @@
   }
 
   /* =======================================================================
+     速度 / 节拍器
+     音阶一音一拍，和节拍器共用同一个速度，所以能跟着咔哒声练
+     ======================================================================= */
+  var BPM_LIST = [60, 70, 80, 90, 100, 110, 120, 130, 140];
+  var bpm = 60, scaleRate = 1, metroOn = false;
+  var metroNext = 0, metroBeat = 0, metroTimer = null;
+
+  function scaleNoteMs() { return Math.round(60000 / bpm * scaleRate); }
+
+  function setBpm(idx, fromSlider) {
+    idx = Math.max(0, Math.min(BPM_LIST.length - 1, idx | 0));
+    bpm = BPM_LIST[idx];
+    elBpmTxt.textContent = bpm + ' BPM';
+    if (!fromSlider) elBpmRange.value = String(idx);
+  }
+
+  /** 节拍声：两极短促的正弦点，第一拍高一档做重音 */
+  function clickAt(t, beat) {
+    try {
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = beat === 0 ? 1568 : 1047;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(beat === 0 ? 0.34 : 0.20, t + 0.003);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t + 0.07);
+    } catch (e) {}
+    var delay = Math.max(0, (t - audioCtx.currentTime) * 1000);
+    setTimeout(function () { flashBeat(beat); }, delay);
+  }
+
+  function flashBeat(beat) {
+    var dots = elBeatDots.children;
+    for (var i = 0; i < dots.length; i++) {
+      dots[i].className = (i === beat && metroOn) ? (beat === 0 ? 'on accent' : 'on') : '';
+    }
+  }
+  function clearBeats() {
+    var dots = elBeatDots.children;
+    for (var i = 0; i < dots.length; i++) dots[i].className = '';
+  }
+
+  /** 前瞻式排程：靠音频时钟走，不受 setTimeout 抖动影响；用递归 setTimeout 每 25ms 补一次 */
+  function metroSchedule() {
+    if (!metroOn || !audioCtx || audioCtx.state !== 'running') return;
+    var ahead = audioCtx.currentTime + 0.12;
+    while (metroNext < ahead) {
+      if (metroNext < audioCtx.currentTime) metroNext = audioCtx.currentTime + 0.02;
+      clickAt(metroNext, metroBeat);
+      metroNext += 60 / bpm;
+      metroBeat = (metroBeat + 1) % 4;
+    }
+  }
+  function metroLoop() {
+    if (!metroOn) return;
+    metroSchedule();
+    metroTimer = setTimeout(metroLoop, 25);
+  }
+  function syncMetroPhase() {
+    if (!metroOn || !audioCtx) return;
+    metroBeat = 0;
+    metroNext = audioCtx.currentTime + 0.06;
+  }
+
+  function startMetro() {
+    var ctx;
+    try { ctx = unlockAudio(); } catch (e) { showBanner('err', '<b>浏览器不支持 Web Audio API。</b>'); return; }
+    if (!micStream) setAudioSession('playback');
+    metroOn = true;
+    elMetro.textContent = '节拍器 开';
+    elMetro.classList.add('playing');
+    metroBeat = 0;
+    metroNext = ctx.currentTime + 0.06;
+    if (metroTimer) clearTimeout(metroTimer);
+    metroLoop();
+  }
+  function stopMetro() {
+    metroOn = false;
+    if (metroTimer) { clearTimeout(metroTimer); metroTimer = null; }
+    elMetro.textContent = '节拍器 关';
+    elMetro.classList.remove('playing');
+    clearBeats();
+  }
+
+  function toggleMetro() { if (metroOn) stopMetro(); else startMetro(); }
+
+  /* =======================================================================
      音阶练习：低 2 个八度（内弦空弦 → 高八度），上行 → 下行 → 来回往复
      ======================================================================= */
   var scaleOn = false, scaleStep = 0, scaleDir = 1, scaleTimer = null;
-  var SCALE_MS = 1000;
-  var SCALE_IDLE_TEXT = '▶ 音阶练习 · 上下行来回（每音 1 秒）';
+  var SCALE_IDLE_TEXT = '▶ 音阶练习 · 上下行来回';
 
   function stopScale() {
     scaleOn = false;
@@ -1175,18 +1301,24 @@
     }
   }
 
+  function scaleLabel() {
+    return '音阶练习 ' + (scaleStep + 1) + '/' + slotsInner.length +
+      ' · ' + (scaleDir > 0 ? '上行 ↑' : '下行 ↓') +
+      ' · ' + bpm + ' BPM' + (scaleRate === 1 ? '' : ' ×' + scaleRate + '拍') +
+      ' · ' + slotsInner[scaleStep].freq.toFixed(2) + ' Hz';
+  }
+
   function scaleTick() {
     if (!scaleOn) return;
     var n = slotsInner.length;            // 15 个音 = 2 个八度
     if (scaleStep < 0 || scaleStep >= n) { stopScale(); return; }
     var s = slotsInner[scaleStep];
+    var ms = scaleNoteMs();
 
     // 发这个音（留 100ms 间隙，音与音分得开）
-    playTone(s.freq, { key: 'scale', duration: SCALE_MS - 100, retrigger: true, volume: 0.32 });
+    playTone(s.freq, { key: 'scale', duration: Math.max(120, ms - 100), retrigger: true, volume: 0.32 });
     // 箭头精确落到这个音位上，读数同步显示
-    showSlot('inner', scaleStep,
-      '音阶练习 ' + (scaleStep + 1) + '/' + n + ' · ' + (scaleDir > 0 ? '上行 ↑' : '下行 ↓') +
-      ' · ' + s.freq.toFixed(2) + ' Hz');
+    showSlot('inner', scaleStep, scaleLabel());
 
     scaleTimer = setTimeout(function () {
       if (!scaleOn) return;
@@ -1194,7 +1326,7 @@
       if (scaleStep >= n) { scaleStep = n - 2; scaleDir = -1; }       // 到顶折返
       else if (scaleStep < 0) { scaleStep = 1; scaleDir = 1; }        // 到底折返
       scaleTick();
-    }, SCALE_MS);
+    }, ms);
   }
 
   function toggleScale() {
@@ -1204,6 +1336,7 @@
     elScale.textContent = '■ 停止音阶练习';
     elScale.classList.add('playing');
     elHint.textContent = '音阶练习中 · 箭头会逐个落在每个音的位置上';
+    syncMetroPhase();                     // 让第一拍和第一个音对齐
     scaleTick();
   }
 
@@ -1287,6 +1420,20 @@
   elStart.addEventListener('click', startTuner);
 
   elScale.addEventListener('click', toggleScale);
+  elMetro.addEventListener('click', toggleMetro);
+
+  elBpmRange.addEventListener('input', function () { setBpm(parseInt(elBpmRange.value, 10) || 0, true); });
+  elBpmRange.addEventListener('change', function () { setBpm(parseInt(elBpmRange.value, 10) || 0, true); updateDiag(); });
+
+  Array.prototype.forEach.call(document.querySelectorAll('#metroSeg button[data-rate]'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('#metroSeg button[data-rate]'), function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      scaleRate = parseFloat(b.getAttribute('data-rate')) || 1;
+      if (scaleOn) scaleTick();          // 立刻按新速度走下一步
+      updateDiag();
+    });
+  });
 
   Array.prototype.forEach.call(document.querySelectorAll('#keySeg button'), function (b) {
     b.addEventListener('click', function () {
@@ -1364,13 +1511,18 @@
     }
     if (!document.hidden) updateDiag();
   });
-  window.addEventListener('pagehide', function () { if (scaleOn) stopScale(); if (running) stopTuner(); });
+  window.addEventListener('pagehide', function () {
+    if (scaleOn) stopScale();
+    if (metroOn) stopMetro();
+    if (running) stopTuner();
+  });
 
   /* =======================================================================
      启动
      ======================================================================= */
   envCheck();
   buildBoard();
+  setBpm(0);              // 把 JS 里的速度同步到界面（默认 60 BPM）
   updateDiag();
 
   window.__erhu = {
@@ -1394,10 +1546,17 @@
     // 调试用：直接渲染一个频率，不需要麦克风（便于截图核对箭头位置）
     demo: function (freq) { render(freq); },
     scale: { toggle: toggleScale, stop: stopScale, tick: scaleTick, setIdleText: function (t) { SCALE_IDLE_TEXT = t; } },
+    tempo: {
+      setBpm: function (v) { setBpm(v, false); },
+      setRate: function (r) { scaleRate = r; },
+      toggleMetro: toggleMetro, stopMetro: stopMetro, schedule: metroSchedule,
+      list: BPM_LIST
+    },
     state: function () {
       return {
         running: running, mode: mode, keyId: keyId, playing: !!playing,
         scaleOn: scaleOn, scaleStep: scaleStep, scaleDir: scaleDir,
+        bpm: bpm, scaleRate: scaleRate, scaleNoteMs: scaleNoteMs(), metroOn: metroOn, metroBeat: metroBeat,
         sampleRate: audioCtx ? audioCtx.sampleRate : null,
         ctxState: audioCtx ? audioCtx.state : null,
         sessionType: (typeof navigator !== 'undefined' && navigator.audioSession) ? navigator.audioSession.type : null,
