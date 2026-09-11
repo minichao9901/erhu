@@ -845,7 +845,7 @@
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(opts.volume || 0.42, now + 0.06);
     gain.gain.setTargetAtTime((opts.volume || 0.42) * 0.72, now + 0.10, 0.5);
-    gain.connect(ctx.destination);
+    gain.connect(outNode());
 
     // 基频 + 2/3/4 次谐波，音色接近弦乐，便于听音定弦
     var partials = [[1, 1.0], [2, 0.34], [3, 0.16], [4, 0.07]];
@@ -1199,6 +1199,23 @@
   var BPM_LIST = [60, 70, 80, 90, 100, 110, 120, 130, 140];
   var bpm = 60, scaleRate = 1, metroOn = false;
   var metroNext = 0, metroBeat = 0, metroTimer = null;
+  var masterNode = null;
+
+  /** 总输出：经过一个限幅器，节拍声和音阶同时响也不会削波 */
+  function outNode() {
+    if (!audioCtx) return null;
+    if (masterNode) return masterNode;
+    try {
+      var c = audioCtx.createDynamicsCompressor();
+      c.threshold.value = -8; c.knee.value = 8; c.ratio.value = 6;
+      c.attack.value = 0.003; c.release.value = 0.2;
+      c.connect(audioCtx.destination);
+      masterNode = c;
+    } catch (e) {
+      masterNode = audioCtx.destination;    // 不支持压缩器就直接接输出
+    }
+    return masterNode;
+  }
 
   function scaleNoteMs() { return Math.round(60000 / bpm * scaleRate); }
 
@@ -1209,17 +1226,18 @@
     if (!fromSlider) elBpmRange.value = String(idx);
   }
 
-  /** 节拍声：两极短促的正弦点，第一拍高一档做重音 */
+  /** 节拍声：短促正弦点，第一拍更高更响做重音；过总限幅器避免与音阶叠加削波 */
   function clickAt(t, beat) {
     try {
       var o = audioCtx.createOscillator(), g = audioCtx.createGain();
       o.type = 'sine';
-      o.frequency.value = beat === 0 ? 1568 : 1047;
+      o.frequency.value = beat === 0 ? 1760 : 1319;
+      var peak = beat === 0 ? 0.85 : 0.62;
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(beat === 0 ? 0.34 : 0.20, t + 0.003);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(t); o.stop(t + 0.07);
+      g.gain.exponentialRampToValueAtTime(peak, t + 0.002);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.075);
+      o.connect(g); g.connect(outNode());
+      o.start(t); o.stop(t + 0.1);
     } catch (e) {}
     var delay = Math.max(0, (t - audioCtx.currentTime) * 1000);
     setTimeout(function () { flashBeat(beat); }, delay);
@@ -1284,7 +1302,7 @@
   /* =======================================================================
      音阶练习：低 2 个八度（内弦空弦 → 高八度），上行 → 下行 → 来回往复
      ======================================================================= */
-  var scaleOn = false, scaleStep = 0, scaleDir = 1, scaleTimer = null;
+  var scaleOn = false, scaleStep = 0, scaleDir = 1, scaleTimer = null, scaleNoteStart = 0;
   var SCALE_IDLE_TEXT = '▶ 音阶练习 · 上下行来回';
 
   function stopScale() {
@@ -1309,6 +1327,31 @@
       ' · ' + slotsInner[scaleStep].freq.toFixed(2) + ' Hz';
   }
 
+  /** 排下一步。所有排程都必须走这里，先清旧定时器——否则切换速度时会留下多个定时器并发乱跳 */
+  function scheduleNextScale(ms) {
+    if (scaleTimer) { clearTimeout(scaleTimer); scaleTimer = null; }
+    scaleNoteStart = performance.now();
+    scaleTimer = setTimeout(scaleAdvance, Math.max(60, ms));
+  }
+
+  function scaleAdvance() {
+    scaleTimer = null;
+    if (!scaleOn) return;
+    var n = slotsInner.length;
+    scaleStep += scaleDir;
+    if (scaleStep >= n) { scaleStep = n - 2; scaleDir = -1; }       // 到顶折返
+    else if (scaleStep < 0) { scaleStep = 1; scaleDir = 1; }        // 到底折返
+    scaleTick();
+  }
+
+  /** 速度或拍数变了：按"这个音已经响了多久"重算剩余时间。
+   *  不重播当前音、也不新增定时器——这就是原来切换拍数时节奏乱掉的原因 */
+  function scaleRetime() {
+    if (!scaleOn || !scaleTimer) return;
+    var elapsed = performance.now() - scaleNoteStart;
+    scheduleNextScale(scaleNoteMs() - elapsed);
+  }
+
   function scaleTick() {
     if (!scaleOn) return;
     var n = slotsInner.length;            // 15 个音 = 2 个八度
@@ -1321,13 +1364,7 @@
     // 箭头精确落到这个音位上，读数同步显示
     showSlot('inner', scaleStep, scaleLabel());
 
-    scaleTimer = setTimeout(function () {
-      if (!scaleOn) return;
-      scaleStep += scaleDir;
-      if (scaleStep >= n) { scaleStep = n - 2; scaleDir = -1; }       // 到顶折返
-      else if (scaleStep < 0) { scaleStep = 1; scaleDir = 1; }        // 到底折返
-      scaleTick();
-    }, ms);
+    scheduleNextScale(ms);
   }
 
   function toggleScale() {
@@ -1423,15 +1460,15 @@
   elScale.addEventListener('click', toggleScale);
   elMetro.addEventListener('click', toggleMetro);
 
-  elBpmRange.addEventListener('input', function () { setBpm(parseInt(elBpmRange.value, 10) || 0, true); });
-  elBpmRange.addEventListener('change', function () { setBpm(parseInt(elBpmRange.value, 10) || 0, true); updateDiag(); });
+  elBpmRange.addEventListener('input', function () { setBpm(parseInt(elBpmRange.value, 10) || 0, true); scaleRetime(); });
+  elBpmRange.addEventListener('change', function () { setBpm(parseInt(elBpmRange.value, 10) || 0, true); scaleRetime(); updateDiag(); });
 
   Array.prototype.forEach.call(document.querySelectorAll('#metroSeg button[data-rate]'), function (b) {
     b.addEventListener('click', function () {
       Array.prototype.forEach.call(document.querySelectorAll('#metroSeg button[data-rate]'), function (x) { x.classList.remove('on'); });
       b.classList.add('on');
       scaleRate = parseFloat(b.getAttribute('data-rate')) || 1;
-      if (scaleOn) scaleTick();          // 立刻按新速度走下一步
+      scaleRetime();                     // 只重算剩余时间，不重播当前音、不新增定时器
       updateDiag();
     });
   });
