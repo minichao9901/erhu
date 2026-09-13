@@ -269,7 +269,7 @@ const isVisible = el => el.getAttribute('opacity') === '1';
 
   console.log('\n=== 6. 静音处理 ===');
   toneAmp = 0.0002;
-  pump(30);
+  pump(50);   // 要超过 HOLD_MS(1500ms) 读数才会清空——短暂丢帧是故意保持不清的
   ok('读数清空', getEl('noteName').textContent === '--', getEl('noteName').textContent);
   ok('提示没听到声音', /没听到声音/.test(getEl('freqLine').textContent), getEl('freqLine').textContent);
   toneAmp = 0.3;

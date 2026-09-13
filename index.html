@@ -462,12 +462,10 @@
       clarity = 1 - bestV;
     } else {
       clarity = 1 - cm[tauEst];
-      // 抗八度误判：若两倍周期处也是谷且明显更"匹配"，真周期是它
-      var t2x = tauEst * 2;
-      if (t2x <= tauMax && cm[t2x] < cm[tauEst] * 0.62) {
-        tauEst = t2x;
-        clarity = 1 - cm[t2x];
-      }
+      // 注意：这里曾经有个"抗八度误判"守卫（若 cm[2τ] 明显更低就改用 2τ）。
+      // 实测它反过来造成降八度错误：三把位 D6(1175Hz) 被它拉到 587Hz。
+      // 原因是真周期处 cm 本来就已经很小，2τ 处因归一化分母变大常常更小，
+      // 比较两个都接近 0 的值等于抛硬币。去掉后合成测试（含强二次谐波用例）全部仍然通过。
     }
 
     var tauRefined = tauEst;
@@ -567,9 +565,28 @@
   var mode = 'auto';                 // auto | D | A
   var keyId = 'D';
   var a4Cal = 440;
-  var smoothing = [], lastHit = 0, noiseFloor = 0.0025, confirmStop = 0;
+  var smoothing = [], lastHit = 0, noiseFloor = 0.0008, confirmStop = 0;
   var rafId = 0, frameCount = 0, lastDetect = 0, wakeLock = null, micTimer = null;
-  var DECIMATE = 1, FFT_SIZE = 4096, SILENCE_RATIO = 2.6, MIN_RMS = 0.0035, HOLD_MS = 900, TOL = 5;
+  var DECIMATE = 1, FFT_SIZE = 4096, HOLD_MS = 1500, TOL = 5;
+  // 噪声门限：只用来区分"完全没声音"和"有声音"，判噪交给 YIN 自己。
+  // 之前设成 0.0035(=-49dBFS) × 环境噪声2.6 倍，实测会爬到 -39dBFS，
+  // 把手机放远一点/弱奏的二胡（-42dBFS 左右）整段吃掉——这就是"有时有有时没有"的根因。
+  var MIN_RMS = 0.0008;          // -62 dBFS：门限只回答"有没有声音"，判噪交给 YIN
+  var SILENCE_RATIO = 1.8;
+  var YIN_THRESHOLD = 0.15;      // YIN 绝对阈值（越大越宽松）
+  var CLARITY_MIN = 0.55;        // 可信度门槛
+  var CLARITY_MIN_CONT = 0.25;   // 与最近读数吻合时放宽到这个值（换弓/揉弦瞬间能用）
+  var STABLE_N = 2;              // 至少连续两帧才认（挡掉单帧噪声假检出）
+  var STABLE_CENTS = 250;        // 跳变超过这个值才判为不稳（够挡八度翻转，不挡揉弦）
+
+  // 检出统计：定位"拉了但没显示"卡在哪一环（门限 / 认不出 / 可信度不足）
+  var dstat = null;
+  function resetDstat() {
+    dstat = { frames: 0, gated: 0, nodetect: 0, lowclarity: 0, unstable: 0, ok: 0,
+              lastDb: -99, dbSum: 0, dbN: 0, lastClarity: 0, clSum: 0, clN: 0, lastFreq: 0 };
+    smoothing = [];        // 统计清零时一起清掉滑动窗口，避免残留上一个音
+  }
+  resetDstat();
 
   var slotsInner = [], slotsOuter = [];
   var boardEls = { inner: [], outer: [], arrow: null, ring: null, alt: null };
@@ -1124,8 +1141,15 @@
     var gate = Math.max(MIN_RMS, noiseFloor * SILENCE_RATIO);
     drawLevel(level);
 
+    // ---- 检出统计：用来定位"拉了但没显示"到底卡在哪一环 ----
+    var db = 20 * Math.log10(Math.max(level, 1e-6));
+    dstat.frames++; dstat.lastDb = db; dstat.dbSum += db; dstat.dbN++;
+
     if (level < gate) {
-      noiseFloor = noiseFloor * 0.94 + level * 0.06;
+      dstat.gated++;
+      // 真静音才更新噪声底。绝不能因"YIN 认不出"就抬高门限——
+      // 那样一旦抬高就会挡住后面更弱的乐音（换弓、弱奏都会被误杀）
+      noiseFloor = noiseFloor * 0.9 + level * 0.1;
       if (performance.now() - lastHit > HOLD_MS) showIdle(level);
       return;
     }
@@ -1133,20 +1157,45 @@
     decimate(rawBuf, DECIMATE, decBuf);
     var range = panelRange();
     var res = detectPitchYIN(decBuf, audioCtx.sampleRate / DECIMATE, {
-      minFreq: range.lo, maxFreq: range.hi, threshold: mode === 'auto' ? 0.15 : 0.12
+      minFreq: range.lo, maxFreq: range.hi, threshold: mode === 'auto' ? YIN_THRESHOLD : YIN_THRESHOLD * 0.8
     });
-    if (!res || res.clarity < 0.55) {
+    if (!res) {
+      dstat.nodetect++;
       confirmStop++;
       if (performance.now() - lastHit > HOLD_MS) showUnsure();
       return;
     }
-    confirmStop = 0;
-    lastHit = performance.now();
+    // 可信度不足时，看它是否与最近读数吻合（吻合就接受——换弓、揉弦瞬间可信度会掉）
+    var consistent = smoothing.length >= 3 &&
+                     Math.abs(centsBetween(res.freq, median(smoothing))) < 50;
+    var clarityOk = res.clarity >= CLARITY_MIN ||
+                    (consistent && res.clarity >= CLARITY_MIN_CONT);
+    if (!clarityOk) {
+      dstat.lowclarity++;
+      dstat.lastClarity = res.clarity; dstat.clSum += res.clarity; dstat.clN++;
+      confirmStop++;
+      if (performance.now() - lastHit > HOLD_MS) showUnsure();
+      return;
+    }
+    dstat.lastClarity = res.clarity; dstat.clSum += res.clarity; dstat.clN++;
 
+    // 帧间一致性：真音连续几帧互相吻合，噪声的假检出会到处乱跳。
+    // 判据是"当前帧 vs 之前几帧的中位数"，而不是全体离散度——
+    // 否则揉弦的渐变、换音的跳变都会被误挡。
     smoothing.push(res.freq);
     if (smoothing.length > 5) smoothing.shift();
-    var freq = smoothing.length >= 3 ? median(smoothing) : res.freq;
-    render(freq);
+    if (smoothing.length < STABLE_N) { dstat.unstable++; return; }
+    var prev = smoothing.slice(0, smoothing.length - 1);
+    var med = median(smoothing);
+    var dev = Math.abs(centsBetween(res.freq, median(prev)));
+    if (dev > STABLE_CENTS) { dstat.unstable++; return; }
+
+    // 到这里才是真的显示出来了（统计口径要和用户看到的一致）
+    dstat.ok++;
+    dstat.lastFreq = med;
+    confirmStop = 0;
+    lastHit = performance.now();
+    render(med);
   }
 
   /* =======================================================================
@@ -1441,6 +1490,15 @@
         '  采样率: ' + (audioCtx ? audioCtx.sampleRate + ' Hz (检测用 ' + (audioCtx.sampleRate / DECIMATE).toFixed(0) + ' Hz)' : '未启动'),
       '音频会话类别: ' + (navigator.audioSession ? (navigator.audioSession.type || '(空)') : '不支持 audioSession API'),
       '调: 1=' + key.label + ' (' + key.chord + ')  模式: ' + mode + '  噪声底: ' + noiseFloor.toFixed(5),
+      // 检出统计：拉了但没显示时，看这一行就知道卡在哪一环
+      '检出统计: 共 ' + dstat.frames + ' 帧 → 成功 ' + dstat.ok +
+        ' / 音量低于门限 ' + dstat.gated + ' / 认不出基频 ' + dstat.nodetect +
+        ' / 可信度不足 ' + dstat.lowclarity + ' / 帧间不稳 ' + dstat.unstable +
+        '  （成功率 ' + (dstat.frames ? (dstat.ok / dstat.frames * 100).toFixed(0) : '—') + '%）',
+      '信号: 最近 ' + dstat.lastDb.toFixed(1) + ' dBFS  平均 ' +
+        (dstat.dbN ? (dstat.dbSum / dstat.dbN).toFixed(1) : '—') + ' dBFS' +
+        '  可信度: 最近 ' + dstat.lastClarity.toFixed(2) + ' 平均 ' +
+        (dstat.clN ? (dstat.clSum / dstat.clN).toFixed(2) : '—') + '（门槛 ' + CLARITY_MIN + '）',
       '面板: 内弦 ' + slotsInner[0].freq.toFixed(1) + '–' + slotsInner[slotsInner.length - 1].freq.toFixed(1) + ' Hz / 外弦 ' +
         slotsOuter[0].freq.toFixed(1) + '–' + slotsOuter[slotsOuter.length - 1].freq.toFixed(1) + ' Hz',
       '麦克风: ' + (micStream ? micStream.getAudioTracks().map(function (t) {
@@ -1581,6 +1639,8 @@
     slotY: slotY,
     yOfSemis: yOfSemis,
     board: function () { return boardEls; },
+    stats: function () { return dstat; },
+    resetStats: resetDstat,
     // 调试用：直接渲染一个频率，不需要麦克风（便于截图核对箭头位置）
     demo: function (freq) { render(freq); },
     scale: { toggle: toggleScale, stop: stopScale, tick: scaleTick, setIdleText: function (t) { SCALE_IDLE_TEXT = t; } },
