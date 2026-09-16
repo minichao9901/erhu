@@ -5,3 +5,6 @@
 *.m4a
 test/rig/wav/
 analysis/
+*.jpg
+*.jpeg
+*.png
