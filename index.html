@@ -576,8 +576,12 @@
   var YIN_THRESHOLD = 0.15;      // YIN 绝对阈值（越大越宽松）
   var CLARITY_MIN = 0.55;        // 可信度门槛
   var CLARITY_MIN_CONT = 0.25;   // 与最近读数吻合时放宽到这个值（换弓/揉弦瞬间能用）
-  var STABLE_N = 2;              // 至少连续两帧才认（挡掉单帧噪声假检出）
-  var STABLE_CENTS = 250;        // 跳变超过这个值才判为不稳（够挡八度翻转，不挡揉弦）
+  var CLARITY_FAST = 0.80;       // 可信度高于此值 → 立即响应，不再等第二帧
+  var SMOOTH_N = 3;              // 滑动中位数窗口。5 帧≈190ms 跟快板太慢：
+                                 // 真实演奏《翻身歌》61s 实测，5帧→3帧 检出率 26%→81%
+  var STABLE_N = 2;              // 可信度一般时需连续几帧音高一致才认（抗噪）
+  var STABLE_CENTS = 250;        // 这几帧之间允许的最大跳变
+  var candFreq = 0, candN = 0;   // 候选音高与连续命中次数
 
   // 检出统计：定位"拉了但没显示"卡在哪一环（门限 / 认不出 / 可信度不足）
   var dstat = null;
@@ -1179,23 +1183,27 @@
     }
     dstat.lastClarity = res.clarity; dstat.clSum += res.clarity; dstat.clN++;
 
-    // 帧间一致性：真音连续几帧互相吻合，噪声的假检出会到处乱跳。
-    // 判据是"当前帧 vs 之前几帧的中位数"，而不是全体离散度——
-    // 否则揉弦的渐变、换音的跳变都会被误挡。
-    smoothing.push(res.freq);
-    if (smoothing.length > 5) smoothing.shift();
-    if (smoothing.length < STABLE_N) { dstat.unstable++; return; }
-    var prev = smoothing.slice(0, smoothing.length - 1);
-    var med = median(smoothing);
-    var dev = Math.abs(centsBetween(res.freq, median(prev)));
-    if (dev > STABLE_CENTS) { dstat.unstable++; return; }
+    // 稳定性判定（自适应）：
+    //   可信度高 → 信号干净，立即响应（快板才跟得上）
+    //   可信度一般 → 可能是噪声，要求连续几帧音高一致才认
+    // 老逻辑是"当前帧 vs 包含上一个音的中位数"，换音时必然被判不稳；
+    // 真实演奏实测误杀 20% 的帧，那是"跟不上"的主因。
+    if (res.clarity < CLARITY_FAST) {
+      if (candFreq && Math.abs(centsBetween(res.freq, candFreq)) <= STABLE_CENTS) candN++;
+      else { candFreq = res.freq; candN = 1; }
+      if (candN < STABLE_N) { dstat.unstable++; return; }
+    } else {
+      candFreq = res.freq; candN = STABLE_N;
+    }
 
-    // 到这里才是真的显示出来了（统计口径要和用户看到的一致）
     dstat.ok++;
-    dstat.lastFreq = med;
+    dstat.lastFreq = res.freq;
     confirmStop = 0;
     lastHit = performance.now();
-    render(med);
+
+    smoothing.push(res.freq);
+    if (smoothing.length > SMOOTH_N) smoothing.shift();
+    render(median(smoothing));
   }
 
   /* =======================================================================
@@ -1452,6 +1460,7 @@
   }
 
   function showIdle(level) {
+    candFreq = 0; candN = 0;
     smoothing = [];
     elNoteName.textContent = '--'; elNoteName.className = 'noteName';
     elJp.className = 'jp'; elJp.innerHTML = '–';
