@@ -99,3 +99,22 @@ node test/rig/sweep-config.js seg.wav     # 参数扫描，比不同配置的检
 - 改为「平滑3帧 + 自适应判稳（可信度≥0.8 立即响应）」：同段 82%，误杀降到 34 帧
 - 长音音分误差 ±5 以内（准）；2 帧（80ms）的超短音因平滑窗口不够而不可信，
   这是物理限制：4096 窗=85ms，比它更短的音符必然被相邻音污染
+
+### 3) 简谱 JSON → 音频（生成练习伴奏）
+
+```bash
+node test/rig/render-jianpu.js 简谱.json 输出.wav [--bb-first6|--no-bb-shift]
+node test/rig/verify-render.js 输出.wav [--bb-first6|--no-bb-shift]   # 回环验证
+```
+
+读简谱 JSON（含 `measures[].notes[].{degree,octave,duration}` 与 `key_sections`），
+合成三角波旋律 + 每拍轻点 + 4 拍预备，60 BPM。
+
+**主音 MIDI 不写死**，而是用"内弦必须是 D4、外弦必须是 A4"这条约束从 `key_sections`
+的定弦记法反推——五段互相印证通过，说明映射正确。改调式/定弦的曲子也能直接用。
+
+`verify-render.js` 把生成的音频解回来逐音检测与 JSON 对照，
+用来确认音频里真的是那些音（实测 495/495 命中，中位误差 0.08 音分）。
+
+⚠️ 已知坑：某些简谱的八度点会有漏标。本项目《快速转调练习》的 bB 段就出现
+22 个音低于二胡最低空弦 D4——用 `--bb-first6` 可只上移有问题的前 6 小节。

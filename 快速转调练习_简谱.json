@@ -1,0 +1,3024 @@
+{
+  "title": "快速转调练习",
+  "index_in_book": "8",
+  "composer_arranger": "刘逸安、赵寒阳（编曲）",
+  "grade": "第六级（二胡考级·练习曲）",
+  "time_signature": "2/4",
+  "tempo": {
+    "marking": "四分音符 = 120",
+    "bpm": 120,
+    "beat_unit": "quarter"
+  },
+  "starting_key": "♭B",
+  "key_sections": [
+    {
+      "from_measure": 1,
+      "key": "♭B",
+      "tuning_inner_string": "3",
+      "tuning_outer_string": "7",
+      "remark": "3 7弦"
+    },
+    {
+      "from_measure": 13,
+      "key": "F",
+      "tuning_inner_string": "6(低音)",
+      "tuning_outer_string": "3",
+      "remark": "转1=F，6 3弦（内弦定低音6）"
+    },
+    {
+      "from_measure": 25,
+      "key": "C",
+      "tuning_inner_string": "2",
+      "tuning_outer_string": "6",
+      "remark": "转1=C，2 6弦"
+    },
+    {
+      "from_measure": 37,
+      "key": "G",
+      "tuning_inner_string": "5(低音)",
+      "tuning_outer_string": "2",
+      "remark": "转1=G，5 2弦（内弦定低音5）"
+    },
+    {
+      "from_measure": 43,
+      "key": "D",
+      "tuning_inner_string": "1",
+      "tuning_outer_string": "5",
+      "remark": "转1=D，1 5弦；转调标记印于本行右上方，转调自第43小节起"
+    }
+  ],
+  "total_measures": 63,
+  "performance_note": "换弦时要避免出现杂音，发音要干净清楚。",
+  "measures": [
+    {
+      "measure": 1,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "3 3 3 3  2 3 3 3",
+      "fingering_printed": "起音 0(空弦)、一",
+      "bow_printed": "冂(起弓)"
+    },
+    {
+      "measure": 2,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "1 3 3 3  7 3 3 3",
+      "fingering_printed": "首音1:四；第二组首音7:三"
+    },
+    {
+      "measure": 3,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "2 3 2 1  7 1 7 6"
+    },
+    {
+      "measure": 4,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "5 2 2 2  1 2 2 2"
+    },
+    {
+      "measure": 5,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "7 2 2 2  6 2 2 2",
+      "rehearsal_mark": 5
+    },
+    {
+      "measure": 6,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "1 2 1 7  6 7 6 5"
+    },
+    {
+      "measure": 7,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "6 5̇ 5̇ 5̇  4̇ 5̇ 5̇ 5̇"
+    },
+    {
+      "measure": 8,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "3̇ 5̇ 5̇ 5̇  2̇ 5̇ 5̇ 5̇"
+    },
+    {
+      "measure": 9,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "4̇ 5̇ 4̇ 3̇  2̇ 3̇ 2̇ 1̇"
+    },
+    {
+      "measure": 10,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "7 4̇ 4̇ 4̇  3̇ 4̇ 4̇ 4̇",
+      "rehearsal_mark": 10
+    },
+    {
+      "measure": 11,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "2̇ 4̇ 4̇ 4̇  1̇ 4̇ 4̇ 4̇"
+    },
+    {
+      "measure": 12,
+      "key": "♭B",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "3̇ 4̇ 3̇ 2̇  1̇ 2̇ 1̇ 7"
+    },
+    {
+      "measure": 13,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "2 6 6 6  5 6 6 6",
+      "fingering_printed": "二 二"
+    },
+    {
+      "measure": 14,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "4 6 6 6  3 6 6 6",
+      "fingering_printed": "4666:四；3666:三"
+    },
+    {
+      "measure": 15,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "5 6 5 4  3 4 3 2",
+      "fingering_printed": "3432:四、三",
+      "rehearsal_mark": 15
+    },
+    {
+      "measure": 16,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "1 5 5 5  4 5 5 5",
+      "fingering_printed": "4555:四"
+    },
+    {
+      "measure": 17,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "3 5 5 5  2 5 5 5",
+      "fingering_printed": "3555:三"
+    },
+    {
+      "measure": 18,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "4 5 4 3  2 3 2 1"
+    },
+    {
+      "measure": 19,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "2 1̇ 1̇ 1̇  7 1̇ 1̇ 1̇"
+    },
+    {
+      "measure": 20,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "6 1̇ 1̇ 1̇  5 1̇ 1̇ 1̇",
+      "rehearsal_mark": 20
+    },
+    {
+      "measure": 21,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "7 1̇ 7 6  5 6 5 4"
+    },
+    {
+      "measure": 22,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "3 7 7 7  6 7 7 7"
+    },
+    {
+      "measure": 23,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "5 7 7 7  4 7 7 7"
+    },
+    {
+      "measure": 24,
+      "key": "F",
+      "notes": [
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "6 7 6 5  4 5 4 3"
+    },
+    {
+      "measure": 25,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "5 2̇ 2̇ 2̇  1̇ 2̇ 2̇ 2̇",
+      "fingering_printed": "5222:二二；1222:一二",
+      "rehearsal_mark": 25
+    },
+    {
+      "measure": 26,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "7 2̇ 2̇ 2̇  6 2̇ 2̇ 2̇",
+      "fingering_printed": "7222:一三；6222:0(空)三"
+    },
+    {
+      "measure": 27,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "1̇ 2̇ 1̇ 7  6 7 6 5",
+      "fingering_printed": "1217:二三二一；6765:0一0三"
+    },
+    {
+      "measure": 28,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "4 1̇ 1̇ 1̇  7 1̇ 1̇ 1̇",
+      "fingering_printed": "4111:二二"
+    },
+    {
+      "measure": 29,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "6 1̇ 1̇ 1̇  5 1̇ 1̇ 1̇",
+      "fingering_printed": "6111:二；5111:三二"
+    },
+    {
+      "measure": 30,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "7 1̇ 7 6  5 6 5 4",
+      "fingering_printed": "5654:三四",
+      "rehearsal_mark": 30
+    },
+    {
+      "measure": 31,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "5 4̇ 4̇ 4̇  3̇ 4̇ 4̇ 4̇",
+      "fingering_printed": "5444:一三"
+    },
+    {
+      "measure": 32,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "2̇ 4̇ 4̇ 4̇  1̇ 4̇ 4̇ 4̇"
+    },
+    {
+      "measure": 33,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "3̇ 4̇ 3̇ 2̇  1̇ 2̇ 1̇ 7",
+      "fingering_printed": "1217:四一、三"
+    },
+    {
+      "measure": 34,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 6,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "6̇ 3̇ 3̇ 3̇  2̇ 3̇ 3̇ 3̇",
+      "fingering_printed": "6333:二"
+    },
+    {
+      "measure": 35,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "1̇ 3̇ 3̇ 3̇  7 3̇ 3̇ 3̇",
+      "rehearsal_mark": 35
+    },
+    {
+      "measure": 36,
+      "key": "C",
+      "notes": [
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "2̇ 3̇ 2̇ 1̇  7 1̇ 7 6",
+      "fingering_printed": "2321:外(弦)二；7176:一二一0"
+    },
+    {
+      "measure": 37,
+      "key": "G",
+      "notes": [
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "1 5 5 5  4 5 5 5",
+      "fingering_printed": "1555:三三"
+    },
+    {
+      "measure": 38,
+      "key": "G",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "3 5 5 5  2 5 5 5"
+    },
+    {
+      "measure": 39,
+      "key": "G",
+      "notes": [
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "4 5 4 3  2 3 2 1"
+    },
+    {
+      "measure": 40,
+      "key": "G",
+      "notes": [
+        {
+          "degree": 7,
+          "octave": -1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "7̣ 4 4 4  3 4 4 4",
+      "fingering_printed": "7444:二二",
+      "rehearsal_mark": 40
+    },
+    {
+      "measure": 41,
+      "key": "G",
+      "notes": [
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "2 4 4 4  1 4 4 4"
+    },
+    {
+      "measure": 42,
+      "key": "G",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": -1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "3 4 3 2  1 2 1 7̣",
+      "fingering_printed": "1217:四三二"
+    },
+    {
+      "measure": 43,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "1 7 7 7  6 7 7 7",
+      "fingering_printed": "起音:内(弦)"
+    },
+    {
+      "measure": 44,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "5 7 7 7  4 7 7 7",
+      "fingering_printed": "5777:四三"
+    },
+    {
+      "measure": 45,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "6 7 6 5  4 5 4 3",
+      "fingering_printed": "6765:二三；4543:一二三",
+      "rehearsal_mark": 45
+    },
+    {
+      "measure": 46,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "2 6 6 6  5 6 6 6",
+      "fingering_printed": "2666:0(空)四"
+    },
+    {
+      "measure": 47,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "4 6 6 6  3 6 6 6"
+    },
+    {
+      "measure": 48,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "5 6 5 4  3 4 3 2"
+    },
+    {
+      "measure": 49,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "4 1̇ 1̇ 1̇  7 1̇ 1̇ 1̇",
+      "fingering_printed": "7111:一二"
+    },
+    {
+      "measure": 50,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "6 1̇ 1̇ 1̇  5 1̇ 1̇ 1̇",
+      "rehearsal_mark": 50
+    },
+    {
+      "measure": 51,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "7 1̇ 7 6  5 6 5 4"
+    },
+    {
+      "measure": 52,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "3 7 7 7  6 7 7 7"
+    },
+    {
+      "measure": 53,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "5 7 7 7  4 7 7 7"
+    },
+    {
+      "measure": 54,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "6 7 6 5  4 5 4 3"
+    },
+    {
+      "measure": 55,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "4 3̇ 3̇ 3̇  2 3̇ 3̇ 3̇",
+      "fingering_printed": "4333:一三",
+      "rehearsal_mark": 55
+    },
+    {
+      "measure": 56,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "1 3̇ 3̇ 3̇  7 3̇ 3̇ 3̇",
+      "fingering_printed": "1333:内(弦)四三；7333:内外"
+    },
+    {
+      "measure": 57,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "2̇ 3̇ 2̇ 1̇  7 1̇ 7 6",
+      "fingering_printed": "2321:一二"
+    },
+    {
+      "measure": 58,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "5 2̇ 2̇ 2̇  1 2̇ 2̇ 2̇"
+    },
+    {
+      "measure": 59,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "7 2̇ 2̇ 2̇  6 2̇ 2̇ 2̇"
+    },
+    {
+      "measure": 60,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "1 2̇ 1 7  6 7 6 5",
+      "rehearsal_mark": 60
+    },
+    {
+      "measure": 61,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 4,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 0,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 2,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 4,
+          "octave": 1,
+          "duration": "16th"
+        }
+      ],
+      "jianpu": "4 5 6 7  1̇ 2̇ 3̇ 4̇"
+    },
+    {
+      "measure": 62,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 5,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 6,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 7,
+          "octave": 1,
+          "duration": "16th"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "quarter"
+        }
+      ],
+      "jianpu": "5̇ 5̇ 6̇ 7̇  1̇[四]",
+      "fingering_printed": "5567:外(弦)一；结束音1:四"
+    },
+    {
+      "measure": 63,
+      "key": "D",
+      "notes": [
+        {
+          "degree": 3,
+          "octave": 1,
+          "duration": "quarter"
+        },
+        {
+          "degree": 1,
+          "octave": 1,
+          "duration": "quarter"
+        }
+      ],
+      "jianpu": "3̇[四] 1̇[四]",
+      "fingering_printed": "3:三；1:一",
+      "bow_printed": "3:∨(入弓)；1:冂(出弓)"
+    }
+  ],
+  "_legend": {
+    "note.degree": "简谱唱名 1-7（do re mi fa sol la si）",
+    "note.octave": "八度：1=高音（数字上方加点），0=中音，-1=低音（数字下方加点）",
+    "note.duration": "时值：16th=十六分音符（全曲主体，数字下双横线）；quarter=四分音符（仅第62、63小节结束音）",
+    "jianpu": "人读简谱：数字后 ̇ 为高音、̣ 为低音、[四] 为四分音符；每四个音为一拍，两拍为一小节",
+    "fingering_printed": "谱面黑色印刷指法（一/二/三/四=按指，0=空弦，内/外=内弦/外弦），仅抄录清晰可辨者；位置前缀为对应音或音组",
+    "bow_printed": "谱面黑色印刷弓法：冂=出弓(拉弓)，∨=入弓(推弓)",
+    "rehearsal_mark": "方框排练号（每5小节）",
+    "ignored": "谱面红色手写笔迹（打勾、画圈、X、手写指法等）为练习批注，未录入"
+  }
+}
