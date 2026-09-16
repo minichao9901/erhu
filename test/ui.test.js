@@ -69,15 +69,18 @@ function makeEl(id, tag) {
 }
 const els = {};
 const docHandlers = {};
+const lsStore = {};
 const getEl = id => (els[id] = els[id] || makeEl(id));
 const keyButtons = ['D', 'G', 'F', 'C', 'A', 'Bb'].map(k => { const b = makeEl('key-' + k, 'button'); b.setAttribute('data-key', k); return b; });
 const modeButtons = ['auto', 'D', 'A'].map(m => { const b = makeEl('mode-' + m, 'button'); b.setAttribute('data-mode', m); return b; });
 const rateButtons = ['2', '1', '0.5'].map(r => { const b = makeEl('rate-' + r, 'button'); b.setAttribute('data-rate', r); return b; });
+const a4Buttons = ['440', '441', '442', '443', '444'].map(v => { const b = makeEl('a4-' + v, 'button'); b.setAttribute('data-a4', v); if (v === '440') b.className = 'on'; return b; });
+global.localStorage = { getItem: k => (k in lsStore ? lsStore[k] : null), setItem: (k, v) => { lsStore[k] = String(v); }, removeItem: k => { delete lsStore[k]; } };
 const documentStub = {
   getElementById: getEl,
   createElement: (t) => makeEl('new', t),
   createElementNS: (ns, t) => makeEl('svg-' + t, t),
-  querySelectorAll: sel => sel.indexOf('keySeg') >= 0 ? keyButtons : (sel.indexOf('modeSeg') >= 0 ? modeButtons : (sel.indexOf('metroSeg') >= 0 ? rateButtons : [])),
+  querySelectorAll: sel => sel.indexOf('keySeg') >= 0 ? keyButtons : (sel.indexOf('modeSeg') >= 0 ? modeButtons : (sel.indexOf('metroSeg') >= 0 ? rateButtons : (sel.indexOf('a4Seg') >= 0 ? a4Buttons : []))),
   querySelector: () => makeEl('q'),
   addEventListener: (ev, fn) => { (docHandlers[ev] = docHandlers[ev] || []).push(fn); },
   hidden: false, body: makeEl('body')
@@ -148,7 +151,7 @@ function loadPage(opts = {}) {
   ctxResumeWorks = opts.resumeWorks !== false;
   Object.keys(docHandlers).forEach(k => delete docHandlers[k]);
   Object.keys(els).forEach(k => delete els[k]);
-  [...keyButtons, ...modeButtons, ...rateButtons].forEach(b => { b._handlers = {}; b._cls.clear(); });
+  [...keyButtons, ...modeButtons, ...rateButtons, ...a4Buttons].forEach(b => { b._handlers = {}; b._cls.clear(); });
 
   const nav = {
     userAgent: opts.ua || 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
@@ -269,7 +272,7 @@ const isVisible = el => el.getAttribute('opacity') === '1';
 
   console.log('\n=== 6. 静音处理 ===');
   toneAmp = 0.0002;
-  pump(50);   // 要超过 HOLD_MS(1500ms) 读数才会清空——短暂丢帧是故意保持不清的
+  pump(50);   // 要超过 HOLD_MS(1500ms) 读数才清空
   ok('读数清空', getEl('noteName').textContent === '--', getEl('noteName').textContent);
   ok('提示没听到声音', /没听到声音/.test(getEl('freqLine').textContent), getEl('freqLine').textContent);
   toneAmp = 0.3;
@@ -654,6 +657,47 @@ const isVisible = el => el.getAttribute('opacity') === '1';
   await tick(); await tick();
   ok('提示被占用', /占用了/.test(getEl('banner').innerHTML));
 
-  console.log(`\n================ 结果: ${pass} 通过 / ${fail} 失败 ================\n`);
-  process.exit(fail ? 1 : 0);
+  console.log('\n=== 14. 音准基准 A4 校准 ===');
+  // 真实录音的音高标准各不相同（实测《翻身歌》≈441.6Hz、《金珠玛米赞》≈443.7Hz），
+  // App 若写死 440，放这些录音时每个音都会被显示成"偏高"——那不是演奏不准。
+  delete lsStore['erhu.a4'];
+  w = loadPage({});
+  ok('默认 A4 = 440（国际标准）', w.__erhu.state().a4Cal === 440, String(w.__erhu.state().a4Cal));
+  ok('内弦空弦 293.66 Hz', Math.abs(w.__erhu.state().slotsInner[0].freq - 293.66) < 0.02, w.__erhu.state().slotsInner[0].freq.toFixed(2));
+  ok('参考音标签显示 293.66', /293\.66/.test(getEl('refDFreq').textContent), getEl('refDFreq').textContent);
+  ok('参考音标签显示 440.00', /440\.00/.test(getEl('refAFreq').textContent), getEl('refAFreq').textContent);
+
+  a4Buttons[2].fire('click');                    // 442
+  await tick();
+  const s442 = w.__erhu.state();
+  ok('切到 442 生效', s442.a4Cal === 442, String(s442.a4Cal));
+  ok('内弦空弦随之变成 295.00 Hz', Math.abs(s442.slotsInner[0].freq - 295.00) < 0.05, s442.slotsInner[0].freq.toFixed(2));
+  ok('外弦空弦随之变成 442.00 Hz', Math.abs(s442.slotsOuter[0].freq - 442.00) < 0.05, s442.slotsOuter[0].freq.toFixed(2));
+  ok('按钮高亮切到 442', a4Buttons[2]._cls.has('on') && !a4Buttons[0]._cls.has('on'), '');
+  ok('参考音标签同步更新', /295\.00/.test(getEl('refDFreq').textContent), getEl('refDFreq').textContent);
+  ok('写进本地存储', lsStore['erhu.a4'] === '442', String(lsStore['erhu.a4']));
+
+  w = loadPage({});
+  ok('重开页面记住 442', w.__erhu.state().a4Cal === 442, String(w.__erhu.state().a4Cal));
+  delete lsStore['erhu.a4'];
+
+  console.log('\n=== 15. 跟录音练：系统性偏移诊断 ===');
+  gumBehavior = 'ok';                            // 上一节模拟过"麦克风被占用"，这里要恢复
+  w = loadPage({});
+  getEl('startBtn').fire('click');               // 必须先启动，主循环才会跑
+  await tick(); await tick();
+  const baseF = w.__erhu.state().slotsInner[0].freq;
+  toneFreq = baseF * Math.pow(2, 8 / 1200);      // 整个录音比 440 高 8 音分
+  pump(60);
+  const box = getEl('diagBox');
+  box.open = true;
+  box.fire('toggle');
+  const diagTxt = getEl('diag').textContent;
+  ok('诊断里标出"系统性偏高"', /系统性偏高/.test(diagTxt), diagTxt.split('\n').filter(l => /偏移/.test(l))[0] || diagTxt.slice(0, 60));
+  ok('并建议把基准改成 442', /改成 442/.test(diagTxt), diagTxt.split('\n').filter(l => /改成/.test(l))[0] || '');
+  const box2 = getEl('diagBox');
+  box2.open = true;
+  box2.fire('toggle');
+
+  console.log(`\n================ 结果: ${pass} 通过 / ${fail} 失败 ================\n`);  process.exit(fail ? 1 : 0);
 })().catch(e => { console.error('\n测试崩溃:', e); process.exit(1); });

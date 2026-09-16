@@ -103,6 +103,9 @@
   }
   .seg button:active,.refBtn:active{transform:scale(.985);}
   .seg button.on{background:rgba(45,212,191,.16);border-color:rgba(45,212,191,.55);color:#c9fff7;font-weight:600;}
+  #a4Seg button{padding:9px 2px;font-size:13px;font-variant-numeric:tabular-nums;}
+  #a4Seg button.on{background:rgba(167,139,250,.18);border-color:rgba(167,139,250,.6);color:#ddd6fe;font-weight:600;}
+  .label em{font-style:normal;color:var(--dim-2);opacity:.85;}
   #keySeg button{flex:1;padding:10px 2px;font-size:13.5px;font-variant-numeric:tabular-nums;}
   #keySeg button.on{background:rgba(250,204,21,.16);border-color:rgba(250,204,21,.55);color:#fde68a;}
   .refBtn{display:flex;flex-direction:column;gap:3px;align-items:center;padding:10px 6px;}
@@ -238,8 +241,18 @@
   <!-- 参考音 -->
   <div class="label"><span>参考音（不插麦克风也能用）</span></div>
   <div class="seg">
-    <button class="refBtn" id="refD"><span class="n">内弦 D</span><span class="f">293.66 Hz</span></button>
-    <button class="refBtn" id="refA"><span class="n">外弦 A</span><span class="f">440.00 Hz</span></button>
+    <button class="refBtn" id="refD"><span class="n">内弦 D</span><span class="f" id="refDFreq">293.66 Hz</span></button>
+    <button class="refBtn" id="refA"><span class="n">外弦 A</span><span class="f" id="refAFreq">440.00 Hz</span></button>
+  </div>
+
+  <!-- 音准基准：跟着录音/乐团练时必须对得上，否则整首都显示偏高或偏低 -->
+  <div class="label"><span>音准基准 A4<em id="a4Hint">（跟录音练时按录音改·国内常用 442）</em></span></div>
+  <div class="seg" id="a4Seg">
+    <button data-a4="440">440</button>
+    <button data-a4="441">441</button>
+    <button data-a4="440" class="on">440</button>
+    <button data-a4="443">443</button>
+    <button data-a4="444">444</button>
   </div>
 
   <details open>
@@ -296,7 +309,7 @@
     </ul>
   </details>
 
-  <details>
+  <details id="diagBox">
     <summary>诊断信息（排障时截图给别人看）</summary>
     <div id="diag" class="kv">—</div>
     <button class="refBtn" id="copyBtn" style="margin-top:10px;flex-direction:row;gap:8px;padding:9px;">
@@ -323,7 +336,8 @@
 
   // 二胡标准定弦
   var OPEN_INNER_MIDI = 62;   // 内弦 D4 = 293.66 Hz
-  var OPEN_OUTER_MIDI = 69;   // 外弦 A4 = 440.00 Hz
+  var OPEN_OUTER_MIDI = 69;   // 外弦 A4
+  var A4_DEFAULT = 440;       // 国际标准。国内乐团/录音常用 442，跟着录音练时改这个值
   var STRING_D4 = 293.66;
   var STRING_A4 = 440.00;
 
@@ -524,7 +538,8 @@
       elLevelTxt = $('levelTxt'), elDiag = $('diag'), elCopy = $('copyBtn'),
       elRefD = $('refD'), elRefA = $('refA'), elHint = $('boardHint'), elScale = $('scaleBtn'),
       elBpmTxt = $('bpmTxt'), elBpmRange = $('bpmRange'), elBeatDots = $('beatDots'), elMetro = $('metroBtn'),
-      elChord = $('chordTxt'), elHdrSub = $('hdrSub'), svg = $('board');
+      elChord = $('chordTxt'), elHdrSub = $('hdrSub'), svg = $('board'),
+      elRefDFreq = $('refDFreq'), elRefAFreq = $('refAFreq'), elA4Hint = $('a4Hint'), elDiagBox = $('diagBox');
   var NS = 'http://www.w3.org/2000/svg';
 
   /* =======================================================================
@@ -564,7 +579,11 @@
   var running = false;
   var mode = 'auto';                 // auto | D | A
   var keyId = 'D';
-  var a4Cal = 440;
+  var a4Cal = A4_DEFAULT;            // 音准基准，会从本地存储恢复
+  try {
+    var savedA4 = parseFloat(localStorage.getItem('erhu.a4'));
+    if (savedA4 >= 430 && savedA4 <= 450) a4Cal = savedA4;
+  } catch (e) {}
   var smoothing = [], lastHit = 0, noiseFloor = 0.0008, confirmStop = 0;
   var rafId = 0, frameCount = 0, lastDetect = 0, wakeLock = null, micTimer = null;
   var DECIMATE = 1, FFT_SIZE = 4096, HOLD_MS = 1500, TOL = 5;
@@ -586,6 +605,7 @@
   // 检出统计：定位"拉了但没显示"卡在哪一环（门限 / 认不出 / 可信度不足）
   var dstat = null;
   function resetDstat() {
+    refHist = [];
     dstat = { frames: 0, gated: 0, nodetect: 0, lowclarity: 0, unstable: 0, ok: 0,
               lastDb: -99, dbSum: 0, dbN: 0, lastClarity: 0, clSum: 0, clN: 0, lastFreq: 0 };
     smoothing = [];        // 统计清零时一起清掉滑动窗口，避免残留上一个音
@@ -1441,6 +1461,8 @@
     var inTune = Math.abs(cents) <= TOL;
     var s = hit.slot;
 
+    trackRefDev(cents);          // 累计偏差，供诊断里判断"是不是整首系统性偏移"
+
     hit.inTune = inTune;
     hit.y = boardEls[hit.which][hit.index].y;
 
@@ -1488,6 +1510,26 @@
   /* =======================================================================
      诊断
      ======================================================================= */
+  /* 跟录音/乐团练时，整首可能系统性偏高或偏低——那不是演奏不准，
+     而是录音的音准基准与 App 不同（国内乐团普遍 442，不是 440）。
+     这里累计最近若干次读数的中位偏差，只在【诊断信息】里提示，不动主界面，
+     免得"调自己的琴"时被误导成改基准。 */
+  var refHist = [];
+  function trackRefDev(cents) {
+    refHist.push(cents);
+    if (refHist.length > 60) refHist.shift();
+  }
+  function refDevText() {
+    if (refHist.length < 25) return '样本不足（拉一会儿再看）';
+    var m = median(refHist);
+    var suggest = Math.round(a4Cal * Math.pow(2, m / 1200));
+    var tag = Math.abs(m) < 5 ? '在正常范围' : (m > 0 ? '系统性偏高' : '系统性偏低');
+    if (Math.abs(m) >= 5 && suggest >= 430 && suggest <= 450 && suggest !== a4Cal) {
+      tag += ' → 若在跟录音/乐团练，把音准基准改成 ' + suggest + ' 试试';
+    }
+    return m.toFixed(1) + ' 音分（最近 ' + refHist.length + ' 帧中位）· ' + tag;
+  }
+
   function updateDiag(extra) {
     var key = currentKey();
     var lines = [
@@ -1498,12 +1540,13 @@
       '音频上下文: ' + (audioCtx ? audioCtx.state : '未创建') +
         '  采样率: ' + (audioCtx ? audioCtx.sampleRate + ' Hz (检测用 ' + (audioCtx.sampleRate / DECIMATE).toFixed(0) + ' Hz)' : '未启动'),
       '音频会话类别: ' + (navigator.audioSession ? (navigator.audioSession.type || '(空)') : '不支持 audioSession API'),
-      '调: 1=' + key.label + ' (' + key.chord + ')  模式: ' + mode + '  噪声底: ' + noiseFloor.toFixed(5),
+      '调: 1=' + key.label + ' (' + key.chord + ')  模式: ' + mode + '  音准基准: A4=' + a4Cal + 'Hz  噪声底: ' + noiseFloor.toFixed(5),
       // 检出统计：拉了但没显示时，看这一行就知道卡在哪一环
       '检出统计: 共 ' + dstat.frames + ' 帧 → 成功 ' + dstat.ok +
         ' / 音量低于门限 ' + dstat.gated + ' / 认不出基频 ' + dstat.nodetect +
         ' / 可信度不足 ' + dstat.lowclarity + ' / 帧间不稳 ' + dstat.unstable +
         '  （成功率 ' + (dstat.frames ? (dstat.ok / dstat.frames * 100).toFixed(0) : '—') + '%）',
+      '跟录音系统性偏移: ' + refDevText(),
       '信号: 最近 ' + dstat.lastDb.toFixed(1) + ' dBFS  平均 ' +
         (dstat.dbN ? (dstat.dbSum / dstat.dbN).toFixed(1) : '—') + ' dBFS' +
         '  可信度: 最近 ' + dstat.lastClarity.toFixed(2) + ' 平均 ' +
@@ -1564,6 +1607,36 @@
       updateDiag();
     });
   });
+
+  /* 音准基准 A4：跟着录音/乐团练时，整首会系统性偏高或偏低，
+     不对齐的话每个音都会被显示成"不准"——而那不是演奏者的问题，
+     是录音的音高标准不同（国内乐团普遍用 442，不是 440）。 */
+  function setA4(v, silent) {
+    a4Cal = v;
+    try { localStorage.setItem('erhu.a4', String(v)); } catch (e) {}
+    Array.prototype.forEach.call(document.querySelectorAll('#a4Seg button'), function (x) {
+      x.classList.toggle('on', parseFloat(x.getAttribute('data-a4')) === v);
+    });
+    updateRefLabels();
+    if (scaleOn) stopScale();
+    stopTone();
+    buildBoard();
+    setTarget(null); setArrow(null);
+    if (!silent) elHint.textContent = '音准基准已设为 A4 = ' + v + ' Hz';
+    updateDiag();
+  }
+  function updateRefLabels() {
+    var d = midiToFreq(OPEN_INNER_MIDI, a4Cal), a = midiToFreq(OPEN_OUTER_MIDI, a4Cal);
+    if (elRefDFreq) elRefDFreq.textContent = d.toFixed(2) + ' Hz';
+    if (elRefAFreq) elRefAFreq.textContent = a.toFixed(2) + ' Hz';
+    if (elA4Hint) elA4Hint.textContent = '（当前 ' + a4Cal + ' Hz' + (a4Cal === 440 ? '·国际标准' : '') + '）';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#a4Seg button'), function (b) {
+    b.addEventListener('click', function () { setA4(parseFloat(b.getAttribute('data-a4')) || 440); });
+  });
+
+  // 诊断面板展开时重算一次——否则看到的还是上次切前台时的旧数据
+  if (elDiagBox) elDiagBox.addEventListener('toggle', function () { if (elDiagBox.open) updateDiag(); });
 
   elRefD.addEventListener('click', function () {
     playTone(slotsInner[0].freq, {
@@ -1626,6 +1699,11 @@
      启动
      ======================================================================= */
   envCheck();
+  // 先把 A4 基准的按钮状态与频率标签同步好（a4Cal 可能从本地存储恢复过）
+  Array.prototype.forEach.call(document.querySelectorAll('#a4Seg button'), function (x) {
+    x.classList.toggle('on', parseFloat(x.getAttribute('data-a4')) === a4Cal);
+  });
+  updateRefLabels();
   buildBoard();
   setBpm(0);              // 把 JS 里的速度同步到界面（默认 60 BPM）
   updateDiag();
@@ -1645,6 +1723,7 @@
     OPEN_OUTER_MIDI: OPEN_OUTER_MIDI,
     SLOTS_PER_STRING: SLOTS_PER_STRING,
     ARROW_GAIN: ARROW_GAIN,
+    setA4: setA4,
     slotY: slotY,
     yOfSemis: yOfSemis,
     board: function () { return boardEls; },
@@ -1661,7 +1740,7 @@
     },
     state: function () {
       return {
-        running: running, mode: mode, keyId: keyId, playing: !!playing,
+        a4Cal: a4Cal, running: running, mode: mode, keyId: keyId, playing: !!playing,
         scaleOn: scaleOn, scaleStep: scaleStep, scaleDir: scaleDir,
         bpm: bpm, scaleRate: scaleRate, scaleNoteMs: scaleNoteMs(), metroOn: metroOn, metroBeat: metroBeat,
         sampleRate: audioCtx ? audioCtx.sampleRate : null,
