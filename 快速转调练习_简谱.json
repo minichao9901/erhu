@@ -61,41 +61,41 @@
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         }
       ],
-      "jianpu": "3 3 3 3  2 3 3 3",
+      "jianpu": "3 3̇ 3̇ 3̇  2̇ 3̇ 3̇ 3̇",
       "fingering_printed": "起音 0(空弦)、一",
       "bow_printed": "冂(起弓)"
     },
@@ -105,22 +105,22 @@
       "notes": [
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -130,21 +130,21 @@
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         }
       ],
-      "jianpu": "1 3 3 3  7 3 3 3",
+      "jianpu": "1̇ 3̇ 3̇ 3̇  7 3̇ 3̇ 3̇",
       "fingering_printed": "首音1:四；第二组首音7:三"
     },
     {
@@ -153,22 +153,22 @@
       "notes": [
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 3,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -178,7 +178,7 @@
         },
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -192,7 +192,7 @@
           "duration": "16th"
         }
       ],
-      "jianpu": "2 3 2 1  7 1 7 6"
+      "jianpu": "2̇ 3̇ 2̇ 1̇  7 1̇ 7 6"
     },
     {
       "measure": 4,
@@ -205,41 +205,41 @@
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         }
       ],
-      "jianpu": "5 2 2 2  1 2 2 2"
+      "jianpu": "5 2̇ 2̇ 2̇  1̇ 2̇ 2̇ 2̇"
     },
     {
       "measure": 5,
@@ -252,17 +252,17 @@
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -272,21 +272,21 @@
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         }
       ],
-      "jianpu": "7 2 2 2  6 2 2 2",
+      "jianpu": "7 2̇ 2̇ 2̇  6 2̇ 2̇ 2̇",
       "rehearsal_mark": 5
     },
     {
@@ -295,17 +295,17 @@
       "notes": [
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -334,7 +334,7 @@
           "duration": "16th"
         }
       ],
-      "jianpu": "1 2 1 7  6 7 6 5"
+      "jianpu": "1̇ 2̇ 1̇ 7  6 7 6 5"
     },
     {
       "measure": 7,
@@ -2650,7 +2650,7 @@
         },
         {
           "degree": 2,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -2669,7 +2669,7 @@
           "duration": "16th"
         }
       ],
-      "jianpu": "4 3̇ 3̇ 3̇  2 3̇ 3̇ 3̇",
+      "jianpu": "4 3̇ 3̇ 3̇  2̇ 3̇ 3̇ 3̇",
       "fingering_printed": "4333:一三",
       "rehearsal_mark": 55
     },
@@ -2679,7 +2679,7 @@
       "notes": [
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -2718,7 +2718,7 @@
           "duration": "16th"
         }
       ],
-      "jianpu": "1 3̇ 3̇ 3̇  7 3̇ 3̇ 3̇",
+      "jianpu": "1̇ 3̇ 3̇ 3̇  7 3̇ 3̇ 3̇",
       "fingering_printed": "1333:内(弦)四三；7333:内外"
     },
     {
@@ -2795,7 +2795,7 @@
         },
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -2814,7 +2814,7 @@
           "duration": "16th"
         }
       ],
-      "jianpu": "5 2̇ 2̇ 2̇  1 2̇ 2̇ 2̇"
+      "jianpu": "5 2̇ 2̇ 2̇  1̇ 2̇ 2̇ 2̇"
     },
     {
       "measure": 59,
@@ -2869,7 +2869,7 @@
       "notes": [
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -2879,7 +2879,7 @@
         },
         {
           "degree": 1,
-          "octave": 0,
+          "octave": 1,
           "duration": "16th"
         },
         {
@@ -2908,7 +2908,7 @@
           "duration": "16th"
         }
       ],
-      "jianpu": "1 2̇ 1 7  6 7 6 5",
+      "jianpu": "1̇ 2̇ 1̇ 7  6 7 6 5",
       "rehearsal_mark": 60
     },
     {
@@ -2979,7 +2979,7 @@
         },
         {
           "degree": 7,
-          "octave": 1,
+          "octave": 0,
           "duration": "16th"
         },
         {
@@ -2988,7 +2988,7 @@
           "duration": "quarter"
         }
       ],
-      "jianpu": "5̇ 5̇ 6̇ 7̇  1̇[四]",
+      "jianpu": "5̇ 5̇ 6̇ 7  1̇[四]",
       "fingering_printed": "5567:外(弦)一；结束音1:四"
     },
     {

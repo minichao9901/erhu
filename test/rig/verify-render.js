@@ -25,15 +25,16 @@ const MAJ = [0, 2, 4, 5, 7, 9, 11];
 const KEYROOT = { '♭B': 58, 'B♭': 58, 'Bb': 58, 'F': 65, 'C': 60, 'G': 67, 'D': 62 };
 const BB_SHIFT = !process.argv.includes('--no-bb-shift');
 const PH6 = process.argv.includes('--bb-first6');
-const BEAT = 1.0, COUNT_IN = 4 * BEAT;
+const bpmArg = process.argv.find(a => a.startsWith('--bpm='));
+const BPM = bpmArg ? parseFloat(bpmArg.split('=')[1]) : 60;
+const BEAT = 60 / BPM, COUNT_IN = 4 * BEAT;
 const midiToFreq = m => 440 * Math.pow(2, (m - 69) / 12);
 
 // 期望时间轴
 const expect = [];
 let t = 0;
 for (const m of j.measures) {
-  const isBB = (m.key === '♭B' || m.key === 'B♭' || m.key === 'Bb');
-  let shift = (BB_SHIFT && isBB && (PH6 ? m.measure <= 6 : true)) ? 12 : 0;
+  const shift = 0;   // JSON 已修正
   for (const n of m.notes) {
     const dur = (n.duration === 'quarter' ? 1 : 0.25) * BEAT;
     expect.push({ t: COUNT_IN + t, dur, midi: KEYROOT[m.key] + MAJ[n.degree - 1] + 12 * (n.octave || 0) + shift, measure: m.measure });
