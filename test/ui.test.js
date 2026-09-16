@@ -699,5 +699,26 @@ const isVisible = el => el.getAttribute('opacity') === '1';
   box2.open = true;
   box2.fire('toggle');
 
+  console.log('\n=== 16. 桩与真实 HTML 的一致性 ===');
+  // 测试桩是"自己造按钮"的，所以真实 HTML 里标记写错了它抓不到。
+  // 这里直接解析 index.html 原文校验按钮，堵住这个盲区
+  // （真发生过：A4 的 442 按钮被误改成第二个 440，桩全过、界面上却露馅）。
+  {
+    const grab = seg => {
+      const m = new RegExp('<div class="seg" id="' + seg + '">([\\s\\S]*?)</div>').exec(html);
+      return m ? m[1] : '';
+    };
+    const vals = (chunk, name) => (chunk.match(new RegExp(name + '="[^"]+"', 'g')) || []).map(s => s.split('"')[1]);
+    const a4 = grab('a4Seg');
+    ok('HTML: A4 有 5 个按钮', vals(a4, 'data-a4').length === 5, String(vals(a4, 'data-a4').length));
+    ok('HTML: A4 取值 = 440,441,442,443,444', vals(a4, 'data-a4').join(',') === '440,441,442,443,444', vals(a4, 'data-a4').join(','));
+    ok('HTML: A4 默认只高亮一个', (a4.match(/class="on"/g) || []).length === 1, String((a4.match(/class="on"/g) || []).length));
+    ok('HTML: A4 默认高亮 440', /data-a4="440" class="on"/.test(a4), a4.match(/data-a4="\d+" class="on"/) || '无');
+    ok('HTML: 调号按钮齐全', vals(grab('keySeg'), 'data-key').join(',') === 'D,G,F,C,A,Bb', vals(grab('keySeg'), 'data-key').join(','));
+    ok('HTML: 检测范围按钮齐全', vals(grab('modeSeg'), 'data-mode').join(',') === 'auto,D,A', vals(grab('modeSeg'), 'data-mode').join(','));
+    const metro = /<div class="seg metroSeg" id="metroSeg">([\s\S]*?)<\/div>/.exec(html);
+    ok('HTML: 拍数按钮齐全', metro && vals(metro[1], 'data-rate').join(',') === '2,1,0.5', metro ? vals(metro[1], 'data-rate').join(',') : '未找到 metroSeg');
+  }
+
   console.log(`\n================ 结果: ${pass} 通过 / ${fail} 失败 ================\n`);  process.exit(fail ? 1 : 0);
 })().catch(e => { console.error('\n测试崩溃:', e); process.exit(1); });
