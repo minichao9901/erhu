@@ -118,7 +118,7 @@ class FakeAudioContext {
     gains.push(g);
     return g;
   }
-  createOscillator() { const o = { type: 'sine', frequency: { value: 0 }, connect() {}, start() {}, stop() { o.stopped = true; } }; oscs.push(o); return o; }
+  createOscillator() { const o = { type: 'sine', frequency: { value: 0 }, connect() {}, start(t) { o._start = t; oscTimes.push(t); }, stop(t) { o.stopped = true; o._stop = t; } }; oscs.push(o); return o; }
 }
 let oscs = [];
 let gains = [];
@@ -771,13 +771,27 @@ const isVisible = el => el.getAttribute('opacity') === '1';
     ok('取消后按钮文字复原', timerButtons[1].textContent === '3 分钟', timerButtons[1].textContent);
     ok('取消后其它按钮恢复可用', timerButtons[0].disabled === false, String(timerButtons[0].disabled));
 
-    oscs = [];
+    oscs = []; oscTimes = [];
     timerButtons[0].fire('click');                       // 1 分钟，跑满
     ok('启动 1 分钟', w.__erhu.timer.active() === '1', String(w.__erhu.timer.active()));
     advance(60500);
     ok('到点后自动结束', w.__erhu.timer.active() === null, String(w.__erhu.timer.active()));
-    ok('到点响了三声', oscs.length === 3, `${oscs.length} 个振荡器`);
-    ok('最后一声更高（1319Hz）', Math.abs(oscs[2].frequency.value - 1319) < 1, String(oscs[2].frequency.value));
+    ok('到点响了六声（用户要求多滴几下）', oscs.length === 6, `${oscs.length} 声`);
+    ok('六声同频 2093Hz（人耳 2~4kHz 最敏感，更能被听到）',
+       oscs.every(o => Math.abs(o.frequency.value - 2093) < 1), oscs.map(o => o.frequency.value).join(','));
+    // 三声一组、组间停顿：组内间隔 ≈0.24s，组间 ≈0.78s
+    const gaps = oscTimes.slice(1).map((t, i) => +(t - oscTimes[i]).toFixed(3));
+    ok('节奏是三声一组（组内 0.24s、组间 0.72s）',
+       gaps.slice(0, 2).every(g => Math.abs(g - 0.24) < 0.02) &&
+       Math.abs(gaps[2] - 0.72) < 0.02 &&
+       gaps.slice(3).every(g => Math.abs(g - 0.24) < 0.02),
+       gaps.join(' / ') + ' 秒');
+    ok('每声峰值 ≥0.9（原来 0.55，偏轻）',
+       Math.max(...gains.map(g => Math.max(...g._calls.filter(v => typeof v === 'number').concat([0])))) >= 0.9,
+       String(Math.max(...gains.map(g => Math.max(...g._calls.filter(v => typeof v === 'number').concat([0]))))));
+    const chimeSrc = /function chime\(\)[\s\S]*?\n  \}/.exec(html);
+    ok('提示音绕过总限幅器（限幅器会把它压到 -7.5dB）',
+       !!chimeSrc && /out\.connect\(ctx\.destination\)/.test(chimeSrc[0]), chimeSrc ? '已绕过' : '未找到 chime');
     ok('横幅提示时间到', /分钟到/.test(getEl('banner').innerHTML), getEl('banner').innerHTML.slice(0, 50));
     ok('提示语更新为已完成', /已完成/.test(getEl('timerHint').textContent), getEl('timerHint').textContent);
 

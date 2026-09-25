@@ -1331,22 +1331,30 @@
      ======================================================================= */
   var timerEnd = 0, timerTick = null, timerBtn = null, timerBtns = [], timerHide = null;
 
-  /** 到点提示音：连响三声，最后一声高一点 */
-  function chime(n) {
+  /** 到点提示音：6 声（三声一组，组间停一下）
+   *  两个刻意的取舍：
+   *  ① 直接接 destination，不走总限幅器——限幅器（-8dB/6:1）会把峰值压到约 -7.5dB，
+   *     提示音听着明显偏轻；提示音是偶发短音，单独出声不会削波。
+   *  ② 频率取 2093Hz：人耳在 2~4kHz 最敏感，同样的音量比中频更容易被听到。 */
+  function chime() {
     var ctx;
     try { ctx = unlockAudio(); } catch (e) { return; }
     if (!micStream) setAudioSession('playback');
-    var base = ctx.currentTime + 0.05;
-    for (var i = 0; i < n; i++) {
-      var t = base + i * 0.42;
+    var out = ctx.createGain();
+    out.gain.value = 0.85;
+    out.connect(ctx.destination);
+    var base = ctx.currentTime + 0.04;
+    for (var i = 0; i < 6; i++) {
+      // 三声一组：组内间隔 0.24s；组偏移 1.20s ⇒ 组间停顿 = 1.20 - 0.48 = 0.72s
+      var t = base + (i % 3) * 0.24 + Math.floor(i / 3) * 1.20;
       var o = ctx.createOscillator(), g = ctx.createGain();
       o.type = 'sine';
-      o.frequency.value = (i === n - 1) ? 1319 : 880;
+      o.frequency.value = 2093;
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.55, t + 0.015);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.30);
-      o.connect(g); g.connect(outNode());
-      o.start(t); o.stop(t + 0.35);
+      g.gain.exponentialRampToValueAtTime(1.0, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.connect(g); g.connect(out);
+      o.start(t); o.stop(t + 0.20);
     }
   }
 
@@ -1377,7 +1385,7 @@
   function finishTimer() {
     var min = timerBtn ? timerBtn.getAttribute('data-min') : '';
     stopTimer();
-    chime(3);
+    chime();
     // 第三参数是"副标题文字"，不是布尔值 —— 传 true 会把 true 印到界面上
     showBanner('ok', '<b>⏰ ' + min + ' 分钟到</b> —— 该换下一项练习了。',
       '继续练就再点一次计时；想停就点正在倒数的那个按钮。');
