@@ -74,13 +74,14 @@ const getEl = id => (els[id] = els[id] || makeEl(id));
 const keyButtons = ['D', 'G', 'F', 'C', 'A', 'Bb'].map(k => { const b = makeEl('key-' + k, 'button'); b.setAttribute('data-key', k); return b; });
 const modeButtons = ['auto', 'D', 'A'].map(m => { const b = makeEl('mode-' + m, 'button'); b.setAttribute('data-mode', m); return b; });
 const rateButtons = ['2', '1', '0.5'].map(r => { const b = makeEl('rate-' + r, 'button'); b.setAttribute('data-rate', r); return b; });
+const timerButtons = ['1', '3', '5'].map(v => { const b = makeEl('timer-' + v, 'button'); b.setAttribute('data-min', v); return b; });
 const a4Buttons = ['440', '441', '442', '443', '444'].map(v => { const b = makeEl('a4-' + v, 'button'); b.setAttribute('data-a4', v); if (v === '440') b.className = 'on'; return b; });
 global.localStorage = { getItem: k => (k in lsStore ? lsStore[k] : null), setItem: (k, v) => { lsStore[k] = String(v); }, removeItem: k => { delete lsStore[k]; } };
 const documentStub = {
   getElementById: getEl,
   createElement: (t) => makeEl('new', t),
   createElementNS: (ns, t) => makeEl('svg-' + t, t),
-  querySelectorAll: sel => sel.indexOf('keySeg') >= 0 ? keyButtons : (sel.indexOf('modeSeg') >= 0 ? modeButtons : (sel.indexOf('metroSeg') >= 0 ? rateButtons : (sel.indexOf('a4Seg') >= 0 ? a4Buttons : []))),
+  querySelectorAll: sel => sel.indexOf('keySeg') >= 0 ? keyButtons : (sel.indexOf('modeSeg') >= 0 ? modeButtons : (sel.indexOf('metroSeg') >= 0 ? rateButtons : (sel.indexOf('a4Seg') >= 0 ? a4Buttons : (sel.indexOf('timerSeg') >= 0 ? timerButtons : [])))),
   querySelector: () => makeEl('q'),
   addEventListener: (ev, fn) => { (docHandlers[ev] = docHandlers[ev] || []).push(fn); },
   hidden: false, body: makeEl('body')
@@ -133,13 +134,20 @@ let sessionLog = [];
 let timers = [], timerSeq = 0;
 function fakeSetTimeout(fn, ms) { const id = ++timerSeq; timers.push({ id, fn, at: clock + (ms || 0) }); return id; }
 function fakeClearTimeout(id) { timers = timers.filter(t => t.id !== id); }
+// 周期定时器（练习计时器用）：到期后重新排期而不是移除
+function fakeSetInterval(fn, ms) { const id = ++timerSeq; timers.push({ id, fn, at: clock + (ms || 1), every: ms || 1 }); return id; }
+function fakeClearInterval(id) { timers = timers.filter(t => t.id !== id); }
+const EPOCH = 1700000000000;
+const FakeDate = function (...a) { return new Date(...a); };
+FakeDate.now = () => EPOCH + clock;                       // 固定纪元，Date.now() 跟着假时钟走
 function advance(ms) {
   const target = clock + ms;
   for (let guard = 0; guard < 5000; guard++) {
     let due = null;
     for (const t of timers) if (t.at <= target && (!due || t.at < due.at)) due = t;
     if (!due) break;
-    timers = timers.filter(t => t !== due);
+    if (due.every) { due.at = clock + due.every; }  // 周期定时器：原地重排
+    else { timers = timers.filter(t => t !== due); }
     clock = Math.max(clock, due.at);
     try { due.fn(); } catch (e) { console.error('timer error:', e.message); }
   }
@@ -151,7 +159,7 @@ function loadPage(opts = {}) {
   ctxResumeWorks = opts.resumeWorks !== false;
   Object.keys(docHandlers).forEach(k => delete docHandlers[k]);
   Object.keys(els).forEach(k => delete els[k]);
-  [...keyButtons, ...modeButtons, ...rateButtons, ...a4Buttons].forEach(b => { b._handlers = {}; b._cls.clear(); });
+  [...keyButtons, ...modeButtons, ...rateButtons, ...a4Buttons, ...timerButtons].forEach(b => { b._handlers = {}; b._cls.clear(); });
 
   const nav = {
     userAgent: opts.ua || 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
@@ -172,14 +180,18 @@ function loadPage(opts = {}) {
     AudioContext: opts.noAudio ? undefined : FakeAudioContext,
     devicePixelRatio: 3, addEventListener() {}, navigator: nav,
     setTimeout: fakeSetTimeout, clearTimeout: fakeClearTimeout,
+    setInterval: fakeSetInterval, clearInterval: fakeClearInterval,
+    Date: FakeDate,
     requestAnimationFrame: fn => { rafQueue.push(fn); return rafQueue.length; },
     cancelAnimationFrame: () => {}, document: documentStub
   };
   const loc = { protocol: opts.secure === false ? 'http:' : 'https:', hostname: 'x', href: 'https://x/' };
   win.location = loc;
   const fn = new Function('window', 'document', 'navigator', 'location', 'performance',
-    'requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout', 'clearTimeout', 'console', script);
-  fn(win, documentStub, nav, loc, { now: () => clock }, win.requestAnimationFrame, win.cancelAnimationFrame, win.setTimeout, win.clearTimeout, console);
+    'requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout', 'clearTimeout',
+    'setInterval', 'clearInterval', 'Date', 'console', script);
+  fn(win, documentStub, nav, loc, { now: () => clock }, win.requestAnimationFrame, win.cancelAnimationFrame,
+     win.setTimeout, win.clearTimeout, win.setInterval, win.clearInterval, FakeDate, console);
   return win;
 }
 const pump = (frames, dt = 40) => {
@@ -718,6 +730,43 @@ const isVisible = el => el.getAttribute('opacity') === '1';
     ok('HTML: 检测范围按钮齐全', vals(grab('modeSeg'), 'data-mode').join(',') === 'auto,D,A', vals(grab('modeSeg'), 'data-mode').join(','));
     const metro = /<div class="seg metroSeg" id="metroSeg">([\s\S]*?)<\/div>/.exec(html);
     ok('HTML: 拍数按钮齐全', metro && vals(metro[1], 'data-rate').join(',') === '2,1,0.5', metro ? vals(metro[1], 'data-rate').join(',') : '未找到 metroSeg');
+  }
+
+  console.log('\n=== 17. 练习计时器 ===');
+  {
+    w = loadPage({});
+    ok('HTML: 计时按钮齐全（1/3/5 分钟）',
+      (/<div class="seg timerSeg" id="timerSeg">([\s\S]*?)<\/div>/.exec(html) || [, ''])[1]
+        .match(/data-min="[^"]+"/g).map(s => s.split('"')[1]).join(',') === '1,3,5',
+      '');
+    ok('初始无计时在跑', w.__erhu.timer.active() === null, String(w.__erhu.timer.active()));
+    ok('初始按钮文字', timerButtons[1].textContent === '3 分钟', timerButtons[1].textContent);
+
+    timerButtons[1].fire('click');                       // 启动 3 分钟
+    ok('点了 3 分钟 → 启动', w.__erhu.timer.active() === '3', String(w.__erhu.timer.active()));
+    ok('剩余 ≈ 180 秒', Math.abs(w.__erhu.timer.left() - 180000) < 300, w.__erhu.timer.left() + 'ms');
+    ok('按钮显示倒计时', /^3:00$/.test(timerButtons[1].textContent), timerButtons[1].textContent);
+    ok('正在计时的那颗高亮', timerButtons[1]._cls.has('on'), '');
+    ok('其它按钮被禁用', timerButtons[0].disabled === true && timerButtons[2].disabled === true, '');
+
+    advance(60000);                                      // 走 1 分钟
+    ok('走 1 分钟后剩余 ≈ 120 秒', Math.abs(w.__erhu.timer.left() - 120000) < 600, w.__erhu.timer.left() + 'ms');
+    ok('显示变成 2:00 附近', /^1:5\d$|^2:00$/.test(timerButtons[1].textContent), timerButtons[1].textContent);
+
+    timerButtons[1].fire('click');                       // 再点一下 = 取消
+    ok('再点一下取消', w.__erhu.timer.active() === null, String(w.__erhu.timer.active()));
+    ok('取消后按钮文字复原', timerButtons[1].textContent === '3 分钟', timerButtons[1].textContent);
+    ok('取消后其它按钮恢复可用', timerButtons[0].disabled === false, String(timerButtons[0].disabled));
+
+    oscs = [];
+    timerButtons[0].fire('click');                       // 1 分钟，跑满
+    ok('启动 1 分钟', w.__erhu.timer.active() === '1', String(w.__erhu.timer.active()));
+    advance(60500);
+    ok('到点后自动结束', w.__erhu.timer.active() === null, String(w.__erhu.timer.active()));
+    ok('到点响了三声', oscs.length === 3, `${oscs.length} 个振荡器`);
+    ok('最后一声更高（1319Hz）', Math.abs(oscs[2].frequency.value - 1319) < 1, String(oscs[2].frequency.value));
+    ok('横幅提示时间到', /分钟到/.test(getEl('banner').innerHTML), getEl('banner').innerHTML.slice(0, 50));
+    ok('提示语更新为已完成', /已完成/.test(getEl('timerHint').textContent), getEl('timerHint').textContent);
   }
 
   console.log(`\n================ 结果: ${pass} 通过 / ${fail} 失败 ================\n`);  process.exit(fail ? 1 : 0);

@@ -151,6 +151,9 @@
   .beatDots i{width:10px;height:10px;border-radius:50%;background:#243141;transition:background .08s,transform .08s;}
   .beatDots i.on{background:#2dd4bf;transform:scale(1.4);}
   .beatDots i.on.accent{background:#facc15;}
+  #timerSeg button{padding:10px 4px;font-size:13.5px;font-variant-numeric:tabular-nums;}
+  #timerSeg button.on{background:rgba(248,113,113,.18);border-color:rgba(248,113,113,.6);color:#fecaca;font-weight:600;}
+  #timerSeg button:disabled{opacity:.4;}
   .metroSeg button{font-size:13px;padding:10px 4px;}
   .metroSeg #metroBtn{flex:1.35;font-weight:600;}
   .metroSeg #metroBtn.playing{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.55);color:#ffd894;}
@@ -217,6 +220,14 @@
     <button data-rate="2">2拍/音</button>
     <button data-rate="1" class="on">1拍/音</button>
     <button data-rate="0.5">½拍/音</button>
+  </div>
+
+  <!-- 练习计时：到点响三声。用来分段练（比如每段 3 分钟） -->
+  <div class="label"><span>练习计时<em id="timerHint">（到点响三声）</em></span></div>
+  <div class="seg timerSeg" id="timerSeg">
+    <button data-min="1">1 分钟</button>
+    <button data-min="3">3 分钟</button>
+    <button data-min="5">5 分钟</button>
   </div>
 
   <!-- 调 -->
@@ -539,7 +550,8 @@
       elRefD = $('refD'), elRefA = $('refA'), elHint = $('boardHint'), elScale = $('scaleBtn'),
       elBpmTxt = $('bpmTxt'), elBpmRange = $('bpmRange'), elBeatDots = $('beatDots'), elMetro = $('metroBtn'),
       elChord = $('chordTxt'), elHdrSub = $('hdrSub'), svg = $('board'),
-      elRefDFreq = $('refDFreq'), elRefAFreq = $('refAFreq'), elA4Hint = $('a4Hint'), elDiagBox = $('diagBox');
+      elRefDFreq = $('refDFreq'), elRefAFreq = $('refAFreq'), elA4Hint = $('a4Hint'), elDiagBox = $('diagBox'),
+      elTimerHint = $('timerHint');
   var NS = 'http://www.w3.org/2000/svg';
 
   /* =======================================================================
@@ -1296,6 +1308,76 @@
 
   function scaleNoteMs() { return Math.round(60000 / bpm * scaleRate); }
 
+  /* =======================================================================
+     练习计时器：1 / 3 / 5 分钟，到点响三声
+     用 Date.now() 而不是 rAF 计时——页面切后台时 rAF 会停，墙钟不会
+     ======================================================================= */
+  var timerEnd = 0, timerTick = null, timerBtn = null, timerBtns = [];
+
+  /** 到点提示音：连响三声，最后一声高一点 */
+  function chime(n) {
+    var ctx;
+    try { ctx = unlockAudio(); } catch (e) { return; }
+    if (!micStream) setAudioSession('playback');
+    var base = ctx.currentTime + 0.05;
+    for (var i = 0; i < n; i++) {
+      var t = base + i * 0.42;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = (i === n - 1) ? 1319 : 880;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.55, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.30);
+      o.connect(g); g.connect(outNode());
+      o.start(t); o.stop(t + 0.35);
+    }
+  }
+
+  function fmtLeft(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000));
+    return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+  }
+
+  function paintTimer(left) {
+    Array.prototype.forEach.call(timerBtns, function (b) {
+      var act = (b === timerBtn);
+      b.classList.toggle('on', act);
+      b.disabled = (timerEnd > 0 && !act);
+      b.textContent = act ? fmtLeft(left) : (b.getAttribute('data-min') + ' 分钟');
+    });
+  }
+
+  function stopTimer() {
+    if (timerTick) { clearInterval(timerTick); timerTick = null; }
+    timerEnd = 0;
+    var old = timerBtn;
+    timerBtn = null;
+    paintTimer(0);
+    if (old && elTimerHint) elTimerHint.textContent = '（到点响三声）';
+  }
+
+  function finishTimer() {
+    var min = timerBtn ? timerBtn.getAttribute('data-min') : '';
+    stopTimer();
+    chime(3);
+    showBanner('ok', '<b>⏰ ' + min + ' 分钟到</b> —— 该换下一项练习了。', true);
+    if (elTimerHint) elTimerHint.textContent = '（本次 ' + min + ' 分钟已完成）';
+  }
+
+  function startTimer(min, btn) {
+    stopTimer();
+    timerBtn = btn;
+    timerEnd = Date.now() + min * 60000;
+    requestWakeLock();                 // 别让屏幕中途黑掉
+    paintTimer(min * 60000);
+    if (elTimerHint) elTimerHint.textContent = '（进行中·点一下可取消）';
+    timerTick = setInterval(function () {
+      var left = timerEnd - Date.now();
+      if (left <= 0) { finishTimer(); return; }
+      paintTimer(left);
+    }, 250);
+  }
+
   function setBpm(idx, fromSlider) {
     idx = Math.max(0, Math.min(BPM_LIST.length - 1, idx | 0));
     bpm = BPM_LIST[idx];
@@ -1638,6 +1720,15 @@
   // 诊断面板展开时重算一次——否则看到的还是上次切前台时的旧数据
   if (elDiagBox) elDiagBox.addEventListener('toggle', function () { if (elDiagBox.open) updateDiag(); });
 
+  /* 练习计时按钮 */
+  timerBtns = Array.prototype.slice.call(document.querySelectorAll('#timerSeg button'));
+  Array.prototype.forEach.call(timerBtns, function (b) {
+    b.addEventListener('click', function () {
+      if (b === timerBtn) { stopTimer(); return; }      // 再点一下 = 取消
+      startTimer(parseFloat(b.getAttribute('data-min')) || 1, b);
+    });
+  });
+
   elRefD.addEventListener('click', function () {
     playTone(slotsInner[0].freq, {
       key: 'refD', duration: 3200,
@@ -1704,6 +1795,8 @@
     x.classList.toggle('on', parseFloat(x.getAttribute('data-a4')) === a4Cal);
   });
   updateRefLabels();
+  timerBtns = Array.prototype.slice.call(document.querySelectorAll('#timerSeg button'));
+  paintTimer(0);
   buildBoard();
   setBpm(0);              // 把 JS 里的速度同步到界面（默认 60 BPM）
   updateDiag();
@@ -1724,6 +1817,7 @@
     SLOTS_PER_STRING: SLOTS_PER_STRING,
     ARROW_GAIN: ARROW_GAIN,
     setA4: setA4,
+    timer: { start: startTimer, stop: stopTimer, left: function () { return timerEnd ? timerEnd - Date.now() : 0; }, active: function () { return timerBtn ? timerBtn.getAttribute('data-min') : null; }, buttons: function () { return timerBtns; } },
     slotY: slotY,
     yOfSemis: yOfSemis,
     board: function () { return boardEls; },
