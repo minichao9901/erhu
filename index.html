@@ -209,9 +209,9 @@
   <button class="scaleBtn" id="scaleBtn">▶ 音阶练习 · 上下行来回</button>
 
   <!-- 速度 / 节拍器：音阶一音一拍，跟节拍器自动对齐 -->
-  <div class="label"><span>速度（节拍器与音阶共用）</span><span id="bpmTxt">60 BPM</span></div>
+  <div class="label"><span>速度（节拍器与音阶共用）</span><span id="bpmTxt">80 BPM</span></div>
   <div class="tempoRow">
-    <input type="range" id="bpmRange" class="bpmRange" min="0" max="8" step="1" value="0"
+    <input type="range" id="bpmRange" class="bpmRange" min="0" max="8" step="1" value="2"
            aria-label="速度 BPM">
     <div class="beatDots" id="beatDots"><i></i><i></i><i></i><i></i></div>
   </div>
@@ -1286,7 +1286,8 @@
      音阶一音一拍，和节拍器共用同一个速度，所以能跟着咔哒声练
      ======================================================================= */
   var BPM_LIST = [60, 70, 80, 90, 100, 110, 120, 130, 140];
-  var bpm = 60, scaleRate = 1, metroOn = false;
+  var BPM_DEFAULT = 80;              // 默认速度（音阶与节拍器共用）
+  var bpm = BPM_DEFAULT, scaleRate = 1, metroOn = false;
   var metroNext = 0, metroBeat = 0, metroTimer = null;
   var masterNode = null;
 
@@ -1798,7 +1799,7 @@
   timerBtns = Array.prototype.slice.call(document.querySelectorAll('#timerSeg button'));
   paintTimer(0);
   buildBoard();
-  setBpm(0);              // 把 JS 里的速度同步到界面（默认 60 BPM）
+  setBpm(BPM_LIST.indexOf(BPM_DEFAULT));   // 把 JS 里的速度同步到界面（默认 80 BPM）
   updateDiag();
 
   window.__erhu = {

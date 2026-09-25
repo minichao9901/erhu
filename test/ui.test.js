@@ -420,6 +420,10 @@ const isVisible = el => el.getAttribute('opacity') === '1';
   console.log('\n=== 10.5 音阶练习（低 2 个八度 · 上下行来回 · 每音 1 秒）===');
   {
     const w3 = loadPage({});
+    // 本组断言按「每音 1 秒」写（60 BPM × 1 拍）。默认速度已改为 80 BPM，
+    // 所以这里显式设成 60 BPM —— 测的是音阶机制，不该依赖默认速度。
+    getEl('bpmRange').value = '0';
+    getEl('bpmRange').fire('input');
     const n = w3.__erhu.state().slotsInner.length;
     ok('音阶 = 内弦 15 个音位（正好 2 个八度）', n === 15, `${n} 个音`);
     const inner = w3.__erhu.state().slotsInner;
@@ -470,6 +474,8 @@ const isVisible = el => el.getAttribute('opacity') === '1';
 
     // 换调后音阶的音必须跟着变
     const w4 = loadPage({});
+    getEl('bpmRange').value = '0';      // 同上一组：按 60 BPM 量
+    getEl('bpmRange').fire('input');
     keyButtons[1].fire('click');    // 1=G
     oscs = [];
     getEl('scaleBtn').fire('click');
@@ -515,17 +521,23 @@ const isVisible = el => el.getAttribute('opacity') === '1';
 
     ok('速度档位 = 60~140 共 9 档', w6.__erhu.tempo.list.join(',') === '60,70,80,90,100,110,120,130,140',
        w6.__erhu.tempo.list.join(','));
-    ok('默认 60 BPM', w6.__erhu.state().bpm === 60);
-    ok('默认 1 拍/音 → 每音 1000ms（与原来一致）', w6.__erhu.state().scaleNoteMs === 1000,
+    ok('默认 80 BPM', w6.__erhu.state().bpm === 80, String(w6.__erhu.state().bpm));
+    ok('默认 1 拍/音 → 每音 750ms', w6.__erhu.state().scaleNoteMs === 750,
        String(w6.__erhu.state().scaleNoteMs));
-    ok('BPM 文案显示', getEl('bpmTxt').textContent === '60 BPM', getEl('bpmTxt').textContent);
+    ok('BPM 文案显示', getEl('bpmTxt').textContent === '80 BPM', getEl('bpmTxt').textContent);
+    ok('滑杆位置与默认值一致', getEl('bpmRange').value === '2', getEl('bpmRange').value);
 
-    // 拖到 80 BPM
+    // 拖到 60 BPM（第 1 档）
+    getEl('bpmRange').value = '0';
+    getEl('bpmRange').fire('input');
+    ok('拖到第 1 档 = 60 BPM', w6.__erhu.state().bpm === 60 && getEl('bpmTxt').textContent === '60 BPM',
+       getEl('bpmTxt').textContent);
+    ok('60 BPM × 1 拍 = 1000ms/音', w6.__erhu.state().scaleNoteMs === 1000, String(w6.__erhu.state().scaleNoteMs));
+
+    // 回到 80 BPM
     getEl('bpmRange').value = '2';
     getEl('bpmRange').fire('input');
-    ok('拖到第 3 档 = 80 BPM', w6.__erhu.state().bpm === 80 && getEl('bpmTxt').textContent === '80 BPM',
-       getEl('bpmTxt').textContent);
-    ok('80 BPM × 1 拍 = 750ms/音', w6.__erhu.state().scaleNoteMs === 750, String(w6.__erhu.state().scaleNoteMs));
+    ok('回到 80 BPM × 1 拍 = 750ms', w6.__erhu.state().scaleNoteMs === 750, String(w6.__erhu.state().scaleNoteMs));
 
     // 切 2 拍/音
     w6.__erhu.tempo.setRate(2);
@@ -556,6 +568,7 @@ const isVisible = el => el.getAttribute('opacity') === '1';
     w6.__erhu.tempo.setBpm(0);
 
     // 节拍器
+    w6.__erhu.tempo.setBpm(0);          // 本组按 60 BPM（1 秒一拍）量拍数，显式设好
     oscs = [];
     getEl('metroBtn').fire('click');
     ok('节拍器开启', w6.__erhu.state().metroOn === true);
