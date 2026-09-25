@@ -647,12 +647,18 @@
      提示条
      ======================================================================= */
   function showBanner(level, html, mini) {
+    // 第三参数是"副标题文字"（字符串），不是布尔值——传 true 会把 true 印到界面上
+    if (mini === true || mini === false) mini = '';
     elBanner.className = 'banner ' + level;
     elBanner.innerHTML = '<div class="ico">' + (level === 'err' ? '⛔️' : level === 'warn' ? '⚠️' : 'ℹ️') +
       '</div><div style="flex:1">' + html + (mini ? '<div class="mini">' + mini + '</div>' : '') + '</div>';
     elBanner.classList.remove('hide');
   }
   function hideBanner() { elBanner.classList.add('hide'); }
+
+  // 横幅是顶部浮层，会一直盖住标题栏 → 点一下就能收起
+  // （计时器的到点提示另外会在 7 秒后自动收起）
+  if (elBanner) elBanner.addEventListener('click', hideBanner);
 
   function envCheck() {
     if (!SECURE) {
