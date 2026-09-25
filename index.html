@@ -30,11 +30,21 @@
   h1{font-size:19px;margin:0;font-weight:650;letter-spacing:.5px;}
   header .sub{font-size:12px;color:var(--dim-2);white-space:nowrap;}
 
-  .banner{border-radius:12px;padding:11px 12px;font-size:13.5px;line-height:1.5;margin-bottom:10px;border:1px solid;display:flex;gap:9px;align-items:flex-start;}
+  /* 横幅 = 从顶部浮出的通知条：position:fixed 不占布局，
+     否则一出现就把调音面板往下挤（用户明确要求不能挤占面板空间） */
+  .banner{
+    position:fixed;left:0;right:0;top:0;z-index:60;
+    border-radius:0 0 13px 13px;border-top:none;
+    padding:12px 14px;font-size:13.5px;line-height:1.5;
+    display:flex;gap:9px;align-items:flex-start;
+    box-shadow:0 10px 26px rgba(0,0,0,.55);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  }
   .banner .ico{flex:0 0 auto;font-size:15px;line-height:1.35;}
-  .banner.err{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.45);color:#ffd7d7;}
-  .banner.warn{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.42);color:#ffe9c2;}
-  .banner.info{background:rgba(45,212,191,.10);border-color:rgba(45,212,191,.38);color:#c8fff6;}
+  .banner.err{background:#3a1f22;border:1px solid rgba(239,68,68,.6);color:#ffd7d7;}
+  .banner.warn{background:#3a2f18;border:1px solid rgba(245,158,11,.55);color:#ffe9c2;}
+  .banner.info{background:#123330;border:1px solid rgba(45,212,191,.5);color:#c8fff6;}
+  .banner.ok{background:#123330;border:1px solid rgba(45,212,191,.5);color:#c8fff6;}
   .banner b{color:#fff;}
   .banner .mini{margin-top:7px;font-size:12.5px;opacity:.9;}
   .hide{display:none !important;}
@@ -1313,7 +1323,7 @@
      练习计时器：1 / 3 / 5 分钟，到点响三声
      用 Date.now() 而不是 rAF 计时——页面切后台时 rAF 会停，墙钟不会
      ======================================================================= */
-  var timerEnd = 0, timerTick = null, timerBtn = null, timerBtns = [];
+  var timerEnd = 0, timerTick = null, timerBtn = null, timerBtns = [], timerHide = null;
 
   /** 到点提示音：连响三声，最后一声高一点 */
   function chime(n) {
@@ -1349,6 +1359,7 @@
   }
 
   function stopTimer() {
+    if (timerHide) { clearTimeout(timerHide); timerHide = null; }
     if (timerTick) { clearInterval(timerTick); timerTick = null; }
     timerEnd = 0;
     var old = timerBtn;
@@ -1361,8 +1372,12 @@
     var min = timerBtn ? timerBtn.getAttribute('data-min') : '';
     stopTimer();
     chime(3);
-    showBanner('ok', '<b>⏰ ' + min + ' 分钟到</b> —— 该换下一项练习了。', true);
+    // 第三参数是"副标题文字"，不是布尔值 —— 传 true 会把 true 印到界面上
+    showBanner('ok', '<b>⏰ ' + min + ' 分钟到</b> —— 该换下一项练习了。',
+      '继续练就再点一次计时；想停就点正在倒数的那个按钮。');
     if (elTimerHint) elTimerHint.textContent = '（本次 ' + min + ' 分钟已完成）';
+    if (timerHide) clearTimeout(timerHide);
+    timerHide = setTimeout(hideBanner, 7000);      // 7 秒后自动收起，不挡着看读数
   }
 
   function startTimer(min, btn) {

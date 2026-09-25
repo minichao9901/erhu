@@ -780,6 +780,18 @@ const isVisible = el => el.getAttribute('opacity') === '1';
     ok('最后一声更高（1319Hz）', Math.abs(oscs[2].frequency.value - 1319) < 1, String(oscs[2].frequency.value));
     ok('横幅提示时间到', /分钟到/.test(getEl('banner').innerHTML), getEl('banner').innerHTML.slice(0, 50));
     ok('提示语更新为已完成', /已完成/.test(getEl('timerHint').textContent), getEl('timerHint').textContent);
+
+    // 真发生过：showBanner 的第三参数是"副标题文字"而不是布尔值，
+    // 传 true 会把 true 直接印在界面上。这里同时做静态与运行时两道检查。
+    ok('横幅里没有 true/false 这种脏值', !/>\s*(true|false)\s*</.test(getEl('banner').innerHTML),
+       getEl('banner').innerHTML.match(/.{0,30}(true|false).{0,20}/) || '无');
+    const badArg = /showBanner\([^;]*?,\s*(true|false)\s*\)/.exec(html);
+    ok('源码里没有把布尔值当横幅副标题', !badArg, badArg ? badArg[0].slice(0, 60) : '');
+    ok('横幅自带副标题说明', /继续练就再点一次/.test(getEl('banner').innerHTML), '');
+
+    // 横幅必须是浮层：普通块元素一出现会把调音面板往下挤（用户明确要求不能挤占）
+    ok('横幅是 position:fixed 浮层', /\.banner\{[\s\S]{0,160}?position:fixed/.test(html), '');
+    ok('横幅无下边距（不参与布局）', /\.banner\{[\s\S]{0,160}?margin:0/.test(html) || !/\.banner\{[^}]*margin-bottom/.test(html), '');
   }
 
   console.log(`\n================ 结果: ${pass} 通过 / ${fail} 失败 ================\n`);  process.exit(fail ? 1 : 0);
