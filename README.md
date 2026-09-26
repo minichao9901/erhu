@@ -1,6 +1,6 @@
 # 二胡音准练习（纯前端调音器）
 
-打开即用，无需安装：**https://minichao9901.github.io/my_pages/**
+打开即用，无需安装：**https://minichao9901.github.io/erhu/**
 
 iPhone 上建议用 **Safari** 打开（微信/QQ 内置浏览器拿不到麦克风权限），
 然后「分享 → 添加到主屏幕」当作 App 用。
