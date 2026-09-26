@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e13">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="二胡音准练习：指板音位面板，内弦 D4 / 外弦 A4，实时箭头显示实际音高位置。">
+<title>二胡音准练习 · 指板面板</title>
+<style>
+  :root{
+    --bg:#0a0e13; --panel:#121a24; --panel-2:#18222f; --line:#243141;
+    --text:#e8eef6; --dim:#93a4b8; --dim-2:#697b90;
+    --accent:#2dd4bf; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+    --flat:#60a5fa; --sharp:#fb923c;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(120% 80% at 50% 0%, #131e2b 0%, var(--bg) 55%) no-repeat, var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    min-height:100vh;-webkit-text-size-adjust:100%;
+    -webkit-user-select:none;user-select:none;overscroll-behavior-y:contain;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 26px);}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 2px 10px;}
+  h1{font-size:19px;margin:0;font-weight:650;letter-spacing:.5px;}
+  header .sub{font-size:12px;color:var(--dim-2);text-align:right;}
+
+  /* 横幅 = 从顶部浮出的通知条：position:fixed 不占布局，
+     否则一出现就把调音面板往下挤（用户明确要求不能挤占面板空间） */
+  .banner{
+    position:fixed;left:0;right:0;top:0;z-index:60;
+    border-radius:0 0 13px 13px;border-top:none;
+    padding:12px 14px;font-size:13.5px;line-height:1.5;
+    display:flex;gap:9px;align-items:flex-start;
+    box-shadow:0 10px 26px rgba(0,0,0,.55);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  }
+  .banner .ico{flex:0 0 auto;font-size:15px;line-height:1.35;}
+  .banner.err{background:#3a1f22;border:1px solid rgba(239,68,68,.6);color:#ffd7d7;}
+  .banner.warn{background:#3a2f18;border:1px solid rgba(245,158,11,.55);color:#ffe9c2;}
+  .banner.info{background:#123330;border:1px solid rgba(45,212,191,.5);color:#c8fff6;}
+  .banner.ok{background:#123330;border:1px solid rgba(45,212,191,.5);color:#c8fff6;}
+  .banner b{color:#fff;}
+  .banner .mini{margin-top:7px;font-size:12.5px;opacity:.9;}
+  .hide{display:none !important;}
+
+  /* ---------- 读数条 ---------- */
+  .readout{
+    display:flex;align-items:center;gap:12px;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--line);border-radius:14px;padding:8px 12px;
+  }
+  /* 读数 + 开始按钮 并排一行，把纵向空间让给指板面板 */
+  .topRow{display:flex;gap:8px;align-items:stretch;margin-bottom:6px;}
+  .topRow .readout{flex:1;min-width:0;display:flex;align-items:center;gap:10px;}
+  .noteName{
+    font-size:32px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;
+    min-width:2.1ch;text-align:center;color:var(--dim-2);transition:color .15s ease;
+  }
+  .noteName.ok{color:var(--ok);text-shadow:0 0 22px rgba(34,197,94,.45);}
+  .noteName.live{color:var(--text);}
+  .jp{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-width:38px;height:38px;border-radius:10px;background:#0d1620;border:1px solid var(--line);
+    font-size:18px;font-weight:700;color:var(--dim-2);line-height:1;
+  }
+  .jp.ok{color:var(--ok);border-color:rgba(34,197,94,.5);}
+  .jp .dt{font-size:9px;line-height:1;letter-spacing:1px;color:var(--dim-2);}
+  .mid{flex:1;min-width:0;}
+  .cents{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.05;color:var(--dim);flex:1;text-align:right;}
+  .cents.ok{color:var(--ok);} .cents.low{color:var(--flat);} .cents.high{color:var(--sharp);}
+  .cents .u{font-size:11.5px;color:var(--dim-2);font-weight:400;margin-left:3px;}
+  /* 频率行独立占满宽度，和开始按钮同宽，不会被挤到截断 */
+  .freqLine{font-size:11.5px;color:var(--dim-2);font-variant-numeric:tabular-nums;margin:-4px 4px 5px;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tuneMeter{position:relative;height:8px;margin:0 4px 10px;border-radius:5px;
+             background:linear-gradient(90deg,rgba(96,165,250,.55),rgba(34,197,94,.65) 50%,rgba(251,146,60,.55));}
+  .tuneMeter::after{content:"";position:absolute;left:50%;top:-3px;width:2px;height:14px;
+                    background:var(--text);opacity:.8;transform:translateX(-50%);}
+  .tuneMarker{position:absolute;top:50%;width:13px;height:13px;border:2px solid #fff;border-radius:50%;
+              background:var(--flat);box-shadow:0 1px 7px rgba(0,0,0,.65);transform:translate(-50%,-50%);z-index:1;}
+  .tuneMarker.ok{background:var(--ok);}.tuneMarker.high{background:var(--sharp);}
+
+  /* ---------- 开始按钮（与读数并排的窄条） ---------- */
+  .big{
+    flex:0 0 86px;padding:8px 4px;border-radius:14px;border:1px solid rgba(45,212,191,.5);
+    background:linear-gradient(180deg,rgba(45,212,191,.22),rgba(45,212,191,.09));
+    color:#eafffb;font-size:15px;font-weight:650;font-family:inherit;letter-spacing:.5px;
+    line-height:1.25;word-break:break-all;
+    -webkit-appearance:none;appearance:none;cursor:pointer;transition:transform .06s;
+  }
+  .big:active{transform:scale(.97);}
+  .big.stop{background:linear-gradient(180deg,rgba(239,68,68,.22),rgba(239,68,68,.08));border-color:rgba(239,68,68,.45);color:#ffe4e4;}
+  .big[disabled]{opacity:.5;}
+
+  /* ---------- 指板面板 ---------- */
+  .boardWrap{
+    position:relative;background:linear-gradient(180deg,#101923,#0c141d);
+    border:1px solid var(--line);border-radius:var(--radius);padding:6px 4px;margin-bottom:10px;
+    overflow:hidden;
+  }
+  svg#board{display:block;width:100%;height:auto;}
+  .hint{
+    position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:11.5px;
+    color:var(--dim-2);pointer-events:none;
+  }
+
+  /* ---------- 控件 ---------- */
+  .label{font-size:12px;color:var(--dim-2);margin:14px 4px 7px;letter-spacing:.4px;display:flex;justify-content:space-between;}
+  .seg{display:flex;gap:7px;}
+  .seg button,.refBtn{
+    font-family:inherit;color:var(--text);cursor:pointer;background:var(--panel);
+    border:1px solid var(--line);border-radius:11px;padding:11px 6px;font-size:14px;flex:1;
+    transition:background .15s,border-color .15s,transform .06s;-webkit-appearance:none;appearance:none;
+  }
+  .seg button:active,.refBtn:active{transform:scale(.985);}
+  button:focus-visible,input:focus-visible,svg [role="button"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+  .seg button.on{background:rgba(45,212,191,.16);border-color:rgba(45,212,191,.55);color:#c9fff7;font-weight:600;}
+  #a4Seg button{padding:9px 2px;font-size:13px;font-variant-numeric:tabular-nums;}
+  #a4Seg button.on{background:rgba(167,139,250,.18);border-color:rgba(167,139,250,.6);color:#ddd6fe;font-weight:600;}
+  .label em{font-style:normal;color:var(--dim-2);opacity:.85;}
+  #keySeg button{flex:1;padding:10px 2px;font-size:13.5px;font-variant-numeric:tabular-nums;}
+  #keySeg button.on{background:rgba(250,204,21,.16);border-color:rgba(250,204,21,.55);color:#fde68a;}
+  .refBtn{display:flex;flex-direction:column;gap:3px;align-items:center;padding:10px 6px;}
+  .refBtn .n{font-size:14px;font-weight:600;}
+  .refBtn .f{font-size:10.5px;color:var(--dim-2);font-variant-numeric:tabular-nums;}
+  .refBtn.playing{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.55);}
+  .refBtn.playing .n{color:#ffd894;}
+
+  .levelRow{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--dim-2);margin:10px 2px 0;}
+  .levelBar{flex:1;height:5px;border-radius:4px;background:#0c141d;border:1px solid var(--line);overflow:hidden;}
+  .levelFill{height:100%;width:0%;background:linear-gradient(90deg,#2dd4bf,#22c55e 70%,#f59e0b);transition:width .06s linear;}
+
+  /* ---------- 音阶练习 ---------- */
+  .scaleBtn{
+    width:100%;margin-top:12px;padding:14px 10px;border-radius:14px;
+    border:1px solid rgba(129,140,248,.5);
+    background:linear-gradient(180deg,rgba(129,140,248,.20),rgba(129,140,248,.08));
+    color:#e8eaff;font-size:15px;font-weight:600;font-family:inherit;letter-spacing:.3px;
+    -webkit-appearance:none;appearance:none;cursor:pointer;transition:transform .06s,background .15s;
+  }
+  .scaleBtn:active{transform:scale(.99);}
+  .scaleBtn.playing{
+    background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(245,158,11,.08));
+    border-color:rgba(245,158,11,.6);color:#ffe2ac;
+  }
+
+  /* ---------- 速度 / 节拍器 ---------- */
+  .tempoRow{display:flex;align-items:center;gap:12px;margin:0 4px 8px;}
+  .bpmRange{
+    flex:1;height:5px;border-radius:3px;-webkit-appearance:none;appearance:none;
+    background:linear-gradient(90deg,#2dd4bf,#818cf8);outline:none;
+  }
+  .bpmRange::-webkit-slider-thumb{
+    -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+    background:#e8eef6;border:3px solid #0a0e13;
+    box-shadow:0 0 0 1px rgba(45,212,191,.9),0 2px 8px rgba(0,0,0,.6);
+  }
+  .bpmRange::-moz-range-thumb{
+    width:22px;height:22px;border-radius:50%;background:#e8eef6;
+    border:3px solid #0a0e13;box-shadow:0 0 0 1px rgba(45,212,191,.9);
+  }
+  .beatDots{display:flex;gap:6px;flex:0 0 auto;}
+  .beatDots i{width:10px;height:10px;border-radius:50%;background:#243141;transition:background .08s,transform .08s;}
+  .beatDots i.on{background:#2dd4bf;transform:scale(1.4);}
+  .beatDots i.on.accent{background:#facc15;}
+  #timerSeg button{padding:10px 4px;font-size:13.5px;font-variant-numeric:tabular-nums;}
+  #timerSeg button.on{background:rgba(248,113,113,.18);border-color:rgba(248,113,113,.6);color:#fecaca;font-weight:600;}
+  #timerSeg button:disabled{opacity:.4;}
+  .metroSeg button{font-size:13px;padding:10px 4px;}
+  .metroSeg #metroBtn{flex:1.35;font-weight:600;}
+  .metroSeg #metroBtn.playing{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.55);color:#ffd894;}
+
+  details{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px 13px;font-size:13.5px;line-height:1.65;color:var(--dim);}
+  details+details{margin-top:10px;}
+  summary{cursor:pointer;color:var(--text);font-weight:600;font-size:14px;list-style:none;}
+  summary::-webkit-details-marker{display:none;}
+  summary::before{content:"▸ ";color:var(--accent);}
+  details[open] summary::before{content:"▾ ";}
+  details p{margin:9px 0 0;}
+  details ul{margin:8px 0 0;padding-left:19px;}
+  details li{margin:4px 0;}
+  details code{background:#0b131c;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px;-webkit-user-select:text;user-select:text;word-break:break-all;}
+  .kv{font-size:12px;color:var(--dim-2);-webkit-user-select:text;user-select:text;word-break:break-all;line-height:1.7;margin-top:8px;white-space:pre-wrap;}
+  footer{text-align:center;font-size:11.5px;color:#4d5d70;margin-top:18px;}
+  @media (max-width:380px){
+    .topRow{flex-wrap:wrap;}
+    .topRow .readout{flex-basis:100%;min-height:60px;}
+    .topRow .big{flex:1 0 100%;min-height:42px;word-break:normal;}
+    header .sub{font-size:11px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>二胡音准练习</h1>
+    <div class="sub" id="hdrSub">内弦 D4 · 外弦 A4</div>
+  </header>
+
+  <div id="banner" class="banner hide"></div>
+
+  <!-- 读数 + 开始按钮 并排 -->
+  <div class="topRow">
+    <div class="readout">
+      <div id="noteName" class="noteName">--</div>
+      <div id="jpBox" class="jp">–</div>
+      <div id="cents" class="cents">--<span class="u">音分</span></div>
+    </div>
+    <button class="big" id="startBtn">开始调音</button>
+  </div>
+  <div id="freqLine" class="freqLine">点击「开始调音」，允许麦克风后拉响琴弦</div>
+  <div class="tuneMeter" aria-hidden="true"><div id="tuneMarker" class="tuneMarker hide"></div></div>
+
+  <!-- 指板面板 -->
+  <div class="boardWrap">
+    <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 566" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="hint" id="boardHint">点任意音位可发声 · 箭头指到哪儿就是哪个音</div>
+  </div>
+
+  <div class="levelRow">
+    <span>输入</span>
+    <div class="levelBar"><div id="levelFill" class="levelFill"></div></div>
+    <span id="levelTxt">静音</span>
+  </div>
+
+  <div class="label"><span>检测范围</span></div>
+  <div class="seg" id="modeSeg">
+    <button data-mode="auto" class="on">两根弦</button>
+    <button data-mode="D">只看内弦</button>
+    <button data-mode="A">只看外弦</button>
+  </div>
+
+  <!-- 音阶练习：来回往复播放当前调的音阶，箭头逐个落在对应音位上 -->
+  <button class="scaleBtn" id="scaleBtn">▶ 音阶练习 · 上下行来回</button>
+
+  <!-- 速度 / 节拍器：音阶一音一拍，跟节拍器自动对齐 -->
+  <div class="label"><span>速度（节拍器与音阶共用）</span><span id="bpmTxt">80 BPM</span></div>
+  <div class="tempoRow">
+    <input type="range" id="bpmRange" class="bpmRange" min="0" max="8" step="1" value="2"
+           aria-label="速度 BPM">
+    <div class="beatDots" id="beatDots"><i></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="seg metroSeg" id="metroSeg">
+    <button id="metroBtn">节拍器 关</button>
+    <button data-rate="2">2拍/音</button>
+    <button data-rate="1" class="on">1拍/音</button>
+    <button data-rate="0.5">½拍/音</button>
+  </div>
+
+  <!-- 练习计时：到点响三声。用来分段练（比如每段 3 分钟） -->
+  <div class="label"><span>练习计时<em id="timerHint">（到点响三声）</em></span></div>
+  <div class="seg timerSeg" id="timerSeg">
+    <button data-min="1">1 分钟</button>
+    <button data-min="3">3 分钟</button>
+    <button data-min="5">5 分钟</button>
+  </div>
+
+  <!-- 调 -->
+  <div class="label"><span>调（决定面板上的简谱数字）</span><span id="chordTxt">15 弦</span></div>
+  <div class="seg" id="keySeg">
+    <button data-key="D" class="on">D</button>
+    <button data-key="G">G</button>
+    <button data-key="F">F</button>
+    <button data-key="C">C</button>
+    <button data-key="A">A</button>
+    <button data-key="Bb">bB</button>
+  </div>
+
+  <!-- 参考音 -->
+  <div class="label"><span>参考音（不插麦克风也能用）</span></div>
+  <div class="seg">
+    <button class="refBtn" id="refD"><span class="n">内弦 D</span><span class="f" id="refDFreq">293.66 Hz</span></button>
+    <button class="refBtn" id="refA"><span class="n">外弦 A</span><span class="f" id="refAFreq">440.00 Hz</span></button>
+  </div>
+
+  <!-- 音准基准：跟着录音/乐团练时必须对得上，否则整首都显示偏高或偏低 -->
+  <div class="label"><span>音准基准 A4<em id="a4Hint">（跟录音练时按录音改·国内常用 442）</em></span></div>
+  <div class="seg" id="a4Seg">
+    <button data-a4="440" class="on">440</button>
+    <button data-a4="441">441</button>
+    <button data-a4="442">442</button>
+    <button data-a4="443">443</button>
+    <button data-a4="444">444</button>
+  </div>
+
+  <details open>
+    <summary>怎么用（30 秒上手）</summary>
+    <ul>
+      <li>手机离琴 20–40 cm，别贴在琴筒上（会爆音）。</li>
+      <li><b style="color:#e8eef6">点面板上任意一个音位圆圈，喇叭就会把那个音发出来</b>——听音找把位、对音准都靠它，不需要麦克风权限。再点一次停止。</li>
+      <li><b style="color:#e8eef6">「音阶练习」</b>会从内弦空弦开始，把<b>低 2 个八度</b>的音阶上行、下行来回放，箭头逐个落在对应音位上。跟着箭头练音准，或者先听熟再自己拉。换个调，音阶的音也跟着换。</li>
+      <li><b style="color:#e8eef6">速度</b>在下面调（60–140 BPM）。音阶是<b>一音一拍</b>，所以调速度就是调音阶快慢；打开节拍器，咔哒声会和音阶的每个音自动对齐——跟着咔哒练，节奏和音准一起抓。</li>
+      <li>拉响一个音，面板上会出现<b style="color:#e8eef6">箭头</b>。箭头压住哪个音位圆圈，就说明你拉的是那个音。</li>
+      <li>箭头正好停在圆圈中心 → 音准；偏上偏下都会有偏移量，<b style="color:#22c55e">变绿</b>即进入 ±5 音分。</li>
+      <li>先练一个把位，每个把位的音阶都稳了再串起来练换把。</li>
+      <li>两弦共振串音时，用「只看内弦 / 只看外弦」锁定，识别更稳。</li>
+      <li>拉弓要平稳持续，短促点一下就抬弓会让读数跳。</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>面板说明（把位 / 简谱怎么看）</summary>
+    <p>面板按<b>手指位置</b>排列：两根弦的空弦都在最上方，往下走音越来越高。</p>
+    <p><b>间距按半音等比</b>：全音的间距是半音的两倍，所以 <b>3→4</b>、<b>7→1̇</b> 这类半音会明显挨得更近，旁边有小括线标出来——这就是实际演奏时这两根手指要并拢的位置。一眼就能看出哪些音要并、哪些要分开。</p>
+    <p><b>两根弦的半音位置不一样</b>，所以两列不是完全对齐的：内弦的半音对在 3→4 和 7→1，外弦的在 7→1̇ 和 3̇→4̇。原因是——大调音阶从主音往上数 6 级是大七度（11 个半音），从属音往上数 6 级是小七度（10 个半音），指距本来就不同。面板按真实指距画，不硬对齐。</p>
+    <p><b>点音位圆圈可以听音</b>：面板上每个圆圈都能点，点了就用喇叭发出那个音的实际频率，方便你按面板找把位、或直接跟着唱。播放时圆圈变琥珀色，提示条会显示这个音的音名和频率。</p>
+    <p><b>音阶练习</b>走的是内弦这条线（低 2 个八度，15 个音），上行到顶再折返下行，来回往复。它会按当前调的音阶来放——1=D 是 D 大调音阶，1=G 放的就是 G 大调的那串音（第 7 个音会是 C 而不是 C#）。</p>
+    <p>三个把位以「1」和「5」为起点划分，每 5 个音位一个把位：</p>
+    <ul>
+      <li><b style="color:#5eead4">第一把位</b>：内弦 1–5（D4–A4）/ 外弦 5–2̇（A4–E5）</li>
+      <li><b style="color:#a5b4fc">第二把位</b>：内弦 6–3̇（B4–F#5）/ 外弦 3̇–7̇（F#5–C#6）</li>
+      <li><b style="color:#f0abfc">第三把位</b>：内弦 4̇–1̇̇（G5–D6）/ 外弦 1̇̇–5̇̇（D6–A6）</li>
+    </ul>
+    <p>数字上方的点表示高八度，下方的点表示低八度。切到 1=G 时内弦空弦就变成带下加点的「5̣」——这就是 52 弦的来历。</p>
+  </details>
+
+  <details>
+    <summary>点了音位没声音？（iPhone 最常见）</summary>
+    <ul>
+      <li><b>先看 iPhone 左侧那个静音拨片。</b>这是头号原因——iOS 默认把网页音频归到"环境"类别，静音开关一开就完全没有声音。本页已经主动把音频会话切成"播放"类别来绕开它，但个别系统版本仍会被拦。</li>
+      <li><b>再点一次音位。</b>Safari 规定音频必须由用户手势解锁：页面在你第一次触摸时会尝试解锁，如果那一下没成功，第二次点就会响。</li>
+      <li>检查是不是<b>插着耳机或连着蓝牙音箱</b>，声音跑到那边去了。</li>
+      <li>用音量键确认<b>媒体音量</b>不是 0（注意不是铃声音量）。</li>
+      <li>还是不行：把下面的「诊断信息」展开，看<b>音频上下文</b>是不是 running、<b>音频会话类别</b>是什么，截图发我最快。</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>打不开麦克风？常见原因</summary>
+    <p><b>iPhone 必须满足两个条件才能用麦克风：HTTPS 网页 + 你亲手点「允许」。</b></p>
+    <ul>
+      <li>页面不是 <code>https://</code> 开头 → Safari 会直接拒绝，没有任何弹窗。请用 HTTPS 地址打开。</li>
+      <li>点过「不允许」→ 到 <b>设置 → Safari 浏览器 → 麦克风</b> 改成「允许」，或点地址栏左侧 <b>aA → 网站设置 → 麦克风 → 允许</b>，然后刷新页面。</li>
+      <li>用微信 / QQ / 抖音内置浏览器打开 → 右上角「···」→ 在 Safari 中打开。</li>
+      <li>提示被占用 → 关掉正在录音/通话的 App（微信语音、录音机、视频会议）。</li>
+      <li>iOS 不允许网页自动开麦，做不到零授权，必须点一次按钮。</li>
+    </ul>
+  </details>
+
+  <details id="diagBox">
+    <summary>诊断信息（排障时截图给别人看）</summary>
+    <div id="diag" class="kv">—</div>
+    <button class="refBtn" id="copyBtn" style="margin-top:10px;flex-direction:row;gap:8px;padding:9px;">
+      <span class="n">复制诊断信息</span>
+    </button>
+  </details>
+
+  <footer>纯前端 · 无后端 · 无外部依赖 · YIN 基频检测</footer>
+</div>
+
+<noscript><div style="padding:20px;color:#fff">需要开启 JavaScript 才能使用。</div></noscript>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =======================================================================
+     DSP 核心 + 音位模型（纯函数，不依赖 DOM —— 可被 Node 单元测试直接抽取）
+     ======================================================================= */
+  /* ===== DSP:CORE-BEGIN ===== */
+
+  var NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  var MAJOR_SEMI = [0, 2, 4, 5, 7, 9, 11];   // 大调音阶各音级相对主音的半音数
+
+  // 二胡标准定弦
+  var OPEN_INNER_MIDI = 62;   // 内弦 D4 = 293.66 Hz
+  var OPEN_OUTER_MIDI = 69;   // 外弦 A4
+  var A4_DEFAULT = 440;       // 国际标准。国内乐团/录音常用 442，跟着录音练时改这个值
+  var STRING_D4 = 293.66;
+  var STRING_A4 = 440.00;
+
+  // 六个常用调：root = 主音在「中央 C 所在八度」里的 MIDI 号（简谱中音区的 1）
+  var KEY_DEFS = [
+    { id: 'D',  label: 'D',  root: 62, chord: '15 弦' },
+    { id: 'G',  label: 'G',  root: 67, chord: '52 弦' },
+    { id: 'F',  label: 'F',  root: 65, chord: '63 弦' },
+    { id: 'C',  label: 'C',  root: 60, chord: '26 弦' },
+    { id: 'A',  label: 'A',  root: 69, chord: '41 弦' },
+    { id: 'Bb', label: 'bB', root: 70, chord: '37 弦' }
+  ];
+
+  var SLOTS_PER_STRING = 15;   // 3 个把位 × 5 个音位
+  var BAND_SIZE = 5;
+
+  function midiToFreq(m, a4) { return (a4 || 440) * Math.pow(2, (m - 69) / 12); }
+
+  /**
+   * 从空弦往上数 steps 个音级，返回相对主音的半音数。
+   * 例：1=D 内弦空弦=1，steps=4 → 7（纯五度 A4）
+   *     1=G 内弦空弦=5̣，steps=0 → -5（低音 5）
+   */
+  function degreeSemitones(rootMidi, openMidi, steps) {
+    var base = openMidi - rootMidi;
+    var baseOct = Math.floor(base / 12);
+    var basePc = ((base % 12) + 12) % 12;
+    var baseDeg = MAJOR_SEMI.indexOf(basePc);
+    if (baseDeg < 0) return null;                 // 空弦不在该调音阶内（不会发生）
+    var idx = baseOct * 7 + baseDeg + steps;
+    var oct = Math.floor(idx / 7);
+    var deg = ((idx % 7) + 7) % 7;
+    return { semis: oct * 12 + MAJOR_SEMI[deg], degree: deg + 1, dots: oct };
+  }
+
+  /** 生成一根弦上所有音位（含频率、简谱数字、八度点数、距空弦的半音数） */
+  function buildSlots(rootMidi, openMidi, count, a4) {
+    var out = [];
+    for (var i = 0; i < count; i++) {
+      var d = degreeSemitones(rootMidi, openMidi, i);
+      if (!d) continue;
+      var midi = rootMidi + d.semis;
+      out.push({
+        step: i, midi: midi, freq: midiToFreq(midi, a4),
+        degree: d.degree, dots: d.dots,
+        semis: midi - openMidi,     // 距本弦空弦的半音数：面板按它排布，全音间距=半音的两倍
+        name: NOTE_NAMES[((midi % 12) + 12) % 12] + (Math.floor(midi / 12) - 1)
+      });
+    }
+    return out;
+  }
+
+  /** 频率 -> 十二平均律音名/八度/相对最近半音的音分偏差 */
+  function freqToNote(freq, a4) {
+    a4 = a4 || 440;
+    var midi = 69 + 12 * Math.log2(freq / a4);
+    var nearest = Math.round(midi);
+    var idx = ((nearest % 12) + 12) % 12;
+    return {
+      midi: nearest, name: NOTE_NAMES[idx], octave: Math.floor(nearest / 12) - 1,
+      full: NOTE_NAMES[idx] + (Math.floor(nearest / 12) - 1),
+      cents: (midi - nearest) * 100
+    };
+  }
+
+  function centsBetween(freq, refFreq) { return 1200 * Math.log2(freq / refFreq); }
+
+  function rms(frame) {
+    var s = 0;
+    for (var i = 0; i < frame.length; i++) s += frame[i] * frame[i];
+    return Math.sqrt(s / frame.length);
+  }
+
+  /** 按 factor 整数倍降采样（2 点平均做简易抗混叠） */
+  function decimate(src, factor, dst) {
+    if (factor <= 1) { dst.set(src.subarray(0, dst.length)); return dst; }
+    var n = Math.floor(src.length / factor);
+    if (n > dst.length) n = dst.length;
+    for (var i = 0; i < n; i++) {
+      var s = 0, base = i * factor;
+      for (var k = 0; k < factor; k++) s += src[base + k];
+      dst[i] = s / factor;
+    }
+    return dst;
+  }
+
+  /**
+   * YIN 基频检测（de Cheveigné & Kawahara, 2002）
+   *  1) 差分函数  2) 累积均值归一化 CMND  3) 绝对阈值取第一个谷  4) 抛物线插值
+   */
+  function detectPitchYIN(frame, sampleRate, opts) {
+    opts = opts || {};
+    var minFreq = opts.minFreq || 90;
+    var maxFreq = opts.maxFreq || 1200;
+    var threshold = (opts.threshold == null) ? 0.14 : opts.threshold;
+
+    var n = frame.length;
+    var W = n >> 1;
+    var tauMin = Math.max(2, Math.floor(sampleRate / maxFreq));
+    var tauMax = Math.min(Math.ceil(sampleRate / minFreq), W - 1);
+    if (tauMax <= tauMin + 2) return null;
+
+    var d = new Float32Array(tauMax + 2);
+    for (var tau = 1; tau <= tauMax; tau++) {
+      var sum = 0;
+      for (var i = 0; i < W; i++) {
+        var delta = frame[i] - frame[i + tau];
+        sum += delta * delta;
+      }
+      d[tau] = sum;
+    }
+
+    var cm = new Float32Array(tauMax + 2);
+    var running = 0;
+    cm[0] = 1;
+    for (var t = 1; t <= tauMax; t++) {
+      running += d[t];
+      cm[t] = (running <= 1e-12) ? 1 : (d[t] * t / running);
+    }
+
+    var tauEst = -1, clarity;
+    for (var t2 = tauMin; t2 < tauMax; t2++) {
+      if (cm[t2] < threshold) {
+        while (t2 + 1 < tauMax && cm[t2 + 1] < cm[t2]) t2++;
+        tauEst = t2;
+        break;
+      }
+    }
+    if (tauEst < 0) {
+      var best = -1, bestV = Infinity;
+      for (var t3 = tauMin; t3 <= tauMax; t3++) {
+        if (cm[t3] < bestV) { bestV = cm[t3]; best = t3; }
+      }
+      if (best < 0 || bestV > 0.32) return null;
+      tauEst = best;
+      clarity = 1 - bestV;
+    } else {
+      clarity = 1 - cm[tauEst];
+      // 注意：这里曾经有个"抗八度误判"守卫（若 cm[2τ] 明显更低就改用 2τ）。
+      // 实测它反过来造成降八度错误：三把位 D6(1175Hz) 被它拉到 587Hz。
+      // 原因是真周期处 cm 本来就已经很小，2τ 处因归一化分母变大常常更小，
+      // 比较两个都接近 0 的值等于抛硬币。去掉后合成测试（含强二次谐波用例）全部仍然通过。
+    }
+
+    var tauRefined = tauEst;
+    if (tauEst > 1 && tauEst < tauMax) {
+      var s0 = cm[tauEst - 1], s1 = cm[tauEst], s2 = cm[tauEst + 1];
+      var den = 2 * (s0 + s2 - 2 * s1);
+      if (Math.abs(den) > 1e-12) {
+        var off = (s0 - s2) / den;
+        if (off > -1 && off < 1) tauRefined = tauEst + off;
+      }
+    }
+
+    var freq = sampleRate / tauRefined;
+    if (!isFinite(freq) || freq < minFreq * 0.95 || freq > maxFreq * 1.05) return null;
+    return { freq: freq, clarity: clarity };
+  }
+
+  /** 中位数（滑动窗口去抖） */
+  function median(arr) {
+    if (!arr.length) return NaN;
+    var a = arr.slice().sort(function (x, y) { return x - y; });
+    var m = a.length >> 1;
+    return (a.length % 2) ? a[m] : (a[m - 1] + a[m]) / 2;
+  }
+
+  /** 在两根弦的音位里找最接近给定频率的那个（返回音分偏差） */
+  function findNearestSlot(freq, slots) {
+    var best = null;
+    for (var i = 0; i < slots.length; i++) {
+      var c = centsBetween(freq, slots[i].freq);
+      if (!best || Math.abs(c) < Math.abs(best.cents)) best = { index: i, slot: slots[i], cents: c };
+    }
+    return best;
+  }
+
+  /* ===== DSP:CORE-END ===== */
+
+  /* =======================================================================
+     环境与能力检测
+     ======================================================================= */
+  var UA = navigator.userAgent || '';
+  var IS_IOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var IOS_SHELL = /CriOS|FxiOS|EdgiOS|OPiOS|GSA|MicroMessenger|QQBrowser|MQQBrowser|UCBrowser|baidubrowser|BIDUBrowser|DingTalk|Weibo|Alipay|Quark|SogouMobileBrowser|HuaweiBrowser|MiuiBrowser|VivoBrowser|HeyTapBrowser|toutiao|bytedance|BiliApp/i.test(UA);
+  var IS_IOS_SAFARI = IS_IOS && !IOS_SHELL;
+  var SECURE = (typeof window.isSecureContext === 'boolean')
+    ? window.isSecureContext
+    : (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  var HAS_GUM = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+  /* =======================================================================
+     DOM
+     ======================================================================= */
+  var $ = function (id) { return document.getElementById(id); };
+  var elBanner = $('banner'), elNoteName = $('noteName'), elJp = $('jpBox'), elCents = $('cents'),
+      elFreqLine = $('freqLine'), elTuneMarker = $('tuneMarker'), elStart = $('startBtn'), elLevelFill = $('levelFill'),
+      elLevelTxt = $('levelTxt'), elDiag = $('diag'), elCopy = $('copyBtn'),
+      elRefD = $('refD'), elRefA = $('refA'), elHint = $('boardHint'), elScale = $('scaleBtn'),
+      elBpmTxt = $('bpmTxt'), elBpmRange = $('bpmRange'), elBeatDots = $('beatDots'), elMetro = $('metroBtn'),
+      elChord = $('chordTxt'), elHdrSub = $('hdrSub'), svg = $('board'),
+      elRefDFreq = $('refDFreq'), elRefAFreq = $('refAFreq'), elA4Hint = $('a4Hint'), elDiagBox = $('diagBox'),
+      elTimerHint = $('timerHint');
+  var NS = 'http://www.w3.org/2000/svg';
+
+  /* =======================================================================
+     面板几何
+     ======================================================================= */
+  var VB_W = 360, VB_H = 566;
+  // 按半音等比排布：全音占 2 格、半音占 1 格，所以 3→4、7→1̇ 这些半音会挨得更近，
+  // 一眼就能看出"这两个音手指要并拢"——和真实指距一致
+  var UNIT = 20;               // 每个半音的像素（半音格 = 一把尺子的一格）
+  var PAD_TOP = 36, PAD_BOT = 50;
+  var ARROW_MIN_Y = 10, ARROW_MAX_Y = VB_H - 8;
+  var BADGE_R = 9;             // 圆圈半径：小圈 + 细体字，留白多才不显挤（全音间距 46，圈占 39%）
+  var X_INNER = 118, X_OUTER = 242;
+  var ARROW_GAIN = UNIT / 100; // 箭头按面板的半音尺定位；细微偏差由音分数字和颜色显示
+
+  function yOfSemis(semis) { return PAD_TOP + semis * UNIT + UNIT / 2; }
+  // 注意：两根弦不能用同一个 slotY(i)。大调音阶从主音数 6 级是大七度（11 个半音），
+  // 从属音数 6 级是小七度（10 个半音），所以内弦第 7 音位与外弦第 7 音位实际指距不同，
+  // 必须各用各的 semis，否则外弦的"3̇→4̇ 半音"会被画成全音。
+  function slotY(which, i) {
+    var arr = which === 'outer' ? slotsOuter : slotsInner;
+    return yOfSemis(arr[i].semis);
+  }
+  function bandOf(i) { return Math.floor(i / BAND_SIZE); }
+
+  var BAND_STYLE = [
+    { name: '第一把位', color: '#5eead4', fill: 'rgba(45,212,191,.055)' },
+    { name: '第二把位', color: '#a5b4fc', fill: 'rgba(129,140,248,.055)' },
+    { name: '第三把位', color: '#f0abfc', fill: 'rgba(232,121,249,.055)' }
+  ];
+
+  /* =======================================================================
+     状态
+     ======================================================================= */
+  var audioCtx = null, analyser = null, micStream = null, micSource = null;
+  var rawBuf = null, decBuf = null;
+  var running = false;
+  var mode = 'auto';                 // auto | D | A
+  var keyId = 'D';
+  var a4Cal = A4_DEFAULT;            // 音准基准，会从本地存储恢复
+  try {
+    var savedA4 = parseFloat(localStorage.getItem('erhu.a4'));
+    if (savedA4 >= 430 && savedA4 <= 450) a4Cal = savedA4;
+  } catch (e) {}
+  var smoothing = [], lastHit = 0, noiseFloor = 0.0008, confirmStop = 0;
+  var rafId = 0, frameCount = 0, lastDetect = 0, wakeLock = null, micTimer = null;
+  var micRequestId = 0;
+  var DECIMATE = 1, FFT_SIZE = 4096, HOLD_MS = 350, TOL = 5;
+  // 噪声门限：只用来区分"完全没声音"和"有声音"，判噪交给 YIN 自己。
+  // 之前设成 0.0035(=-49dBFS) × 环境噪声2.6 倍，实测会爬到 -39dBFS，
+  // 把手机放远一点/弱奏的二胡（-42dBFS 左右）整段吃掉——这就是"有时有有时没有"的根因。
+  var MIN_RMS = 0.0008;          // -62 dBFS：门限只回答"有没有声音"，判噪交给 YIN
+  var SILENCE_RATIO = 1.8;
+  var YIN_THRESHOLD = 0.15;      // YIN 绝对阈值（越大越宽松）
+  var CLARITY_MIN = 0.55;        // 可信度门槛
+  var CLARITY_MIN_CONT = 0.25;   // 与最近读数吻合时放宽到这个值（换弓/揉弦瞬间能用）
+  var CLARITY_FAST = 0.80;       // 可信度高于此值 → 立即响应，不再等第二帧
+  var SMOOTH_N = 3;              // 滑动中位数窗口。5 帧≈190ms 跟快板太慢：
+                                  // 真实演奏《翻身歌》61s 实测，5帧→3帧 检出率 26%→81%
+  var SMOOTH_RESET_CENTS = 75;   // 换音超过此距离时不再混入旧音的中位数窗口
+  var STABLE_N = 2;              // 可信度一般时需连续几帧音高一致才认（抗噪）
+  var STABLE_CENTS = 250;        // 这几帧之间允许的最大跳变
+  var candFreq = 0, candN = 0;   // 候选音高与连续命中次数
+
+  // 检出统计：定位"拉了但没显示"卡在哪一环（门限 / 认不出 / 可信度不足）
+  var dstat = null;
+  function resetDstat() {
+    refHist = [];
+    dstat = { frames: 0, gated: 0, nodetect: 0, lowclarity: 0, unstable: 0, ok: 0,
+              lastDb: -99, dbSum: 0, dbN: 0, lastClarity: 0, clSum: 0, clN: 0, lastFreq: 0 };
+    smoothing = [];        // 统计清零时一起清掉滑动窗口，避免残留上一个音
+  }
+  resetDstat();
+
+  var slotsInner = [], slotsOuter = [];
+  var boardEls = { inner: [], outer: [], arrow: null, ring: null, alt: null };
+  var tapBadge = null;        // 正在被"点击试听"高亮的音位（音阶练习不能用它挡箭头）
+
+  function currentKey() {
+    for (var i = 0; i < KEY_DEFS.length; i++) if (KEY_DEFS[i].id === keyId) return KEY_DEFS[i];
+    return KEY_DEFS[0];
+  }
+
+  /* =======================================================================
+     提示条
+     ======================================================================= */
+  function showBanner(level, html, mini) {
+    // 第三参数是"副标题文字"（字符串），不是布尔值——传 true 会把 true 印到界面上
+    if (mini === true || mini === false) mini = '';
+    elBanner.className = 'banner ' + level;
+    elBanner.innerHTML = '<div class="ico">' + (level === 'err' ? '⛔️' : level === 'warn' ? '⚠️' : 'ℹ️') +
+      '</div><div style="flex:1">' + html + (mini ? '<div class="mini">' + mini + '</div>' : '') + '</div>';
+    elBanner.classList.remove('hide');
+  }
+  function hideBanner() { elBanner.classList.add('hide'); }
+
+  // 横幅是顶部浮层，会一直盖住标题栏 → 点一下就能收起
+  // （计时器的到点提示另外会在 7 秒后自动收起）
+  if (elBanner) elBanner.addEventListener('click', hideBanner);
+
+  function envCheck() {
+    if (!SECURE) {
+      showBanner('err', '<b>当前不是 HTTPS，iPhone 无法调用麦克风。</b>浏览器只在安全上下文里开放麦克风，HTTP 页面连授权弹窗都不会出现。',
+        '把本页部署到 HTTPS 地址再打开。');
+      return false;
+    }
+    if (!HAS_GUM) {
+      showBanner('err',
+        IOS_SHELL ? '<b>iOS 上请改用 Safari 打开本页。</b>当前是微信/QQ/Chrome 等套壳或第三方内核，拿不到麦克风。'
+                  : '<b>这个浏览器不支持麦克风采集（getUserMedia）。</b>',
+        IOS_SHELL ? '点右上角「···」→「在 Safari 中打开」。' : '请换用较新版本的 Safari / Chrome。');
+      return false;
+    }
+    if (IS_IOS && !IS_IOS_SAFARI) {
+      showBanner('warn', '<b>检测到你不在 Safari 里打开。</b>iOS 上只有 Safari 能保证录音稳定。',
+        '建议点右上角「···」→「在 Safari 中打开」；也可以先点「开始调音」试试。');
+      return true;
+    }
+    hideBanner();
+    return true;
+  }
+
+  /* =======================================================================
+     音频
+     ======================================================================= */
+  /**
+   * iOS 音频会话类别：
+   *  - 'playback'      放音用。会忽略侧边静音拨片（像音乐 App 一样走扬声器）。
+   *                    默认的 'auto'/'ambient' 类别只要静音开关一开就完全没声音。
+   *  - 'play-and-record' 开麦时必须用这个，否则录音会打断放音。
+   * 切换失败不报错，只影响音量策略，不影响功能。
+   */
+  function setAudioSession(t) {
+    try { if (navigator.audioSession && navigator.audioSession.type !== t) navigator.audioSession.type = t; }
+    catch (e) {}
+  }
+
+  function ensureCtx() {
+    if (!audioCtx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) throw new Error('浏览器不支持 Web Audio API');
+      audioCtx = new AC();
+      audioCtx.onstatechange = function () {
+        // Safari 的音频上下文除了 suspended 还会变成 interrupted（被电话/其它 App 抢走会话）
+        if (audioCtx.state !== 'running') {
+          elFreqLine.textContent = '音频被系统暂停了，轻点页面任意处恢复…';
+        }
+        updateDiag();
+      };
+    }
+    // 关键：不只处理 suspended。iOS 上从后台切回来常常是 'interrupted'，
+    // 老代码只 resume('suspended') 就会一直哑着——这正是"第一次响、再打开不响"的元凶之一
+    if (audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e) {} }
+    return audioCtx;
+  }
+
+  /** 用户手势里解锁音频：创建上下文 + resume，必须在同一个手势调用栈内 */
+  function unlockAudio() {
+    var ctx = ensureCtx();
+    if (ctx.state !== 'running') { try { ctx.resume(); } catch (e) {} }
+    return ctx;
+  }
+
+  /** 播放前自检：如果 350ms 后仍然没 running，多半是静音拨片或者还没解锁 */
+  function playbackHealthCheck(what) {
+    setTimeout(function () {
+      if (audioCtx && audioCtx.state !== 'running') {
+        showBanner('warn', '<b>' + (what || '点了音位') + '，但没听到声音？</b>',
+          '① 看 iPhone 左侧的<b>静音拨片</b>——拨到静音时 iOS 默认不播网页声音；' +
+          '② 再点一次（Safari 需要一次手势来解锁音频）；' +
+          '③ 如果插着耳机或连着蓝牙音箱，声音会跑到那边去。');
+      }
+    }, 350);
+  }
+
+  function requestWakeLock() {
+    if (!navigator.wakeLock || wakeLock) return;
+    try { navigator.wakeLock.request('screen').then(function (wl) { wakeLock = wl; }, function () {}); } catch (e) {}
+  }
+
+  function micErrorMessage(err) {
+    var name = (err && (err.name || err.code)) || 'Unknown';
+    switch (name) {
+      case 'NotAllowedError': case 'PermissionDeniedError': case 'SecurityError':
+        return { html: '<b>麦克风权限被拒绝（或页面不是 HTTPS）。</b>',
+                 mini: 'iPhone：设置 → Safari 浏览器 → 麦克风 → 允许；或点地址栏左侧 <b>aA</b> → 网站设置 → 麦克风 → 允许，然后<b>刷新页面</b>重试。' };
+      case 'NotFoundError': case 'DevicesNotFoundError':
+        return { html: '<b>没找到可用的麦克风。</b>', mini: '确认设备有麦克风，且没被外接耳机/声卡异常占用。' };
+      case 'NotReadableError': case 'TrackStartError':
+        return { html: '<b>麦克风被其它 App 占用了。</b>', mini: '关掉微信语音/录音机/视频会议等正在录音的 App，再点一次「开始调音」。' };
+      case 'OverconstrainedError':
+        return { html: '<b>麦克风不支持所请求的参数。</b>', mini: '已自动降级重试，若仍失败请换 Safari 打开。' };
+      case 'AbortError':
+        return { html: '<b>麦克风启动被中断。</b>', mini: '请重试一次。' };
+      default:
+        return { html: '<b>麦克风启动失败：' + String((err && err.message) || name) + '</b>', mini: '换 Safari 打开，或重启浏览器再试。' };
+    }
+  }
+
+  function stopTuner(silent) {
+    micRequestId++;              // 让尚未返回的麦克风授权请求失效
+    running = false;
+    stopTone();
+    if (micTimer) { clearTimeout(micTimer); micTimer = null; }
+    elStart.disabled = false;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+    if (micSource) { try { micSource.disconnect(); } catch (e) {} micSource = null; }
+    if (micStream) { try { micStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} micStream = null; }
+    analyser = null; rawBuf = null; decBuf = null; smoothing = [];
+    setAudioSession('auto');         // 关麦后交还系统音频会话，不占着不放
+    if (wakeLock) { try { wakeLock.release(); } catch (e) {} wakeLock = null; }
+    if (!silent) {
+      elStart.textContent = '开始调音';
+      elStart.classList.remove('stop');
+      elNoteName.textContent = '--'; elNoteName.className = 'noteName';
+      elJp.className = 'jp'; elJp.innerHTML = '–';
+      elCents.className = 'cents'; elCents.innerHTML = '--<span class="u">音分</span>';
+      elFreqLine.textContent = '已停止。点「开始调音」重新开始。';
+      setArrow(null); setTarget(null);
+      elLevelFill.style.width = '0%'; elLevelTxt.textContent = '静音';
+      elHint.textContent = '点「开始调音」后开始显示';
+    }
+  }
+
+  function startTuner() {
+    if (running) { stopTuner(); return; }
+    if (scaleOn) stopScale();          // 开麦前先停音阶，否则喇叭声音会被当成琴声
+    if (!envCheck()) return;
+    var requestId = ++micRequestId;
+    if (HAS_GUM && navigator.permissions && navigator.permissions.query) {
+      try {
+        navigator.permissions.query({ name: 'microphone' }).then(function (st) {
+          if (st.state === 'denied') showBanner('warn', '<b>系统记录显示麦克风权限已被拒绝。</b>',
+            '到 设置 → Safari 浏览器 → 麦克风 打开，然后刷新本页。');
+        }, function () {});
+      } catch (e) {}
+    }
+
+    var ctx;
+    try { ctx = ensureCtx(); } catch (e) {
+      showBanner('err', '<b>浏览器不支持 Web Audio API。</b>', '请换用 Safari / Chrome 新版。'); return;
+    }
+    try { ctx.resume(); } catch (e) {}
+
+    elStart.disabled = true;
+    elStart.textContent = '请求中…';
+    elFreqLine.textContent = '请在弹窗中点「允许」…';
+
+    if (micTimer) clearTimeout(micTimer);
+    micTimer = setTimeout(function () {
+      if (!running && requestId === micRequestId) {
+        micRequestId++;          // 超时后用户可以重试，迟到的旧音频流必须关闭
+        micTimer = null;
+        elStart.disabled = false; elStart.textContent = '开始调音';
+        showBanner('warn', '<b>麦克风授权等待超时，请再点一次「开始调音」。</b>',
+          '若没看到弹窗：iPhone 到 设置 → Safari 浏览器 → 麦克风 改为「允许」，刷新后重试。');
+      }
+    }, 20000);
+
+    var strict = { audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } };
+
+    function attempt(constraints, isRetry) {
+      navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+        if (requestId !== micRequestId) {
+          stream.getTracks().forEach(function (track) { track.stop(); });
+          return;
+        }
+        if (micTimer) { clearTimeout(micTimer); micTimer = null; }
+        micStream = stream;
+        onMicReady();
+      }, function (err) {
+        if (requestId !== micRequestId) return;
+        var name = (err && (err.name || err.code)) || '';
+        if (!isRetry && (name === 'OverconstrainedError' || name === 'TypeError' || name === 'NotSupportedError')) {
+          attempt({ audio: true }, true); return;
+        }
+        if (micTimer) { clearTimeout(micTimer); micTimer = null; }
+        var m = micErrorMessage(err);
+        showBanner('err', m.html, m.mini);
+        stopTuner();
+      });
+    }
+    attempt(strict, false);
+  }
+
+  function onMicReady() {
+    var ctx = ensureCtx();
+    micSource = ctx.createMediaStreamSource(micStream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = FFT_SIZE;
+    analyser.smoothingTimeConstant = 0.72;
+    micSource.connect(analyser);
+
+    rawBuf = new Float32Array(analyser.fftSize);
+    // 开麦后必须切到 play-and-record：否则参考音/点击发声会被录音会话打断
+    setAudioSession('play-and-record');
+    // 不做降采样：实测 24kHz 在 1568Hz 处最大误差 4.87 音分（正好卡在 ±5 判绿门槛上），
+    // 48kHz 全量检测最大误差 1.30 音分，而开销只有约 1% 单核——精度远比省这点算力重要
+    DECIMATE = 1;
+    decBuf = new Float32Array(Math.floor(analyser.fftSize / DECIMATE));
+
+    running = true; smoothing = []; lastHit = 0; confirmStop = 0;
+    elStart.disabled = false;
+    elStart.textContent = '停止调音';
+    elStart.classList.add('stop');
+    elFreqLine.textContent = '拉响琴弦…';
+    elHint.textContent = '拉响一个音，箭头会停在它的实际位置上';
+    hideBanner();
+    requestWakeLock();
+
+    var track = micStream.getAudioTracks()[0];
+    if (track && track.addEventListener) {
+      try {
+        track.addEventListener('ended', function () {
+          if (running) { showBanner('warn', '<b>麦克风连接被系统断开了。</b>', '请重新点「开始调音」。'); stopTuner(); }
+        });
+      } catch (e) {}
+    }
+    updateDiag();
+    lastDetect = 0;
+    rafId = requestAnimationFrame(loop);
+  }
+
+  /* =======================================================================
+     发声（参考音按钮 + 点击音位都用这一套）
+     ======================================================================= */
+  // playing = { gain, oscs, key, endAt, onEnd }
+  // key 用来判断"再点一次同一个东西 = 停止"，onEnd 用来清掉高亮
+  var playing = null, playTimer = null;
+
+  function stopTone() {
+    if (playTimer) { clearTimeout(playTimer); playTimer = null; }
+    var p = playing;
+    playing = null;
+    if (p) {
+      try {
+        var t = audioCtx.currentTime;
+        p.gain.gain.cancelScheduledValues(t);
+        p.gain.gain.setTargetAtTime(0.0001, t, 0.03);
+        p.oscs.forEach(function (o) { try { o.stop(t + 0.14); } catch (e) {} });
+      } catch (e) {}
+      if (p.onEnd) p.onEnd();
+    }
+    elRefD.classList.remove('playing'); elRefA.classList.remove('playing');
+    elRefD.querySelector('.n').textContent = '内弦 D';
+    elRefA.querySelector('.n').textContent = '外弦 A';
+  }
+
+  function playTone(freq, opts) {
+    opts = opts || {};
+    var ctx;
+    try { ctx = unlockAudio(); } catch (e) { showBanner('err', '<b>浏览器不支持 Web Audio API。</b>'); return; }
+    if (!opts.retrigger && playing && playing.key === opts.key) { stopTone(); return; }   // 再点一次 = 停
+    stopTone();
+    // 真正要出声时才切到 playback：这个类别会忽略静音拨片（放音必需），
+    // 但也会接管系统音频会话，所以不能一进页面就抢
+    if (!micStream) setAudioSession('playback');
+
+    var now = ctx.currentTime + 0.02;
+    var gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(opts.volume || 0.42, now + 0.06);
+    gain.gain.setTargetAtTime((opts.volume || 0.42) * 0.72, now + 0.10, 0.5);
+    gain.connect(outNode());
+
+    // 基频 + 2/3/4 次谐波，音色接近弦乐，便于听音定弦
+    var partials = [[1, 1.0], [2, 0.34], [3, 0.16], [4, 0.07]];
+    var dur = opts.duration || 3200;
+    var oscs = partials.map(function (p) {
+      var o = ctx.createOscillator();
+      o.type = 'sine'; o.frequency.value = freq * p[0];
+      var g = ctx.createGain(); g.gain.value = p[1];
+      o.connect(g); g.connect(gain);
+      o.start(now); o.stop(now + dur / 1000 + 1);
+      return o;
+    });
+
+    playing = { gain: gain, oscs: oscs, key: opts.key, onEnd: opts.onEnd };
+    if (opts.onStart) opts.onStart();
+    playTimer = setTimeout(stopTone, dur);
+    playbackHealthCheck();
+  }
+
+  /* =======================================================================
+     检测范围（按模式/调收窄 -> 抗八度误判）
+     ======================================================================= */
+  function panelRange() {
+    var inn = slotsInner, out = slotsOuter;
+    var lo = inn[0].freq, hi = Math.max(inn[inn.length - 1].freq, out[out.length - 1].freq);
+    if (mode === 'D') return { lo: lo * 0.9, hi: inn[inn.length - 1].freq * 1.15 };
+    if (mode === 'A') return { lo: out[0].freq * 0.9, hi: out[out.length - 1].freq * 1.15 };
+    return { lo: lo * 0.9, hi: hi * 1.15 };
+  }
+
+  /* =======================================================================
+     面板绘制
+     ======================================================================= */
+  function mk(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  function jpDots(count) {
+    var s = '';
+    for (var i = 0; i < Math.abs(count); i++) s += '·';
+    return s;
+  }
+
+  function buildBoard() {
+    var key = currentKey();
+    slotsInner = buildSlots(key.root, OPEN_INNER_MIDI, SLOTS_PER_STRING, a4Cal);
+    slotsOuter = buildSlots(key.root, OPEN_OUTER_MIDI, SLOTS_PER_STRING, a4Cal);
+
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    boardEls = { inner: [], outer: [], arrowInner: null, arrowOuter: null, ring: null };
+
+    var gBand = mk('g', null, svg);
+    var gErhu = mk('g', null, svg);
+    var gBoard = mk('g', null, svg);
+    var gLive = mk('g', null, svg);
+
+    // --- 把位底色 + 左侧标签（每 5 个音位 = 纯五度 = 7 个半音，所以三个把位等高） ---
+    for (var b = 0; b < 3; b++) {
+      var i0 = b * BAND_SIZE, i1 = b * BAND_SIZE + BAND_SIZE - 1;
+      if (!slotsInner[i1] || !slotsOuter[i1]) continue;
+      // 底色要同时罩住两根弦：两弦同一把位的起止半音数可能差 1（大七度/小七度）
+      var topS = Math.min(slotsInner[i0].semis, slotsOuter[i0].semis);
+      var botS = Math.max(slotsInner[i1].semis, slotsOuter[i1].semis);
+      var y0 = yOfSemis(topS) - UNIT * 0.75;
+      var h = (botS - topS) * UNIT + UNIT * 1.5;
+      var st = BAND_STYLE[b];
+      mk('rect', { x: 4, y: y0, width: VB_W - 8, height: h, rx: 8, fill: st.fill }, gBand);
+      mk('rect', { x: 4, y: y0, width: 3, height: h, rx: 1.5, fill: st.color, opacity: .75 }, gBand);
+      var lbl = mk('text', {
+        x: 14, y: y0 + h / 2 + 3.5, fill: st.color, 'font-size': 10,
+        'font-family': '-apple-system,sans-serif', opacity: .95
+      }, gBand);
+      lbl.textContent = st.name;
+    }
+
+    // --- 简化的二胡（琴杆 + 琴筒 + 千斤 + 弓），只做背景暗示 ---
+    var bottomY = yOfSemis(slotsInner[SLOTS_PER_STRING - 1].semis);
+    mk('rect', { x: 176, y: PAD_TOP - 16, width: 8, height: bottomY - PAD_TOP + 46, rx: 4, fill: '#1b2734' }, gErhu);
+    mk('path', { d: 'M150 ' + (bottomY + 26) + ' h60 l-10 26 h-40 z', fill: '#1b2734' }, gErhu);
+    mk('rect', { x: 100, y: PAD_TOP - 20, width: 160, height: 5, rx: 2.5, fill: '#2a3a4c' }, gErhu);
+    mk('line', { x1: 96, y1: PAD_TOP + 40, x2: 268, y2: PAD_TOP + 200, stroke: '#243244', 'stroke-width': 3, 'stroke-linecap': 'round' }, gErhu);
+
+    // --- 两根弦的音位 ---
+    drawStringColumn(gBoard, X_INNER, slotsInner, 'inner', key);
+    drawStringColumn(gBoard, X_OUTER, slotsOuter, 'outer', key);
+
+    // --- 顶端弦名 ---
+    var t1 = mk('text', { x: X_INNER, y: 18, 'text-anchor': 'middle', fill: '#cbd5e1', 'font-size': 12, 'font-weight': 600, 'font-family': '-apple-system,sans-serif' }, gBoard);
+    t1.textContent = '内弦 D4';
+    var t2 = mk('text', { x: X_OUTER, y: 18, 'text-anchor': 'middle', fill: '#cbd5e1', 'font-size': 12, 'font-weight': 600, 'font-family': '-apple-system,sans-serif' }, gBoard);
+    t2.textContent = '外弦 A4';
+
+    // --- 实时指示：箭头（两根弦各一个，按需显示）+ 目标圈 ---
+    boardEls.ring = mk('circle', { cx: 0, cy: 0, r: BADGE_R + 5, fill: 'none', stroke: '#38bdf8', 'stroke-width': 2, opacity: 0 }, gLive);
+    boardEls.arrowInner = makeArrow(gLive, -1);
+    boardEls.arrowOuter = makeArrow(gLive, 1);
+
+    // --- 点击热区放在最上层，保证点得中（含两颗徽标的空隙） ---
+    var gHit = mk('g', null, svg);
+    var hitRects = [];
+    [[X_INNER, 'inner'], [X_OUTER, 'outer']].forEach(function (pair) {
+      for (var i = 0; i < SLOTS_PER_STRING; i++) {
+        (function (idx) {
+          var hh = Math.max(UNIT - 2, 18);   // 半音只隔 1 格，热区取一格高（不小于 18 保证好点）
+          var r = mk('rect', {
+             x: pair[0] - 46, y: yOfSemis((pair[1] === 'outer' ? slotsOuter : slotsInner)[idx].semis) - hh / 2, width: 92, height: hh,
+             fill: 'transparent', 'pointer-events': 'all', style: 'cursor:pointer',
+             role: 'button', tabindex: 0,
+             'aria-label': (pair[1] === 'inner' ? '内弦 ' : '外弦 ') + (pair[1] === 'inner' ? slotsInner[idx].name : slotsOuter[idx].name) + ' 试听'
+           }, gHit);
+           r.addEventListener('click', function () { onSlotTap(pair[1], idx); });
+           r.addEventListener('keydown', function (ev) {
+             if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onSlotTap(pair[1], idx); }
+           });
+          hitRects.push(r);
+        })(i);
+      }
+    });
+    boardEls.hit = hitRects;
+
+    elChord.textContent = key.chord;
+    elHdrSub.textContent = '内弦 D4 · 外弦 A4 · 1=' + key.label;
+  }
+
+  /** 点音位 -> 用喇叭把那个音发出来（不需要麦克风权限） */
+  function onSlotTap(which, i) {
+    var slots = which === 'inner' ? slotsInner : slotsOuter;
+    var s = slots[i];
+    var b = boardEls[which][i];
+    if (!s || !b) return;
+    playTone(s.freq, {
+      key: which + '-' + i,
+      duration: 2400,
+      onStart: function () {
+        tapBadge = b;
+        b.circle.setAttribute('stroke', '#f59e0b');
+        b.circle.setAttribute('stroke-width', 2.6);
+        b.circle.setAttribute('fill', 'rgba(245,158,11,.22)');
+        b.text.setAttribute('fill', '#ffffff');
+        elHint.textContent = '♪ ' + s.name + ' · ' + (which === 'inner' ? '内弦' : '外弦') +
+          ' 第' + (bandOf(i) + 1) + '把位 · ' + s.freq.toFixed(2) + ' Hz';
+      },
+      onEnd: function () { tapBadge = null; resetBadge(b); elHint.textContent = HINT_DEFAULT; }
+    });
+  }
+
+  var HINT_DEFAULT = '点任意音位可发声 · 箭头指到哪儿就是哪个音';
+
+  function resetBadge(b) {
+    b.circle.setAttribute('stroke', 'rgba(255,255,255,.20)');
+    b.circle.setAttribute('stroke-width', 1.2);
+    b.circle.setAttribute('fill', '#0f1a25');
+    b.text.setAttribute('fill', '#b6c6d8');
+  }
+
+  function drawStringColumn(parent, x, slots, which, key) {
+    var lastSemis = slots[slots.length - 1].semis;
+    mk('line', {
+      x1: x, y1: PAD_TOP - 12, x2: x, y2: yOfSemis(lastSemis) + UNIT * 0.8,
+      stroke: 'rgba(200,210,225,.30)', 'stroke-width': 1.6
+    }, parent);
+
+    // ---- 半音刻度尺：每个半音一条横线，两根弦共用同一把尺子 ----
+    // 物理上两弦位置完全一致（都由"距空弦的半音数"决定），所以刻度线在同一高度。
+    // 有了这把均匀的尺子做参照，音位圆圈落在哪一格一目了然，也就不会显得乱了。
+    for (var st = 0; st <= lastSemis; st++) {
+      var yt = yOfSemis(st);
+      var isOct = (st % 12 === 0);
+      var isFifth = (st % 12 === 7);
+      mk('line', {
+        x1: x - 22, y1: yt, x2: x + 22, y2: yt,
+        stroke: isOct ? 'rgba(255,255,255,.26)' : (isFifth ? 'rgba(255,255,255,.16)' : 'rgba(255,255,255,.115)'),
+        'stroke-width': isOct ? 1.3 : 1
+      }, parent);
+    }
+
+    // 半音处画一条竖的括线，把"这两根手指要并拢"标出来（和真实指法一致）
+    slots.forEach(function (s, i) {
+      if (i === 0) return;
+      if (s.semis - slots[i - 1].semis === 1) {
+        mk('path', {
+          d: 'M' + (x - 30) + ' ' + (yOfSemis(slots[i - 1].semis) - 4) + ' h6 M' + (x - 27) + ' ' + (yOfSemis(slots[i - 1].semis) - 4) +
+             ' V' + (yOfSemis(s.semis) + 4) + ' M' + (x - 30) + ' ' + (yOfSemis(s.semis) + 4) + ' h6',
+          stroke: 'rgba(148,163,184,.5)', 'stroke-width': 1.4, fill: 'none'
+        }, parent);
+      }
+    });
+
+    slots.forEach(function (s, i) {
+      var y = yOfSemis(s.semis);
+      var band = BAND_STYLE[bandOf(i)];
+      var g = mk('g', null, parent);
+      var c = mk('circle', { cx: x, cy: y, r: BADGE_R, fill: '#0f1a25', stroke: 'rgba(255,255,255,.22)', 'stroke-width': 1 }, g);
+      var tx = mk('text', {
+        x: x, y: y + 4, 'text-anchor': 'middle', fill: '#c3d0de',
+        'font-size': 11.5, 'font-weight': 400, 'font-family': '-apple-system,sans-serif'
+      }, g);
+      tx.textContent = String(s.degree);
+      if (s.dots !== 0) {
+        // 八度点：上加点=高八度，下加点=低八度（简谱写法）
+        var dy = s.dots > 0 ? y - 5.5 : y + 6.5;
+        for (var d = 0; d < Math.abs(s.dots); d++) {
+          mk('circle', { cx: x + (d - (Math.abs(s.dots) - 1) / 2) * 5, cy: dy, r: 1.7, fill: band.color }, g);
+        }
+      }
+      boardEls[which].push({ g: g, circle: c, text: tx, y: y, slot: s });
+    });
+  }
+
+  function makeArrow(parent, dir) {
+    // dir=-1: 内弦，箭头在弦左侧、尖端朝右指向弦；dir=1: 外弦，尖端朝左
+    // 路径以「尖端」为原点，这样 scale 放大时箭头不会跑位
+    var x = dir < 0 ? X_INNER - 16 : X_OUTER + 16;
+    var g = mk('g', { opacity: 0, transform: 'translate(' + x + ',0)' }, parent);
+    var tri = mk('path', {
+      d: dir < 0 ? 'M0 0 L-13 -7.5 L-13 7.5 Z' : 'M0 0 L13 -7.5 L13 7.5 Z',
+      fill: '#94a3b8'
+    }, g);
+    return { g: g, tri: tri, baseX: x, dir: dir };
+  }
+
+  /* =======================================================================
+     面板更新
+     ======================================================================= */
+  function setTarget(hit) {
+    // 只有"点击音位试听"那种高亮才需要保护，音阶练习的箭头必须照常显示
+    if (tapBadge) { boardEls.ring.setAttribute('opacity', 0); return; }
+    boardEls.inner.concat(boardEls.outer).forEach(resetBadge);
+    if (!hit) { boardEls.ring.setAttribute('opacity', 0); return; }
+    var b = boardEls[hit.which][hit.index];   // hit.list 是音位数据，图形元素在 boardEls 里
+    if (!b) { boardEls.ring.setAttribute('opacity', 0); return; }
+    var col = hit.inTune ? '#22c55e' : '#38bdf8';
+    b.circle.setAttribute('stroke', col);
+    b.circle.setAttribute('stroke-width', 2.2);
+    b.circle.setAttribute('fill', hit.inTune ? 'rgba(34,197,94,.20)' : 'rgba(56,189,248,.16)');
+    b.text.setAttribute('fill', '#ffffff');
+    boardEls.ring.setAttribute('cx', b.circle.getAttribute('cx'));
+    boardEls.ring.setAttribute('cy', b.y);
+    boardEls.ring.setAttribute('stroke', col);
+    boardEls.ring.setAttribute('opacity', 1);
+  }
+
+  function setArrow(hit) {
+    var a = boardEls.arrowInner, b = boardEls.arrowOuter;
+    if (!hit) {
+      a.g.setAttribute('opacity', 0); b.g.setAttribute('opacity', 0);
+      elTuneMarker.classList.add('hide');
+      return;
+    }
+    var use = hit.which === 'outer' ? b : a;
+    var other = use === a ? b : a;
+    other.g.setAttribute('opacity', 0);
+
+    var y = Math.max(ARROW_MIN_Y, Math.min(ARROW_MAX_Y, hit.y + hit.cents * ARROW_GAIN));
+    var color = hit.inTune ? '#22c55e' : (hit.cents < 0 ? '#60a5fa' : '#fb923c');
+    use.g.setAttribute('transform',
+      'translate(' + use.baseX + ',' + y.toFixed(2) + ')' + (hit.inTune ? ' scale(1.3)' : ''));
+    use.g.setAttribute('opacity', 1);
+    use.tri.setAttribute('fill', color);
+    elTuneMarker.className = 'tuneMarker' + (hit.inTune ? ' ok' : (hit.cents > 0 ? ' high' : ''));
+    elTuneMarker.style.left = (50 + Math.max(-50, Math.min(50, hit.cents))) + '%';
+  }
+
+  /* =======================================================================
+     主循环
+     ======================================================================= */
+  function loop(ts) {
+    if (!running) return;
+    rafId = requestAnimationFrame(loop);
+    if (!analyser || !audioCtx) return;
+
+    if (playing || scaleOn) {
+      elFreqLine.textContent = '♪ 播放中…先跟着听准，再拉弦核对';
+      return;
+    }
+    if (audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e) {} return; }
+
+    frameCount++;
+    if (ts - lastDetect < 38) return;
+    lastDetect = ts;
+
+    analyser.getFloatTimeDomainData(rawBuf);
+    var level = rms(rawBuf);
+    var gate = Math.max(MIN_RMS, noiseFloor * SILENCE_RATIO);
+    drawLevel(level);
+
+    // ---- 检出统计：用来定位"拉了但没显示"到底卡在哪一环 ----
+    var db = 20 * Math.log10(Math.max(level, 1e-6));
+    dstat.frames++; dstat.lastDb = db; dstat.dbSum += db; dstat.dbN++;
+
+    if (level < gate) {
+      dstat.gated++;
+      // 真静音才更新噪声底。绝不能因"YIN 认不出"就抬高门限——
+      // 那样一旦抬高就会挡住后面更弱的乐音（换弓、弱奏都会被误杀）
+      noiseFloor = noiseFloor * 0.9 + level * 0.1;
+      if (performance.now() - lastHit > HOLD_MS) showIdle(level);
+      return;
+    }
+
+    decimate(rawBuf, DECIMATE, decBuf);
+    var range = panelRange();
+    var res = detectPitchYIN(decBuf, audioCtx.sampleRate / DECIMATE, {
+      minFreq: range.lo, maxFreq: range.hi, threshold: mode === 'auto' ? YIN_THRESHOLD : YIN_THRESHOLD * 0.8
+    });
+    if (!res) {
+      dstat.nodetect++;
+      confirmStop++;
+      if (performance.now() - lastHit > HOLD_MS) showUnsure();
+      return;
+    }
+    // 可信度不足时，看它是否与最近读数吻合（吻合就接受——换弓、揉弦瞬间可信度会掉）
+    var consistent = smoothing.length >= 3 &&
+                     Math.abs(centsBetween(res.freq, median(smoothing))) < 50;
+    var clarityOk = res.clarity >= CLARITY_MIN ||
+                    (consistent && res.clarity >= CLARITY_MIN_CONT);
+    if (!clarityOk) {
+      dstat.lowclarity++;
+      dstat.lastClarity = res.clarity; dstat.clSum += res.clarity; dstat.clN++;
+      confirmStop++;
+      if (performance.now() - lastHit > HOLD_MS) showUnsure();
+      return;
+    }
+    dstat.lastClarity = res.clarity; dstat.clSum += res.clarity; dstat.clN++;
+
+    // 稳定性判定（自适应）：
+    //   可信度高 → 信号干净，立即响应（快板才跟得上）
+    //   可信度一般 → 可能是噪声，要求连续几帧音高一致才认
+    // 老逻辑是"当前帧 vs 包含上一个音的中位数"，换音时必然被判不稳；
+    // 真实演奏实测误杀 20% 的帧，那是"跟不上"的主因。
+    if (res.clarity < CLARITY_FAST) {
+      if (candFreq && Math.abs(centsBetween(res.freq, candFreq)) <= STABLE_CENTS) candN++;
+      else { candFreq = res.freq; candN = 1; }
+      if (candN < STABLE_N) { dstat.unstable++; return; }
+    } else {
+      candFreq = res.freq; candN = STABLE_N;
+    }
+
+    dstat.ok++;
+    dstat.lastFreq = res.freq;
+    confirmStop = 0;
+    lastHit = performance.now();
+
+    if (smoothing.length && Math.abs(centsBetween(res.freq, median(smoothing))) >= SMOOTH_RESET_CENTS) {
+      smoothing = [];            // 新音已过可信度与稳定性检查，立即丢弃旧音
+    }
+    smoothing.push(res.freq);
+    if (smoothing.length > SMOOTH_N) smoothing.shift();
+    render(median(smoothing));
+  }
+
+  /* =======================================================================
+     渲染
+     ======================================================================= */
+  function pickTarget(freq) {
+    var list, which, r;
+    if (mode === 'D') { list = slotsInner; which = 'inner'; r = findNearestSlot(freq, list); }
+    else if (mode === 'A') { list = slotsOuter; which = 'outer'; r = findNearestSlot(freq, list); }
+    else {
+      // 同一个音两根弦上都能按（如 A4 = 外弦空弦 = 内弦第5位），此时优先给把位更低的按法：
+      // 每个音位序号加一点点惩罚分，让"空弦/低把位"胜出，符合实际演奏习惯
+      var a = findNearestSlot(freq, slotsInner), b = findNearestSlot(freq, slotsOuter);
+      var sa = Math.abs(a.cents) + a.index * 0.35;
+      var sb = Math.abs(b.cents) + b.index * 0.35;
+      if (sa <= sb) { list = slotsInner; which = 'inner'; r = a; }
+      else { list = slotsOuter; which = 'outer'; r = b; }
+    }
+    return { list: list, which: which, index: r.index, slot: r.slot, cents: r.cents };
+  }
+
+  /** 简谱数字的 HTML（上加点=高八度、下加点=低八度） */
+  function jpHtml(s) {
+    return (s.dots > 0 ? '<span class="dt">' + jpDots(s.dots) + '</span>' : '') +
+           '<span>' + s.degree + '</span>' +
+           (s.dots < 0 ? '<span class="dt">' + jpDots(s.dots) + '</span>' : '');
+  }
+
+  /** 把读数条设置成某个音位（试听 / 音阶练习用），箭头精确落在它上面 */
+  function showSlot(which, i, hintText) {
+    var arr = which === 'outer' ? slotsOuter : slotsInner;
+    var s = arr[i], b = boardEls[which][i];
+    if (!s || !b) return;
+    var hit = { which: which, index: i, slot: s, cents: 0, inTune: true, y: b.y };
+    setTarget(hit);
+    setArrow(hit);
+    elNoteName.textContent = s.name;
+    elNoteName.className = 'noteName live ok';
+    elJp.className = 'jp ok';
+    elJp.innerHTML = jpHtml(s);
+    elCents.className = 'cents ok';
+    elCents.innerHTML = '0.0<span class="u">音分</span>';
+    if (hintText) elFreqLine.textContent = hintText;
+  }
+
+  /* =======================================================================
+     速度 / 节拍器
+     音阶一音一拍，和节拍器共用同一个速度，所以能跟着咔哒声练
+     ======================================================================= */
+  var BPM_LIST = [60, 70, 80, 90, 100, 110, 120, 130, 140];
+  var BPM_DEFAULT = 80;              // 默认速度（音阶与节拍器共用）
+  var bpm = BPM_DEFAULT, scaleRate = 1, metroOn = false;
+  var metroNext = 0, metroBeat = 0, metroTimer = null;
+  var masterNode = null;
+
+  /** 总输出：经过一个限幅器，节拍声和音阶同时响也不会削波 */
+  function outNode() {
+    if (!audioCtx) return null;
+    if (masterNode) return masterNode;
+    try {
+      var c = audioCtx.createDynamicsCompressor();
+      c.threshold.value = -8; c.knee.value = 8; c.ratio.value = 6;
+      c.attack.value = 0.003; c.release.value = 0.2;
+      c.connect(audioCtx.destination);
+      masterNode = c;
+    } catch (e) {
+      masterNode = audioCtx.destination;    // 不支持压缩器就直接接输出
+    }
+    return masterNode;
+  }
+
+  function scaleNoteMs() { return Math.round(60000 / bpm * scaleRate); }
+
+  /* =======================================================================
+     练习计时器：1 / 3 / 5 分钟，到点响三声
+     用 Date.now() 而不是 rAF 计时——页面切后台时 rAF 会停，墙钟不会
+     ======================================================================= */
+  var timerEnd = 0, timerTick = null, timerBtn = null, timerBtns = [], timerHide = null;
+
+  /** 到点提示音：6 声（三声一组，组间停一下）
+   *  两个刻意的取舍：
+   *  ① 直接接 destination，不走总限幅器——限幅器（-8dB/6:1）会把峰值压到约 -7.5dB，
+   *     提示音听着明显偏轻；提示音是偶发短音，单独出声不会削波。
+   *  ② 频率取 2093Hz：人耳在 2~4kHz 最敏感，同样的音量比中频更容易被听到。 */
+  function chime() {
+    var ctx;
+    try { ctx = unlockAudio(); } catch (e) { return; }
+    if (!micStream) setAudioSession('playback');
+    var out = ctx.createGain();
+    out.gain.value = 0.85;
+    out.connect(ctx.destination);
+    var base = ctx.currentTime + 0.04;
+    for (var i = 0; i < 6; i++) {
+      // 三声一组：组内间隔 0.24s；组偏移 1.20s ⇒ 组间停顿 = 1.20 - 0.48 = 0.72s
+      var t = base + (i % 3) * 0.24 + Math.floor(i / 3) * 1.20;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = 2093;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(1.0, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.connect(g); g.connect(out);
+      o.start(t); o.stop(t + 0.20);
+    }
+  }
+
+  function fmtLeft(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000));
+    return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+  }
+
+  function paintTimer(left) {
+    Array.prototype.forEach.call(timerBtns, function (b) {
+      var act = (b === timerBtn);
+      b.classList.toggle('on', act);
+      b.disabled = (timerEnd > 0 && !act);
+      b.textContent = act ? fmtLeft(left) : (b.getAttribute('data-min') + ' 分钟');
+    });
+  }
+
+  function stopTimer() {
+    if (timerHide) { clearTimeout(timerHide); timerHide = null; }
+    if (timerTick) { clearInterval(timerTick); timerTick = null; }
+    timerEnd = 0;
+    var old = timerBtn;
+    timerBtn = null;
+    paintTimer(0);
+    if (old && elTimerHint) elTimerHint.textContent = '（到点响三声）';
+  }
+
+  function finishTimer() {
+    var min = timerBtn ? timerBtn.getAttribute('data-min') : '';
+    stopTimer();
+    chime();
+    // 第三参数是"副标题文字"，不是布尔值 —— 传 true 会把 true 印到界面上
+    showBanner('ok', '<b>⏰ ' + min + ' 分钟到</b> —— 该换下一项练习了。',
+      '继续练就再点一次计时；想停就点正在倒数的那个按钮。');
+    if (elTimerHint) elTimerHint.textContent = '（本次 ' + min + ' 分钟已完成）';
+    if (timerHide) clearTimeout(timerHide);
+    timerHide = setTimeout(hideBanner, 7000);      // 7 秒后自动收起，不挡着看读数
+  }
+
+  function startTimer(min, btn) {
+    stopTimer();
+    timerBtn = btn;
+    timerEnd = Date.now() + min * 60000;
+    requestWakeLock();                 // 别让屏幕中途黑掉
+    paintTimer(min * 60000);
+    if (elTimerHint) elTimerHint.textContent = '（进行中·点一下可取消）';
+    timerTick = setInterval(function () {
+      var left = timerEnd - Date.now();
+      if (left <= 0) { finishTimer(); return; }
+      paintTimer(left);
+    }, 250);
+  }
+
+  function setBpm(idx, fromSlider) {
+    idx = Math.max(0, Math.min(BPM_LIST.length - 1, idx | 0));
+    bpm = BPM_LIST[idx];
+    elBpmTxt.textContent = bpm + ' BPM';
+    if (!fromSlider) elBpmRange.value = String(idx);
+  }
+
+  /** 节拍声：短促正弦点，第一拍更高更响做重音；过总限幅器避免与音阶叠加削波 */
+  function clickAt(t, beat) {
+    try {
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = beat === 0 ? 1760 : 1319;
+      var peak = beat === 0 ? 0.85 : 0.62;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + 0.002);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.075);
+      o.connect(g); g.connect(outNode());
+      o.start(t); o.stop(t + 0.1);
+    } catch (e) {}
+    var delay = Math.max(0, (t - audioCtx.currentTime) * 1000);
+    setTimeout(function () { flashBeat(beat); }, delay);
+  }
+
+  function flashBeat(beat) {
+    var dots = elBeatDots.children;
+    for (var i = 0; i < dots.length; i++) {
+      dots[i].className = (i === beat && metroOn) ? (beat === 0 ? 'on accent' : 'on') : '';
+    }
+  }
+  function clearBeats() {
+    var dots = elBeatDots.children;
+    for (var i = 0; i < dots.length; i++) dots[i].className = '';
+  }
+
+  /** 前瞻式排程：靠音频时钟走，不受 setTimeout 抖动影响；用递归 setTimeout 每 25ms 补一次 */
+  function metroSchedule() {
+    if (!metroOn || !audioCtx || audioCtx.state !== 'running') return;
+    var ahead = audioCtx.currentTime + 0.12;
+    while (metroNext < ahead) {
+      if (metroNext < audioCtx.currentTime) metroNext = audioCtx.currentTime + 0.02;
+      clickAt(metroNext, metroBeat);
+      metroNext += 60 / bpm;
+      metroBeat = (metroBeat + 1) % 4;
+    }
+  }
+  function metroLoop() {
+    if (!metroOn) return;
+    metroSchedule();
+    metroTimer = setTimeout(metroLoop, 25);
+  }
+  function syncMetroPhase() {
+    if (!metroOn || !audioCtx) return;
+    metroBeat = 0;
+    metroNext = audioCtx.currentTime + 0.06;
+  }
+
+  function startMetro() {
+    var ctx;
+    try { ctx = unlockAudio(); } catch (e) { showBanner('err', '<b>浏览器不支持 Web Audio API。</b>'); return; }
+    if (!micStream) setAudioSession('playback');
+    metroOn = true;
+    elMetro.textContent = '节拍器 开';
+    elMetro.classList.add('playing');
+    metroBeat = 0;
+    metroNext = ctx.currentTime + 0.06;
+    if (metroTimer) clearTimeout(metroTimer);
+    metroLoop();
+    playbackHealthCheck('开了节拍器');   // 没起来就提示静音拨片，别让用户干等
+  }
+  function stopMetro() {
+    metroOn = false;
+    if (metroTimer) { clearTimeout(metroTimer); metroTimer = null; }
+    elMetro.textContent = '节拍器 关';
+    elMetro.classList.remove('playing');
+    clearBeats();
+  }
+
+  function toggleMetro() { if (metroOn) stopMetro(); else startMetro(); }
+
+  /* =======================================================================
+     音阶练习：低 2 个八度（内弦空弦 → 高八度），上行 → 下行 → 来回往复
+     ======================================================================= */
+  var scaleOn = false, scaleStep = 0, scaleDir = 1, scaleTimer = null, scaleNoteStart = 0;
+  var SCALE_IDLE_TEXT = '▶ 音阶练习 · 上下行来回';
+
+  function stopScale() {
+    scaleOn = false;
+    if (scaleTimer) { clearTimeout(scaleTimer); scaleTimer = null; }
+    elScale.textContent = SCALE_IDLE_TEXT;
+    elScale.classList.remove('playing');
+    stopTone();
+    if (!running) {                       // 没在调音就把读数清干净
+      elNoteName.textContent = '--'; elNoteName.className = 'noteName';
+      elJp.className = 'jp'; elJp.innerHTML = '–';
+      elCents.className = 'cents'; elCents.innerHTML = '--<span class="u">音分</span>';
+      elFreqLine.textContent = '点击「开始调音」，允许麦克风后拉响琴弦';
+      setArrow(null); setTarget(null);
+    }
+  }
+
+  function scaleLabel() {
+    return '音阶练习 ' + (scaleStep + 1) + '/' + slotsInner.length +
+      ' · ' + (scaleDir > 0 ? '上行 ↑' : '下行 ↓') +
+      ' · ' + bpm + ' BPM' + (scaleRate === 1 ? '' : ' ×' + scaleRate + '拍') +
+      ' · ' + slotsInner[scaleStep].freq.toFixed(2) + ' Hz';
+  }
+
+  /** 排下一步。所有排程都必须走这里，先清旧定时器——否则切换速度时会留下多个定时器并发乱跳 */
+  function scheduleNextScale(ms) {
+    if (scaleTimer) { clearTimeout(scaleTimer); scaleTimer = null; }
+    scaleNoteStart = performance.now();
+    scaleTimer = setTimeout(scaleAdvance, Math.max(60, ms));
+  }
+
+  function scaleAdvance() {
+    scaleTimer = null;
+    if (!scaleOn) return;
+    var n = slotsInner.length;
+    scaleStep += scaleDir;
+    if (scaleStep >= n) { scaleStep = n - 2; scaleDir = -1; }       // 到顶折返
+    else if (scaleStep < 0) { scaleStep = 1; scaleDir = 1; }        // 到底折返
+    scaleTick();
+  }
+
+  /** 速度或拍数变了：按"这个音已经响了多久"重算剩余时间。
+   *  不重播当前音、也不新增定时器——这就是原来切换拍数时节奏乱掉的原因 */
+  function scaleRetime() {
+    if (!scaleOn || !scaleTimer) return;
+    var elapsed = performance.now() - scaleNoteStart;
+    scheduleNextScale(scaleNoteMs() - elapsed);
+  }
+
+  function scaleTick() {
+    if (!scaleOn) return;
+    var n = slotsInner.length;            // 15 个音 = 2 个八度
+    if (scaleStep < 0 || scaleStep >= n) { stopScale(); return; }
+    var s = slotsInner[scaleStep];
+    var ms = scaleNoteMs();
+
+    // 发这个音（留 100ms 间隙，音与音分得开）
+    playTone(s.freq, { key: 'scale', duration: Math.max(120, ms - 100), retrigger: true, volume: 0.32 });
+    // 箭头精确落到这个音位上，读数同步显示
+    showSlot('inner', scaleStep, scaleLabel());
+
+    scheduleNextScale(ms);
+  }
+
+  function toggleScale() {
+    if (scaleOn) { stopScale(); return; }
+    if (running) stopTuner();             // 开麦时不能同时放音阶，先停调音
+    scaleOn = true; scaleStep = 0; scaleDir = 1;
+    elScale.textContent = '■ 停止音阶练习';
+    elScale.classList.add('playing');
+    elHint.textContent = '音阶练习中 · 箭头会逐个落在每个音的位置上';
+    syncMetroPhase();                     // 让第一拍和第一个音对齐
+    scaleTick();
+  }
+
+  function render(freq) {
+    var hit = pickTarget(freq);
+    var cents = hit.cents;
+    var inTune = Math.abs(cents) <= TOL;
+    var s = hit.slot;
+
+    trackRefDev(cents);          // 累计偏差，供诊断里判断"是不是整首系统性偏移"
+
+    hit.inTune = inTune;
+    hit.y = boardEls[hit.which][hit.index].y;
+
+    elNoteName.textContent = freqToNote(freq, a4Cal).full;
+    elNoteName.className = 'noteName live' + (inTune ? ' ok' : '');
+    elJp.className = 'jp' + (inTune ? ' ok' : '');
+    elJp.innerHTML = jpHtml(s);
+    var cTxt = cents.toFixed(1);
+    if (cTxt === '-0.0') cTxt = '0.0';
+    elCents.className = 'cents ' + (inTune ? 'ok' : (cents < 0 ? 'low' : 'high'));
+    elCents.innerHTML = (cents >= 0 ? '+' : '') + cTxt + '<span class="u">音分</span>';
+    elFreqLine.textContent = freq.toFixed(1) + ' Hz → 目标 ' + s.freq.toFixed(2) + ' Hz · ' +
+      (hit.which === 'inner' ? '内弦' : '外弦') + ' 第' + (bandOf(hit.index) + 1) + '把位';
+
+    setTarget(hit);
+    setArrow(hit);
+  }
+
+  function showIdle(level) {
+    candFreq = 0; candN = 0;
+    smoothing = [];
+    elNoteName.textContent = '--'; elNoteName.className = 'noteName';
+    elJp.className = 'jp'; elJp.innerHTML = '–';
+    elCents.className = 'cents'; elCents.innerHTML = '--<span class="u">音分</span>';
+    elFreqLine.textContent = level < MIN_RMS ? '没听到声音：确认麦克风没被挡住，或把手机靠近一点' : '请持续拉响琴弦…';
+    setArrow(null); setTarget(null);
+  }
+
+  function showUnsure() {
+    elNoteName.textContent = '--'; elNoteName.className = 'noteName';
+    elJp.className = 'jp'; elJp.innerHTML = '–';
+    elCents.className = 'cents'; elCents.innerHTML = '--<span class="u">音分</span>';
+    elFreqLine.textContent = confirmStop > 12
+      ? '声音太杂，认不出基频：靠近一点、避开环境噪音，或用「只看内弦/外弦」锁定'
+      : '信号不稳，再拉一次…';
+    setArrow(null); setTarget(null);
+  }
+
+  function drawLevel(level) {
+    var db = 20 * Math.log10(Math.max(level, 1e-6));
+    var pct = Math.max(0, Math.min(100, (db + 70) / 70 * 100));
+    elLevelFill.style.width = pct.toFixed(0) + '%';
+    elLevelTxt.textContent = db < -60 ? '静音' : (db < -34 ? '偏小' : (db < -12 ? '正常' : '偏大'));
+  }
+
+  /* =======================================================================
+     诊断
+     ======================================================================= */
+  /* 跟录音/乐团练时，整首可能系统性偏高或偏低——那不是演奏不准，
+     而是录音的音准基准与 App 不同（国内乐团普遍 442，不是 440）。
+     这里累计最近若干次读数的中位偏差，只在【诊断信息】里提示，不动主界面，
+     免得"调自己的琴"时被误导成改基准。 */
+  var refHist = [];
+  function trackRefDev(cents) {
+    refHist.push(cents);
+    if (refHist.length > 60) refHist.shift();
+  }
+  function refDevText() {
+    if (refHist.length < 25) return '样本不足（拉一会儿再看）';
+    var m = median(refHist);
+    var suggest = Math.round(a4Cal * Math.pow(2, m / 1200));
+    var tag = Math.abs(m) < 5 ? '在正常范围' : (m > 0 ? '系统性偏高' : '系统性偏低');
+    if (Math.abs(m) >= 5 && suggest >= 430 && suggest <= 450 && suggest !== a4Cal) {
+      tag += ' → 若在跟录音/乐团练，把音准基准改成 ' + suggest + ' 试试';
+    }
+    return m.toFixed(1) + ' 音分（最近 ' + refHist.length + ' 帧中位）· ' + tag;
+  }
+
+  function updateDiag(extra) {
+    var key = currentKey();
+    var lines = [
+      '协议: ' + location.protocol + '  安全上下文: ' + SECURE,
+      'UA: ' + UA,
+      'iOS: ' + IS_IOS + '  iOS-Safari: ' + IS_IOS_SAFARI + '  套壳内核: ' + IOS_SHELL,
+      'getUserMedia: ' + HAS_GUM + '  像素比: ' + (window.devicePixelRatio || 1),
+      '音频上下文: ' + (audioCtx ? audioCtx.state : '未创建') +
+        '  采样率: ' + (audioCtx ? audioCtx.sampleRate + ' Hz (检测用 ' + (audioCtx.sampleRate / DECIMATE).toFixed(0) + ' Hz)' : '未启动'),
+      '音频会话类别: ' + (navigator.audioSession ? (navigator.audioSession.type || '(空)') : '不支持 audioSession API'),
+      '调: 1=' + key.label + ' (' + key.chord + ')  模式: ' + mode + '  音准基准: A4=' + a4Cal + 'Hz  噪声底: ' + noiseFloor.toFixed(5),
+      // 检出统计：拉了但没显示时，看这一行就知道卡在哪一环
+      '检出统计: 共 ' + dstat.frames + ' 帧 → 成功 ' + dstat.ok +
+        ' / 音量低于门限 ' + dstat.gated + ' / 认不出基频 ' + dstat.nodetect +
+        ' / 可信度不足 ' + dstat.lowclarity + ' / 帧间不稳 ' + dstat.unstable +
+        '  （成功率 ' + (dstat.frames ? (dstat.ok / dstat.frames * 100).toFixed(0) : '—') + '%）',
+      '跟录音系统性偏移: ' + refDevText(),
+      '信号: 最近 ' + dstat.lastDb.toFixed(1) + ' dBFS  平均 ' +
+        (dstat.dbN ? (dstat.dbSum / dstat.dbN).toFixed(1) : '—') + ' dBFS' +
+        '  可信度: 最近 ' + dstat.lastClarity.toFixed(2) + ' 平均 ' +
+        (dstat.clN ? (dstat.clSum / dstat.clN).toFixed(2) : '—') + '（门槛 ' + CLARITY_MIN + '）',
+      '面板: 内弦 ' + slotsInner[0].freq.toFixed(1) + '–' + slotsInner[slotsInner.length - 1].freq.toFixed(1) + ' Hz / 外弦 ' +
+        slotsOuter[0].freq.toFixed(1) + '–' + slotsOuter[slotsOuter.length - 1].freq.toFixed(1) + ' Hz',
+      '麦克风: ' + (micStream ? micStream.getAudioTracks().map(function (t) {
+        var s = t.getSettings ? t.getSettings() : {};
+        return '[' + t.label + ' ec=' + s.echoCancellation + ' ns=' + s.noiseSuppression + ' agc=' + s.autoGainControl + ']';
+      }).join(' ') : '未连接')
+    ];
+    if (extra) lines.push(extra);
+    elDiag.textContent = lines.join('\n');
+  }
+
+  /* =======================================================================
+     事件
+     ======================================================================= */
+  elStart.addEventListener('click', startTuner);
+
+  elScale.addEventListener('click', toggleScale);
+  elMetro.addEventListener('click', toggleMetro);
+
+  elBpmRange.addEventListener('input', function () { setBpm(parseInt(elBpmRange.value, 10) || 0, true); scaleRetime(); });
+  elBpmRange.addEventListener('change', function () { setBpm(parseInt(elBpmRange.value, 10) || 0, true); scaleRetime(); updateDiag(); });
+
+  Array.prototype.forEach.call(document.querySelectorAll('#metroSeg button[data-rate]'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('#metroSeg button[data-rate]'), function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      scaleRate = parseFloat(b.getAttribute('data-rate')) || 1;
+      scaleRetime();                     // 只重算剩余时间，不重播当前音、不新增定时器
+      updateDiag();
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('#keySeg button'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('#keySeg button'), function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      keyId = b.getAttribute('data-key');
+      smoothing = [];
+      if (scaleOn) stopScale();        // 换调要重排音阶，先停
+      stopTone();                      // 面板要重建，先把正在发的音停掉
+      buildBoard();
+      setTarget(null); setArrow(null);
+      updateDiag();
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('#modeSeg button'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('#modeSeg button'), function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      mode = b.getAttribute('data-mode');
+      smoothing = [];
+      setTarget(null); setArrow(null);
+      updateDiag();
+    });
+  });
+
+  /* 音准基准 A4：跟着录音/乐团练时，整首会系统性偏高或偏低，
+     不对齐的话每个音都会被显示成"不准"——而那不是演奏者的问题，
+     是录音的音高标准不同（国内乐团普遍用 442，不是 440）。 */
+  function setA4(v, silent) {
+    a4Cal = v;
+    try { localStorage.setItem('erhu.a4', String(v)); } catch (e) {}
+    Array.prototype.forEach.call(document.querySelectorAll('#a4Seg button'), function (x) {
+      x.classList.toggle('on', parseFloat(x.getAttribute('data-a4')) === v);
+    });
+    updateRefLabels();
+    if (scaleOn) stopScale();
+    stopTone();
+    buildBoard();
+    setTarget(null); setArrow(null);
+    if (!silent) elHint.textContent = '音准基准已设为 A4 = ' + v + ' Hz';
+    updateDiag();
+  }
+  function updateRefLabels() {
+    var d = midiToFreq(OPEN_INNER_MIDI, a4Cal), a = midiToFreq(OPEN_OUTER_MIDI, a4Cal);
+    if (elRefDFreq) elRefDFreq.textContent = d.toFixed(2) + ' Hz';
+    if (elRefAFreq) elRefAFreq.textContent = a.toFixed(2) + ' Hz';
+    if (elA4Hint) elA4Hint.textContent = '（当前 ' + a4Cal + ' Hz' + (a4Cal === 440 ? '·国际标准' : '') + '）';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#a4Seg button'), function (b) {
+    b.addEventListener('click', function () { setA4(parseFloat(b.getAttribute('data-a4')) || 440); });
+  });
+
+  // 诊断面板展开时重算一次——否则看到的还是上次切前台时的旧数据
+  if (elDiagBox) elDiagBox.addEventListener('toggle', function () { if (elDiagBox.open) updateDiag(); });
+
+  /* 练习计时按钮 */
+  timerBtns = Array.prototype.slice.call(document.querySelectorAll('#timerSeg button'));
+  Array.prototype.forEach.call(timerBtns, function (b) {
+    b.addEventListener('click', function () {
+      if (b === timerBtn) { stopTimer(); return; }      // 再点一下 = 取消
+      startTimer(parseFloat(b.getAttribute('data-min')) || 1, b);
+    });
+  });
+
+  elRefD.addEventListener('click', function () {
+    playTone(slotsInner[0].freq, {
+      key: 'refD', duration: 3200,
+      onStart: function () { elRefD.classList.add('playing'); elRefD.querySelector('.n').textContent = '内弦 D · 播放中'; },
+      onEnd: function () { elRefD.classList.remove('playing'); elRefD.querySelector('.n').textContent = '内弦 D'; }
+    });
+  });
+  elRefA.addEventListener('click', function () {
+    playTone(slotsOuter[0].freq, {
+      key: 'refA', duration: 3200,
+      onStart: function () { elRefA.classList.add('playing'); elRefA.querySelector('.n').textContent = '外弦 A · 播放中'; },
+      onEnd: function () { elRefA.classList.remove('playing'); elRefA.querySelector('.n').textContent = '外弦 A'; }
+    });
+  });
+
+  elCopy.addEventListener('click', function () {
+    updateDiag();
+    var text = elDiag.textContent;
+    var done = function () {
+      elCopy.querySelector('.n').textContent = '已复制 ✓';
+      setTimeout(function () { elCopy.querySelector('.n').textContent = '复制诊断信息'; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+    } else fallbackCopy(text, done);
+  });
+  function fallbackCopy(text, done) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta); done();
+    } catch (e) { showBanner('info', '复制失败，请长按诊断信息手动选择。'); }
+  }
+
+  ['touchstart', 'click'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      // 任何一次触摸都先把音频解锁：Safari 只认手势，
+      // 提前解锁能让后面点音位立即出声，也顺手救回 interrupted 状态
+      if (!audioCtx) { try { unlockAudio(); } catch (e) {} }
+      else if (audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e) {} }
+    }, { passive: true });
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && running) {
+      if (audioCtx && audioCtx.state !== 'running') { try { audioCtx.resume(); } catch (e) {} }
+      requestWakeLock(); lastDetect = 0;
+    }
+    if (!document.hidden) updateDiag();
+  });
+  window.addEventListener('pagehide', function () {
+    if (scaleOn) stopScale();
+    if (metroOn) stopMetro();
+    if (running) stopTuner();
+  });
+
+  /* =======================================================================
+     启动
+     ======================================================================= */
+  envCheck();
+  // 先把 A4 基准的按钮状态与频率标签同步好（a4Cal 可能从本地存储恢复过）
+  Array.prototype.forEach.call(document.querySelectorAll('#a4Seg button'), function (x) {
+    x.classList.toggle('on', parseFloat(x.getAttribute('data-a4')) === a4Cal);
+  });
+  updateRefLabels();
+  timerBtns = Array.prototype.slice.call(document.querySelectorAll('#timerSeg button'));
+  paintTimer(0);
+  buildBoard();
+  setBpm(BPM_LIST.indexOf(BPM_DEFAULT));   // 把 JS 里的速度同步到界面（默认 80 BPM）
+  updateDiag();
+
+  window.__erhu = {
+    detectPitchYIN: detectPitchYIN,
+    freqToNote: freqToNote,
+    centsBetween: centsBetween,
+    decimate: decimate,
+    rms: rms,
+    median: median,
+    buildSlots: buildSlots,
+    degreeSemitones: degreeSemitones,
+    findNearestSlot: findNearestSlot,
+    KEY_DEFS: KEY_DEFS,
+    OPEN_INNER_MIDI: OPEN_INNER_MIDI,
+    OPEN_OUTER_MIDI: OPEN_OUTER_MIDI,
+    SLOTS_PER_STRING: SLOTS_PER_STRING,
+    ARROW_GAIN: ARROW_GAIN,
+    setA4: setA4,
+    timer: { start: startTimer, stop: stopTimer, left: function () { return timerEnd ? timerEnd - Date.now() : 0; }, active: function () { return timerBtn ? timerBtn.getAttribute('data-min') : null; }, buttons: function () { return timerBtns; } },
+    slotY: slotY,
+    yOfSemis: yOfSemis,
+    board: function () { return boardEls; },
+    stats: function () { return dstat; },
+    resetStats: resetDstat,
+    // 调试用：直接渲染一个频率，不需要麦克风（便于截图核对箭头位置）
+    demo: function (freq) { render(freq); },
+    scale: { toggle: toggleScale, stop: stopScale, tick: scaleTick, setIdleText: function (t) { SCALE_IDLE_TEXT = t; } },
+    tempo: {
+      setBpm: function (v) { setBpm(v, false); },
+      setRate: function (r) { scaleRate = r; },
+      toggleMetro: toggleMetro, stopMetro: stopMetro, schedule: metroSchedule,
+      list: BPM_LIST
+    },
+    state: function () {
+      return {
+        a4Cal: a4Cal, running: running, mode: mode, keyId: keyId, playing: !!playing,
+        scaleOn: scaleOn, scaleStep: scaleStep, scaleDir: scaleDir,
+        bpm: bpm, scaleRate: scaleRate, scaleNoteMs: scaleNoteMs(), metroOn: metroOn, metroBeat: metroBeat,
+        sampleRate: audioCtx ? audioCtx.sampleRate : null,
+        ctxState: audioCtx ? audioCtx.state : null,
+        sessionType: (typeof navigator !== 'undefined' && navigator.audioSession) ? navigator.audioSession.type : null,
+        slotsInner: slotsInner, slotsOuter: slotsOuter
+      };
+    }
+  };
+})();
+</script>
+</body>
+</html>
