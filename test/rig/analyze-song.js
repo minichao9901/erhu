@@ -59,6 +59,7 @@ const P = {
   CLARITY_MIN_CONT: num('CLARITY_MIN_CONT', 0.25),
   CLARITY_FAST: num('CLARITY_FAST', 0.80),
   SMOOTH_N: num('SMOOTH_N', 3),
+  SMOOTH_RESET_CENTS: num('SMOOTH_RESET_CENTS', 75),
   STABLE_N: num('STABLE_N', 2),
   STABLE_CENTS: num('STABLE_CENTS', 250)
 };
@@ -91,6 +92,7 @@ for (let end = P.FFT; end < src.length; end += P.HOP) {
     else { candFreq = r.freq; candN = 1; }
     if (candN < P.STABLE_N) { st.unstable++; rows.push({ t, db, state: 'unstable' }); continue; }
   } else { candFreq = r.freq; candN = P.STABLE_N; }
+  if (smoothing.length && Math.abs(api.centsBetween(r.freq, api.median(smoothing))) >= P.SMOOTH_RESET_CENTS) smoothing = [];
   smoothing.push(r.freq); if (smoothing.length > P.SMOOTH_N) smoothing.shift();
   var med = api.median(smoothing);
   st.ok++;

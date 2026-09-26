@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0e13">
 <meta name="format-detection" content="telephone=no">
 <meta name="description" content="二胡音准练习：指板音位面板，内弦 D4 / 外弦 A4，实时箭头显示实际音高位置。">
@@ -28,7 +28,7 @@
 
   header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 2px 10px;}
   h1{font-size:19px;margin:0;font-weight:650;letter-spacing:.5px;}
-  header .sub{font-size:12px;color:var(--dim-2);white-space:nowrap;}
+  header .sub{font-size:12px;color:var(--dim-2);text-align:right;}
 
   /* 横幅 = 从顶部浮出的通知条：position:fixed 不占布局，
      否则一出现就把调音面板往下挤（用户明确要求不能挤占面板空间） */
@@ -76,8 +76,15 @@
   .cents.ok{color:var(--ok);} .cents.low{color:var(--flat);} .cents.high{color:var(--sharp);}
   .cents .u{font-size:11.5px;color:var(--dim-2);font-weight:400;margin-left:3px;}
   /* 频率行独立占满宽度，和开始按钮同宽，不会被挤到截断 */
-  .freqLine{font-size:11.5px;color:var(--dim-2);font-variant-numeric:tabular-nums;margin:-4px 4px 10px;
+  .freqLine{font-size:11.5px;color:var(--dim-2);font-variant-numeric:tabular-nums;margin:-4px 4px 5px;
             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tuneMeter{position:relative;height:8px;margin:0 4px 10px;border-radius:5px;
+             background:linear-gradient(90deg,rgba(96,165,250,.55),rgba(34,197,94,.65) 50%,rgba(251,146,60,.55));}
+  .tuneMeter::after{content:"";position:absolute;left:50%;top:-3px;width:2px;height:14px;
+                    background:var(--text);opacity:.8;transform:translateX(-50%);}
+  .tuneMarker{position:absolute;top:50%;width:13px;height:13px;border:2px solid #fff;border-radius:50%;
+              background:var(--flat);box-shadow:0 1px 7px rgba(0,0,0,.65);transform:translate(-50%,-50%);z-index:1;}
+  .tuneMarker.ok{background:var(--ok);}.tuneMarker.high{background:var(--sharp);}
 
   /* ---------- 开始按钮（与读数并排的窄条） ---------- */
   .big{
@@ -112,6 +119,7 @@
     transition:background .15s,border-color .15s,transform .06s;-webkit-appearance:none;appearance:none;
   }
   .seg button:active,.refBtn:active{transform:scale(.985);}
+  button:focus-visible,input:focus-visible,svg [role="button"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
   .seg button.on{background:rgba(45,212,191,.16);border-color:rgba(45,212,191,.55);color:#c9fff7;font-weight:600;}
   #a4Seg button{padding:9px 2px;font-size:13px;font-variant-numeric:tabular-nums;}
   #a4Seg button.on{background:rgba(167,139,250,.18);border-color:rgba(167,139,250,.6);color:#ddd6fe;font-weight:600;}
@@ -180,6 +188,12 @@
   details code{background:#0b131c;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px;-webkit-user-select:text;user-select:text;word-break:break-all;}
   .kv{font-size:12px;color:var(--dim-2);-webkit-user-select:text;user-select:text;word-break:break-all;line-height:1.7;margin-top:8px;white-space:pre-wrap;}
   footer{text-align:center;font-size:11.5px;color:#4d5d70;margin-top:18px;}
+  @media (max-width:380px){
+    .topRow{flex-wrap:wrap;}
+    .topRow .readout{flex-basis:100%;min-height:60px;}
+    .topRow .big{flex:1 0 100%;min-height:42px;word-break:normal;}
+    header .sub{font-size:11px;}
+  }
 </style>
 </head>
 <body>
@@ -202,6 +216,7 @@
     <button class="big" id="startBtn">开始调音</button>
   </div>
   <div id="freqLine" class="freqLine">点击「开始调音」，允许麦克风后拉响琴弦</div>
+  <div class="tuneMeter" aria-hidden="true"><div id="tuneMarker" class="tuneMarker hide"></div></div>
 
   <!-- 指板面板 -->
   <div class="boardWrap">
@@ -213,6 +228,13 @@
     <span>输入</span>
     <div class="levelBar"><div id="levelFill" class="levelFill"></div></div>
     <span id="levelTxt">静音</span>
+  </div>
+
+  <div class="label"><span>检测范围</span></div>
+  <div class="seg" id="modeSeg">
+    <button data-mode="auto" class="on">两根弦</button>
+    <button data-mode="D">只看内弦</button>
+    <button data-mode="A">只看外弦</button>
   </div>
 
   <!-- 音阶练习：来回往复播放当前调的音阶，箭头逐个落在对应音位上 -->
@@ -249,14 +271,6 @@
     <button data-key="C">C</button>
     <button data-key="A">A</button>
     <button data-key="Bb">bB</button>
-  </div>
-
-  <!-- 弦 -->
-  <div class="label"><span>检测范围</span></div>
-  <div class="seg" id="modeSeg">
-    <button data-mode="auto" class="on">两根弦</button>
-    <button data-mode="D">只看内弦</button>
-    <button data-mode="A">只看外弦</button>
   </div>
 
   <!-- 参考音 -->
@@ -555,7 +569,7 @@
      ======================================================================= */
   var $ = function (id) { return document.getElementById(id); };
   var elBanner = $('banner'), elNoteName = $('noteName'), elJp = $('jpBox'), elCents = $('cents'),
-      elFreqLine = $('freqLine'), elStart = $('startBtn'), elLevelFill = $('levelFill'),
+      elFreqLine = $('freqLine'), elTuneMarker = $('tuneMarker'), elStart = $('startBtn'), elLevelFill = $('levelFill'),
       elLevelTxt = $('levelTxt'), elDiag = $('diag'), elCopy = $('copyBtn'),
       elRefD = $('refD'), elRefA = $('refA'), elHint = $('boardHint'), elScale = $('scaleBtn'),
       elBpmTxt = $('bpmTxt'), elBpmRange = $('bpmRange'), elBeatDots = $('beatDots'), elMetro = $('metroBtn'),
@@ -575,7 +589,7 @@
   var ARROW_MIN_Y = 10, ARROW_MAX_Y = VB_H - 8;
   var BADGE_R = 9;             // 圆圈半径：小圈 + 细体字，留白多才不显挤（全音间距 46，圈占 39%）
   var X_INNER = 118, X_OUTER = 242;
-  var ARROW_GAIN = 0.7;        // 每 1 音分对应的像素（放大显示，否则 ±5 音分肉眼看不出来）
+  var ARROW_GAIN = UNIT / 100; // 箭头按面板的半音尺定位；细微偏差由音分数字和颜色显示
 
   function yOfSemis(semis) { return PAD_TOP + semis * UNIT + UNIT / 2; }
   // 注意：两根弦不能用同一个 slotY(i)。大调音阶从主音数 6 级是大七度（11 个半音），
@@ -608,7 +622,8 @@
   } catch (e) {}
   var smoothing = [], lastHit = 0, noiseFloor = 0.0008, confirmStop = 0;
   var rafId = 0, frameCount = 0, lastDetect = 0, wakeLock = null, micTimer = null;
-  var DECIMATE = 1, FFT_SIZE = 4096, HOLD_MS = 1500, TOL = 5;
+  var micRequestId = 0;
+  var DECIMATE = 1, FFT_SIZE = 4096, HOLD_MS = 350, TOL = 5;
   // 噪声门限：只用来区分"完全没声音"和"有声音"，判噪交给 YIN 自己。
   // 之前设成 0.0035(=-49dBFS) × 环境噪声2.6 倍，实测会爬到 -39dBFS，
   // 把手机放远一点/弱奏的二胡（-42dBFS 左右）整段吃掉——这就是"有时有有时没有"的根因。
@@ -619,7 +634,8 @@
   var CLARITY_MIN_CONT = 0.25;   // 与最近读数吻合时放宽到这个值（换弓/揉弦瞬间能用）
   var CLARITY_FAST = 0.80;       // 可信度高于此值 → 立即响应，不再等第二帧
   var SMOOTH_N = 3;              // 滑动中位数窗口。5 帧≈190ms 跟快板太慢：
-                                 // 真实演奏《翻身歌》61s 实测，5帧→3帧 检出率 26%→81%
+                                  // 真实演奏《翻身歌》61s 实测，5帧→3帧 检出率 26%→81%
+  var SMOOTH_RESET_CENTS = 75;   // 换音超过此距离时不再混入旧音的中位数窗口
   var STABLE_N = 2;              // 可信度一般时需连续几帧音高一致才认（抗噪）
   var STABLE_CENTS = 250;        // 这几帧之间允许的最大跳变
   var candFreq = 0, candN = 0;   // 候选音高与连续命中次数
@@ -760,6 +776,7 @@
   }
 
   function stopTuner(silent) {
+    micRequestId++;              // 让尚未返回的麦克风授权请求失效
     running = false;
     stopTone();
     if (micTimer) { clearTimeout(micTimer); micTimer = null; }
@@ -787,6 +804,7 @@
     if (running) { stopTuner(); return; }
     if (scaleOn) stopScale();          // 开麦前先停音阶，否则喇叭声音会被当成琴声
     if (!envCheck()) return;
+    var requestId = ++micRequestId;
     if (HAS_GUM && navigator.permissions && navigator.permissions.query) {
       try {
         navigator.permissions.query({ name: 'microphone' }).then(function (st) {
@@ -808,10 +826,12 @@
 
     if (micTimer) clearTimeout(micTimer);
     micTimer = setTimeout(function () {
-      if (!running) {
+      if (!running && requestId === micRequestId) {
+        micRequestId++;          // 超时后用户可以重试，迟到的旧音频流必须关闭
+        micTimer = null;
         elStart.disabled = false; elStart.textContent = '开始调音';
-        showBanner('warn', '<b>还没有拿到麦克风授权。</b>',
-          '若没看到弹窗：iPhone 到 设置 → Safari 浏览器 → 麦克风 改为「允许」，刷新后再点一次。');
+        showBanner('warn', '<b>麦克风授权等待超时，请再点一次「开始调音」。</b>',
+          '若没看到弹窗：iPhone 到 设置 → Safari 浏览器 → 麦克风 改为「允许」，刷新后重试。');
       }
     }, 20000);
 
@@ -819,10 +839,15 @@
 
     function attempt(constraints, isRetry) {
       navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+        if (requestId !== micRequestId) {
+          stream.getTracks().forEach(function (track) { track.stop(); });
+          return;
+        }
         if (micTimer) { clearTimeout(micTimer); micTimer = null; }
         micStream = stream;
         onMicReady();
       }, function (err) {
+        if (requestId !== micRequestId) return;
         var name = (err && (err.name || err.code)) || '';
         if (!isRetry && (name === 'OverconstrainedError' || name === 'TypeError' || name === 'NotSupportedError')) {
           attempt({ audio: true }, true); return;
@@ -1023,10 +1048,15 @@
         (function (idx) {
           var hh = Math.max(UNIT - 2, 18);   // 半音只隔 1 格，热区取一格高（不小于 18 保证好点）
           var r = mk('rect', {
-            x: pair[0] - 46, y: yOfSemis((pair[1] === 'outer' ? slotsOuter : slotsInner)[idx].semis) - hh / 2, width: 92, height: hh,
-            fill: 'transparent', 'pointer-events': 'all', style: 'cursor:pointer'
-          }, gHit);
-          r.addEventListener('click', function () { onSlotTap(pair[1], idx); });
+             x: pair[0] - 46, y: yOfSemis((pair[1] === 'outer' ? slotsOuter : slotsInner)[idx].semis) - hh / 2, width: 92, height: hh,
+             fill: 'transparent', 'pointer-events': 'all', style: 'cursor:pointer',
+             role: 'button', tabindex: 0,
+             'aria-label': (pair[1] === 'inner' ? '内弦 ' : '外弦 ') + (pair[1] === 'inner' ? slotsInner[idx].name : slotsOuter[idx].name) + ' 试听'
+           }, gHit);
+           r.addEventListener('click', function () { onSlotTap(pair[1], idx); });
+           r.addEventListener('keydown', function (ev) {
+             if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onSlotTap(pair[1], idx); }
+           });
           hitRects.push(r);
         })(i);
       }
@@ -1157,7 +1187,11 @@
 
   function setArrow(hit) {
     var a = boardEls.arrowInner, b = boardEls.arrowOuter;
-    if (!hit) { a.g.setAttribute('opacity', 0); b.g.setAttribute('opacity', 0); return; }
+    if (!hit) {
+      a.g.setAttribute('opacity', 0); b.g.setAttribute('opacity', 0);
+      elTuneMarker.classList.add('hide');
+      return;
+    }
     var use = hit.which === 'outer' ? b : a;
     var other = use === a ? b : a;
     other.g.setAttribute('opacity', 0);
@@ -1168,6 +1202,8 @@
       'translate(' + use.baseX + ',' + y.toFixed(2) + ')' + (hit.inTune ? ' scale(1.3)' : ''));
     use.g.setAttribute('opacity', 1);
     use.tri.setAttribute('fill', color);
+    elTuneMarker.className = 'tuneMarker' + (hit.inTune ? ' ok' : (hit.cents > 0 ? ' high' : ''));
+    elTuneMarker.style.left = (50 + Math.max(-50, Math.min(50, hit.cents))) + '%';
   }
 
   /* =======================================================================
@@ -1249,6 +1285,9 @@
     confirmStop = 0;
     lastHit = performance.now();
 
+    if (smoothing.length && Math.abs(centsBetween(res.freq, median(smoothing))) >= SMOOTH_RESET_CENTS) {
+      smoothing = [];            // 新音已过可信度与稳定性检查，立即丢弃旧音
+    }
     smoothing.push(res.freq);
     if (smoothing.length > SMOOTH_N) smoothing.shift();
     render(median(smoothing));
@@ -1578,7 +1617,7 @@
     hit.inTune = inTune;
     hit.y = boardEls[hit.which][hit.index].y;
 
-    elNoteName.textContent = s.name;
+    elNoteName.textContent = freqToNote(freq, a4Cal).full;
     elNoteName.className = 'noteName live' + (inTune ? ' ok' : '');
     elJp.className = 'jp' + (inTune ? ' ok' : '');
     elJp.innerHTML = jpHtml(s);
@@ -1605,6 +1644,7 @@
 
   function showUnsure() {
     elNoteName.textContent = '--'; elNoteName.className = 'noteName';
+    elJp.className = 'jp'; elJp.innerHTML = '–';
     elCents.className = 'cents'; elCents.innerHTML = '--<span class="u">音分</span>';
     elFreqLine.textContent = confirmStop > 12
       ? '声音太杂，认不出基频：靠近一点、避开环境噪音，或用「只看内弦/外弦」锁定'

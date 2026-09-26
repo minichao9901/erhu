@@ -165,7 +165,7 @@ function loadPage(opts = {}) {
     userAgent: opts.ua || 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
     platform: 'iPhone', maxTouchPoints: 5,
     mediaDevices: opts.noGum ? undefined : {
-      getUserMedia: () => gumBehavior === 'ok' ? Promise.resolve(fakeStream) : Promise.reject(Object.assign(new Error('x'), { name: gumBehavior }))
+      getUserMedia: opts.gum || (() => gumBehavior === 'ok' ? Promise.resolve(fakeStream) : Promise.reject(Object.assign(new Error('x'), { name: gumBehavior })))
     },
     permissions: { query: () => Promise.resolve({ state: 'prompt' }) },
     wakeLock: { request: () => Promise.resolve({ release() {} }) },
@@ -254,14 +254,24 @@ const isVisible = el => el.getAttribute('opacity') === '1';
   pump(10);
   ok('D5 提示落在「外弦」第1把位', /外弦 第1把位/.test(getEl('freqLine').textContent), getEl('freqLine').textContent);
 
+  console.log('\n=== 3b. 清晰换音立即切换读数 ===');
+  toneFreq = 293.66; pump(5);
+  toneFreq = 329.63; pump(1);
+  ok('D4 换 E4 后首个清晰检测帧就显示 E4', getEl('noteName').textContent === 'E4', getEl('noteName').textContent);
+  toneFreq = 311.13; pump(2);
+  ok('非当前调音阶的音显示实际音名 D#4', getEl('noteName').textContent === 'D#4', getEl('noteName').textContent);
+  const chromaticY = arrowY(w.__erhu.board().arrowInner.g);
+  ok('D#4 箭头位于 D4 与 E4 的半音刻度', Math.abs(chromaticY - (slotY('inner', 0) + UNIT)) < 2,
+     `箭头y=${chromaticY}`);
+
   console.log('\n=== 4. 偏低 / 偏高：箭头位移与颜色 ===');
   toneFreq = 293.66 * Math.pow(2, -30 / 1200);
   pump(10);
   let c = parseFloat(getEl('cents').textContent);
   ok('偏低显示负值', c < -25 && c > -35, getEl('cents').textContent);
   let ay = arrowY(w.__erhu.board().arrowInner.g);
-  ok('箭头按 0.7px/音分 向上偏移约 21px', Math.abs((slotY('inner',0) - ay) - 30 * 0.7) < 3,
-     `实际偏移 ${(slotY('inner',0) - ay).toFixed(1)}px（理论 21px）`);
+  ok('箭头按半音尺向上偏移约 6px', Math.abs((slotY('inner',0) - ay) - 30 * 0.2) < 1,
+     `实际偏移 ${(slotY('inner',0) - ay).toFixed(1)}px（理论 6px）`);
   ok('偏低用蓝色', getEl('cents')._cls.has('low'), [...getEl('cents')._cls].join(' '));
   ok('箭头变蓝', w.__erhu.board().arrowInner.tri.getAttribute('fill') === '#60a5fa');
   toneFreq = 293.66 * Math.pow(2, 22 / 1200);
@@ -269,7 +279,9 @@ const isVisible = el => el.getAttribute('opacity') === '1';
   c = parseFloat(getEl('cents').textContent);
   ok('偏高显示正值', c > 18 && c < 28, getEl('cents').textContent);
   ay = arrowY(w.__erhu.board().arrowInner.g);
-  ok('箭头向下偏移约 15px', Math.abs((ay - slotY('inner',0)) - 22 * 0.7) < 3, `实际 ${(ay - slotY('inner',0)).toFixed(1)}px`);
+  ok('箭头按半音尺向下偏移约 4.4px', Math.abs((ay - slotY('inner',0)) - 22 * 0.2) < 1, `实际 ${(ay - slotY('inner',0)).toFixed(1)}px`);
+  ok('细调指针显示 +22 音分', Math.abs(parseFloat(getEl('tuneMarker').style.left) - 72) < 1,
+     getEl('tuneMarker').style.left);
   ok('偏高用橙色', getEl('cents')._cls.has('high'), [...getEl('cents')._cls].join(' '));
   ok('箭头变橙', w.__erhu.board().arrowInner.tri.getAttribute('fill') === '#fb923c');
 
@@ -284,8 +296,10 @@ const isVisible = el => el.getAttribute('opacity') === '1';
 
   console.log('\n=== 6. 静音处理 ===');
   toneAmp = 0.0002;
-  pump(50);   // 要超过 HOLD_MS(1500ms) 读数才清空
+  pump(10);   // 400ms，超过短暂换弓保留时间
   ok('读数清空', getEl('noteName').textContent === '--', getEl('noteName').textContent);
+  ok('简谱一并清空', getEl('jpBox').textContent === '–', getEl('jpBox').textContent);
+  ok('细调指针随静音隐藏', getEl('tuneMarker')._cls.has('hide'));
   ok('提示没听到声音', /没听到声音/.test(getEl('freqLine').textContent), getEl('freqLine').textContent);
   toneAmp = 0.3;
 
@@ -806,6 +820,27 @@ const isVisible = el => el.getAttribute('opacity') === '1';
     // 横幅必须是浮层：普通块元素一出现会把调音面板往下挤（用户明确要求不能挤占）
     ok('横幅是 position:fixed 浮层', /\.banner\{[\s\S]{0,160}?position:fixed/.test(html), '');
     ok('横幅无下边距（不参与布局）', /\.banner\{[\s\S]{0,160}?margin:0/.test(html) || !/\.banner\{[^}]*margin-bottom/.test(html), '');
+  }
+
+  console.log('\n=== 18. 麦克风授权超时后，迟到的旧请求不能覆盖新请求 ===');
+  {
+    const pending = [], stopped = [0, 0];
+    w = loadPage({ gum: () => new Promise(resolve => pending.push(resolve)) });
+    getEl('startBtn').fire('click');
+    advance(20001);
+    ok('授权超时后允许重试', getEl('startBtn').disabled === false);
+    getEl('startBtn').fire('click');
+    const stream = i => {
+      const track = { ...fakeTrack, stop() { stopped[i]++; } };
+      return { getTracks: () => [track], getAudioTracks: () => [track] };
+    };
+    pending[0](stream(0)); await tick();
+    ok('迟到的旧流被关闭', stopped[0] === 1, String(stopped[0]));
+    ok('旧请求没有启动调音', w.__erhu.state().running === false);
+    pending[1](stream(1)); await tick();
+    ok('新请求正常启动调音', w.__erhu.state().running === true);
+    getEl('startBtn').fire('click');
+    ok('停止时关闭新音频流', stopped[1] === 1, String(stopped[1]));
   }
 
   console.log(`\n================ 结果: ${pass} 通过 / ${fail} 失败 ================\n`);  process.exit(fail ? 1 : 0);

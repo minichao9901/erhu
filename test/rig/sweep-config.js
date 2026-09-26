@@ -44,7 +44,7 @@ const CLARITY_MIN = 0.55, CLARITY_MIN_CONT = 0.25;
  *             'off'       不判
  */
 function run(cfg) {
-  const { FFT, SMOOTH_N, STABLE_N, STABLE_CENTS, stability, HIGH_CL } = cfg;
+  const { FFT, SMOOTH_N, STABLE_N, STABLE_CENTS, SMOOTH_RESET_CENTS, stability, HIGH_CL } = cfg;
   const HOP = 1824;
   let noiseFloor = MIN_RMS, smoothing = [], cand = 0, candN = 0;
   const st = { frames: 0, ok: 0, gated: 0, nodetect: 0, lowclarity: 0, unstable: 0 };
@@ -77,6 +77,8 @@ function run(cfg) {
       }
     }
     st.ok++;
+    if (SMOOTH_RESET_CENTS && smoothing.length &&
+        Math.abs(api.centsBetween(r.freq, api.median(smoothing))) >= SMOOTH_RESET_CENTS) smoothing = [];
     smoothing.push(r.freq); if (smoothing.length > SMOOTH_N) smoothing.shift();
     const med = api.median(smoothing);
     const info = api.freqToNote(med, 440);
@@ -93,12 +95,13 @@ function run(cfg) {
 }
 
 const configs = [
-  { name: 'A 现状(窗4096/平滑5/中位数判稳)', FFT: 4096, SMOOTH_N: 5, STABLE_N: 2, STABLE_CENTS: 250, stability: 'median' },
+  { name: 'A 旧版(窗4096/平滑5/中位数判稳)', FFT: 4096, SMOOTH_N: 5, STABLE_N: 2, STABLE_CENTS: 250, stability: 'median' },
   { name: 'H 窗2048/平滑3/自适应判稳', FFT: 2048, SMOOTH_N: 3, STABLE_N: 2, STABLE_CENTS: 250, stability: 'adaptive' },
   { name: 'I 窗4096/平滑3/自适应判稳', FFT: 4096, SMOOTH_N: 3, STABLE_N: 2, STABLE_CENTS: 250, stability: 'adaptive' },
   { name: 'J 窗2048/平滑3/不判稳', FFT: 2048, SMOOTH_N: 3, STABLE_N: 2, STABLE_CENTS: 250, stability: 'off' },
   { name: 'K 窗2048/平滑5/自适应判稳', FFT: 2048, SMOOTH_N: 5, STABLE_N: 2, STABLE_CENTS: 250, stability: 'adaptive' },
-  { name: 'L 窗2048/平滑3/自适应(高门槛0.6)', FFT: 2048, SMOOTH_N: 3, STABLE_N: 2, STABLE_CENTS: 250, stability: 'adaptive', HIGH_CL: 0.6 }
+  { name: 'L 窗2048/平滑3/自适应(高门槛0.6)', FFT: 2048, SMOOTH_N: 3, STABLE_N: 2, STABLE_CENTS: 250, stability: 'adaptive', HIGH_CL: 0.6 },
+  { name: 'M 现版(4096/平滑3/换音清窗)', FFT: 4096, SMOOTH_N: 3, SMOOTH_RESET_CENTS: 75, STABLE_N: 2, STABLE_CENTS: 250, stability: 'adaptive', HIGH_CL: 0.80 }
 ];
 
 console.log(`文件 ${path.basename(file)}  ${(src.length / SR).toFixed(1)}s\n`);
