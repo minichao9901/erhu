@@ -2,7 +2,7 @@
 const { execFileSync } = require('child_process');
 const path = require('path');
 
-const suites = ['dsp.test.js', 'ui.test.js'];
+const suites = ['dsp.test.js', 'ui.test.js', 'score.test.js'];
 let failed = 0;
 const summary = [];
 

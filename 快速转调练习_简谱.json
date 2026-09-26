@@ -40,11 +40,11 @@
       "remark": "转1=G，5 2弦（内弦定低音5）"
     },
     {
-      "from_measure": 43,
+      "from_measure": 49,
       "key": "D",
       "tuning_inner_string": "1",
       "tuning_outer_string": "5",
-      "remark": "转1=D，1 5弦；转调标记印于本行右上方，转调自第43小节起"
+      "remark": "转1=D，1 5弦；从第49小节 4111… 起，第43–48小节仍为1=G"
     }
   ],
   "total_measures": 63,
@@ -1629,7 +1629,7 @@
       "notes": [
         {
           "degree": 6,
-          "octave": 1,
+          "octave": 0,
           "duration": "16th"
         },
         {
@@ -1668,7 +1668,7 @@
           "duration": "16th"
         }
       ],
-      "jianpu": "6̇ 3̇ 3̇ 3̇  2̇ 3̇ 3̇ 3̇",
+      "jianpu": "6 3̇ 3̇ 3̇  2̇ 3̇ 3̇ 3̇",
       "fingering_printed": "6333:二"
     },
     {
@@ -2055,7 +2055,7 @@
     },
     {
       "measure": 43,
-      "key": "D",
+      "key": "G",
       "notes": [
         {
           "degree": 1,
@@ -2103,7 +2103,7 @@
     },
     {
       "measure": 44,
-      "key": "D",
+      "key": "G",
       "notes": [
         {
           "degree": 5,
@@ -2151,7 +2151,7 @@
     },
     {
       "measure": 45,
-      "key": "D",
+      "key": "G",
       "notes": [
         {
           "degree": 6,
@@ -2200,7 +2200,7 @@
     },
     {
       "measure": 46,
-      "key": "D",
+      "key": "G",
       "notes": [
         {
           "degree": 2,
@@ -2248,7 +2248,7 @@
     },
     {
       "measure": 47,
-      "key": "D",
+      "key": "G",
       "notes": [
         {
           "degree": 4,
@@ -2295,7 +2295,7 @@
     },
     {
       "measure": 48,
-      "key": "D",
+      "key": "G",
       "notes": [
         {
           "degree": 5,

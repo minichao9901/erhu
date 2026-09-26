@@ -3,13 +3,14 @@
 零依赖，纯 Node 运行（Node 18+ 即可），**不需要 npm install**。
 
 ```bash
-node test/run-all.js     # 一次跑完两套（共 351 项）
+node test/run-all.js     # 一次跑完三套
 node test/dsp.test.js    # 125 项：YIN 算法 + 乐理 / 音位模型
 node test/ui.test.js     # 226 项：整页交互（DOM 与 AudioContext 桩，无需浏览器）
+node test/score.test.js  # 谱面错音与转调切点回归校验
 ```
 
-两套测试都**直接从 `../index.html` 里抽取被测代码**运行，所以改完页面直接重跑即可，
-不存在"测试和实现不同步"的问题，也不需要构建步骤。
+前两套测试都**直接从 `../index.html` 里抽取被测代码**运行；第三套读取简谱 JSON，
+锁定第34小节首音的八度与 G→D 的切点。均不需要构建步骤。
 
 ---
 
@@ -105,8 +106,10 @@ node test/rig/sweep-config.js seg.wav     # 参数扫描，比不同配置的检
 ### 3) 简谱 JSON → 音频（生成练习伴奏）
 
 ```bash
-node test/rig/render-jianpu.js 简谱.json 输出.wav [--bb-first6|--no-bb-shift]
-node test/rig/verify-render.js 输出.wav [--bb-first6|--no-bb-shift]   # 回环验证
+node test/rig/render-jianpu.js 简谱.json 输出.wav [--bpm=30|60]
+node test/rig/verify-render.js 输出.wav [--bpm=30|60]   # 回环验证
+node test/rig/split-by-key.js 简谱.json WAV目录 分段输出目录
+node test/rig/verify-segments.js 简谱.json 分段输出目录     # 逐段解码校验音高与时长
 ```
 
 读简谱 JSON（含 `measures[].notes[].{degree,octave,duration}` 与 `key_sections`），
@@ -118,5 +121,8 @@ node test/rig/verify-render.js 输出.wav [--bb-first6|--no-bb-shift]   # 回环
 `verify-render.js` 把生成的音频解回来逐音检测与 JSON 对照，
 用来确认音频里真的是那些音（实测 495/495 命中，中位误差 0.08 音分）。
 
-⚠️ 已知坑：某些简谱的八度点会有漏标。本项目《快速转调练习》的 bB 段就出现
-22 个音低于二胡最低空弦 D4——用 `--bb-first6` 可只上移有问题的前 6 小节。
+音频按简谱 JSON 中的八度点直接合成；需要修音时应校对并修改 JSON，
+然后重新合成、切分、验证。
+
+谱面校对：第34小节 `6333` 的首音 `6` 无高八度点；G 调为第37–48小节，
+D 调从第49小节 `4111…` 开始。分段输出按这两个位置生成。

@@ -1,12 +1,10 @@
 // 把《快速转调练习》简谱 JSON 还原成音频
-// 用: node render-jianpu.js <json> <out.wav> [--no-bb-shift]
+// 用: node render-jianpu.js <json> <out.wav> [--bpm=30|60]
 const fs = require('fs');
 const path = require('path');
 
 const SRC = process.argv[2];
 const OUT = process.argv[3];
-const BB_SHIFT = !process.argv.includes('--no-bb-shift');
-const PH6 = process.argv.includes('--bb-first6');
 const SR = 44100;
 const bpmArg = process.argv.find(a => a.startsWith('--bpm='));
 const BPM = bpmArg ? parseFloat(bpmArg.split('=')[1]) : 60;   // 四分音符 = 60/BPM 秒
@@ -23,11 +21,9 @@ const events = [];
 let t = 0;
 for (const m of j.measures) {
   const key = KEYROOT[m.key] !== undefined ? m.key : j.starting_key;
-  const shift = 0;   // JSON 已修正八度点，不需要任何位移
-
   for (const n of m.notes) {
     const dur = (NOTE_UNITS[n.duration] || 0.25) * BEAT;
-    const midi = KEYROOT[key] + MAJ[n.degree - 1] + 12 * (n.octave || 0) + shift;
+    const midi = KEYROOT[key] + MAJ[n.degree - 1] + 12 * (n.octave || 0);
     events.push({ t, dur, midi, measure: m.measure, degree: n.degree, octave: n.octave || 0, key: m.key });
     t += dur;
   }
@@ -114,7 +110,7 @@ console.log(`已写出 ${OUT}（${(out.length / 1048576).toFixed(1)} MB，${tota
 
 // 附一份对照表，方便核对
 const map = path.join(path.dirname(OUT), '转调练习-音高对照.txt');
-const lines = ['# 《快速转调练习》音高对照（60 BPM，四分音符=1秒）', ''];
+const lines = [`# 《快速转调练习》音高对照（${BPM} BPM，四分音符=${BEAT}秒）`, ''];
 lines.push('# 说明：内弦 D4 / 外弦 A4（标准定弦），A4=440Hz' );
 lines.push('# 小节\t调\t简谱\t实际音高\t起始秒(含4拍预备)\t时长');
 const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
