@@ -3,356 +3,167 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0a0e13">
+<meta name="theme-color" content="#111310">
 <meta name="format-detection" content="telephone=no">
-<meta name="description" content="二胡音准练习：指板音位面板，内弦 D4 / 外弦 A4，实时箭头显示实际音高位置。">
-<title>二胡音准练习 · 指板面板</title>
+<meta name="description" content="沉浸式二胡调音与练习。内外弦同音双显、实时音准、音阶、节拍器与专注计时，音频仅在本地处理。">
+<title>弦外之音 · 二胡调音与练习</title>
 <style>
-  :root{
-    --bg:#0a0e13; --panel:#121a24; --panel-2:#18222f; --line:#243141;
-    --text:#e8eef6; --dim:#93a4b8; --dim-2:#697b90;
-    --accent:#2dd4bf; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
-    --flat:#60a5fa; --sharp:#fb923c;
-    --radius:16px;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:radial-gradient(120% 80% at 50% 0%, #131e2b 0%, var(--bg) 55%) no-repeat, var(--bg);
-    color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-    min-height:100vh;-webkit-text-size-adjust:100%;
-    -webkit-user-select:none;user-select:none;overscroll-behavior-y:contain;
-  }
-  .wrap{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 26px);}
 
-  header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 2px 10px;}
-  h1{font-size:19px;margin:0;font-weight:650;letter-spacing:.5px;}
-  header .sub{font-size:12px;color:var(--dim-2);text-align:right;}
+:root{color-scheme:dark;--bg:#111310;--panel:#1a1d18;--panel-2:#20241e;--line:#32372d;--text:#eeeede;--dim:#a5ac9a;--dim-2:#78816e;--accent:#ddbd83;--ok:#a6d595;--flat:#8dbbd3;--sharp:#edab7c;--radius:22px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%;overflow:hidden}body{font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);background:radial-gradient(ellipse at 72% 28%,#252a1c60,transparent 55%),var(--bg);font-size:14px;-webkit-text-size-adjust:100%}button,input{font:inherit}button{cursor:pointer;color:inherit}button:disabled{opacity:.45;cursor:wait}button:focus-visible,input:focus-visible,[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:4px}button:active{transform:translateY(1px)}button{transition:background .16s,border-color .16s}button:hover{border-color:var(--accent)}.hide,[hidden]{display:none!important}
+.wrap{height:100svh;height:100dvh;max-width:1440px;margin:auto;padding:calc(24px + env(safe-area-inset-top)) 40px calc(18px + env(safe-area-inset-bottom));display:grid;grid-template-rows:64px minmax(0,1fr) 30px;gap:20px}header{display:flex;align-items:center;gap:24px;border-bottom:1px solid var(--line);padding-bottom:20px}.brand{display:flex;align-items:center;gap:12px;flex:1}.brand-mark{border:1px solid #8b7856;width:37px;height:41px;border-radius:12px 3px;display:grid;place-items:center;color:var(--accent);font-family:serif;font-size:24px}.brand h1{font-size:19px;letter-spacing:3px;margin:0;font-weight:500}.brand small{display:block;font-size:9px;letter-spacing:2.4px;color:var(--dim-2);margin-top:5px}.tabs{display:flex;gap:6px;background:#090c084d;padding:5px;border:1px solid #2c3127;border-radius:13px}.tabs button{border:0;background:none;padding:9px 21px;border-radius:8px;color:var(--dim);font-size:13px;white-space:nowrap}.tabs button[aria-selected=true]{background:#34392c;color:var(--accent);box-shadow:0 2px 6px #0003}.fullscreen{display:flex;gap:8px;align-items:center;background:transparent;border:1px solid var(--line);padding:10px 13px;border-radius:10px;font-size:12px}.fullscreen svg{width:16px;height:16px}.stage{min-height:0;display:grid;grid-template-columns:minmax(280px,.82fr) minmax(0,1.18fr);gap:24px}.stage.solo{grid-template-columns:1fr}.boardWrap{position:relative;min-height:0;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(150deg,#20261b99,#15191299);display:grid;grid-template-rows:48px minmax(0,1fr) 28px;padding:14px 20px 10px;overflow:hidden}.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--dim-2)}.panel-heading h2{margin:4px 0 0;font-size:16px;letter-spacing:1px;font-weight:500}.pill{font-size:10px;color:var(--accent);border:1px solid #6b6146;padding:5px 9px;border-radius:20px;white-space:nowrap}svg#board{width:100%;height:100%;min-height:0;display:block}.hint{align-self:end;text-align:center;font-size:10px;color:var(--dim-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.page{min-width:0;min-height:0}.tuner-page{display:flex;flex-direction:column;gap:16px}.page-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.page-title h2{font-weight:400;font-size:23px;letter-spacing:2px;margin:4px 0 0}.status{font-size:11px;color:var(--dim-2);display:flex;align-items:center;gap:6px}.status::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--dim-2)}.status.live{color:var(--ok)}.status.live::before{background:var(--ok);box-shadow:0 0 10px #a6d59580}
+.tuning-core{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;background:radial-gradient(ellipse at center,#8593530e,transparent 70%);padding:8px 0}.readout{display:flex;align-items:center;justify-content:center;gap:18px}.noteName{font-family:Georgia,"Times New Roman",serif;font-size:clamp(64px,9vw,142px);font-weight:400;line-height:1.1;letter-spacing:-5px;color:var(--dim-2);font-variant-numeric:tabular-nums}.noteName.live{color:var(--text)}.noteName.ok{color:var(--ok);text-shadow:0 0 45px #a6d59518}.jp{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;font-size:23px;color:var(--dim);border:1px solid var(--line);border-radius:11px;min-width:43px;height:52px}.jp .dt{font-size:12px;line-height:.65;letter-spacing:3px}.jp.ok{color:var(--ok);border-color:#a6d59550}.cents{font-variant-numeric:tabular-nums;font-size:28px;min-height:35px;color:var(--dim);margin-top:4px}.cents .u{font-size:11px;margin-left:7px;color:var(--dim-2)}.ok{color:var(--ok)}.low{color:var(--flat)}.high{color:var(--sharp)}.freqLine{font-variant-numeric:tabular-nums;font-size:11px;color:var(--dim-2);text-align:center;min-height:16px;margin-top:10px;max-width:100%;line-height:1.6}.meter-wrap{width:88%;margin:25px auto 0}.tuneMeter{height:36px;position:relative;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(10% - 1px),#4a5140 calc(10% - 1px),#4a5140 10%);border-bottom:1px solid var(--line)}.tuneMeter::before{content:"";position:absolute;left:45%;width:10%;top:0;bottom:0;background:#a6d59513;border-inline:1px solid #a6d59530}.tuneMeter::after{content:"";position:absolute;left:50%;width:1px;height:47px;bottom:0;background:var(--ok)}.tuneMarker{position:absolute;left:50%;top:-9px;width:12px;height:12px;background:var(--flat);clip-path:polygon(0 0,100% 0,50% 100%);transform:translateX(-50%);transition:left .09s linear}.tuneMarker.ok{background:var(--ok)}.tuneMarker.high{background:var(--sharp)}.meter-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--dim-2);margin-top:9px}.meter-labels span:nth-child(2){color:var(--ok)}.string-matches{display:grid;grid-template-columns:1fr 1fr;gap:12px}.string-card{border:1px solid var(--line);border-radius:14px;padding:13px 16px;background:#1c201899;display:flex;align-items:center;justify-content:space-between;gap:8px}.string-card small{font-size:10px;color:var(--dim-2);display:block;margin-bottom:6px}.string-card strong{font-size:13px;font-weight:400;color:var(--dim)}.string-card .match-note{font:24px Georgia,serif;color:var(--dim-2)}.string-card.active{border-color:#bba16b80;background:#ddbd8309}.string-card.active .match-note{color:var(--accent)}.string-card.in-tune{border-color:#a6d59566}.string-card.in-tune .match-note{color:var(--ok)}.tuner-controls{display:flex;flex-direction:column;gap:12px}.big{width:100%;border-radius:13px;border:1px solid var(--accent);background:var(--accent);color:#282718;padding:15px;font-size:14px;font-weight:600;letter-spacing:2px}.big.stop{background:#ddbd8314;color:var(--accent);border-color:#ddbd8366}.levelRow{display:flex;align-items:center;gap:10px;font-size:10px;color:var(--dim-2);min-height:14px}.levelBar{height:3px;background:#30362a;flex:1;overflow:hidden;border-radius:5px}.levelFill{height:100%;width:0;background:var(--ok);transition:width .07s}.control-card{border:1px solid var(--line);border-radius:18px;padding:22px;background:#1b20177a}.control-card h3{font-size:15px;font-weight:500;letter-spacing:1px;margin:0 0 8px}.control-card p{font-size:12px;line-height:1.8;color:var(--dim-2);margin:0 0 18px}.label{display:flex;justify-content:space-between;gap:8px;color:var(--dim);font-size:12px;margin:0 0 12px}.label em{font-style:normal;color:var(--dim-2);font-size:10px}.seg{display:flex;gap:6px}.seg button,.refBtn{flex:1;min-width:0;border:1px solid var(--line);background:#181c14;border-radius:9px;padding:11px 4px;color:var(--dim);font-size:12px}.seg button.on{border-color:#bda16d80;background:#ddbd8314;color:var(--accent)}.refBtn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px}.refBtn .n{font-size:13px;color:var(--text)}.refBtn .f{font-size:11px;color:var(--dim-2);font-variant-numeric:tabular-nums}.refBtn.playing{border-color:var(--accent);background:#ddbd8314}.settings-page{display:flex;flex-direction:column;gap:20px}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;min-height:0}.settings-grid .control-card{display:flex;flex-direction:column;justify-content:center;min-height:0}.settings-grid .seg{margin-top:auto}.settings-grid .label{margin-bottom:12px}.settings-note{color:var(--dim-2);font-size:11px;line-height:1.8;margin:0}.practice-page{display:flex;flex-direction:column;justify-content:space-between;gap:16px}.practice-page .control-card{padding:20px}.scaleBtn{width:100%;padding:17px 9px;border:1px solid #ddbd8366;border-radius:11px;background:#ddbd8314;color:var(--accent);font-size:14px;letter-spacing:1px}.scaleBtn.playing{background:#ddbd8328}.tempoRow{display:flex;align-items:center;gap:16px;margin:20px 0}.bpmRange{flex:1;min-width:0;accent-color:var(--accent);height:5px}.beatDots{display:flex;gap:9px}.beatDots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.beatDots i.on{background:var(--ok);box-shadow:0 0 12px #a6d59566}.beatDots i.on.accent{background:var(--accent)}.metroSeg #metroBtn.playing{border-color:var(--accent);color:var(--accent)}.timer-display{font:42px Georgia,serif;color:var(--accent);font-variant-numeric:tabular-nums;margin:5px 0 15px;letter-spacing:2px}.help-page{display:flex;flex-direction:column;gap:20px;max-width:940px;width:100%;margin:0 auto}.help-paper{min-height:0;flex:1;padding:clamp(16px,3vw,38px);border:1px solid var(--line);background:#1b201780;border-radius:20px;display:flex;flex-direction:column;justify-content:center}.help-paper h3{font-size:22px;font-weight:400;margin:0 0 18px;color:var(--accent)}.help-paper p,.help-paper li{line-height:1.9;color:var(--dim);font-size:13px}.help-paper ul{padding-left:20px;margin:0}.help-paper li{margin:9px 0}.help-pagination{display:flex;align-items:center;justify-content:space-between;color:var(--dim-2);font-size:11px;gap:8px}.help-pagination button{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:9px 18px}.kv{font-size:11px;white-space:pre-wrap;overflow:auto;max-height:200px;line-height:1.7;color:var(--dim);user-select:text}.banner{position:fixed;top:calc(16px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:100;width:min(540px,92vw);padding:15px 20px;border-radius:13px;border:1px solid #ddbd8377;background:#292b20f5;box-shadow:0 12px 40px #0006;display:flex;gap:10px;font-size:13px;line-height:1.7;cursor:pointer}.banner.err{border-color:#de8c7a;color:#f4bcad}.banner .mini{font-size:11px;color:var(--dim);margin-top:4px}footer{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--dim-2);letter-spacing:.5px;border-top:1px solid var(--line);padding-top:12px}.footer-dot{display:inline-block;width:5px;height:5px;background:var(--accent);border-radius:50%;margin-right:6px}.immersive .brand small{display:none}@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(min-width:1100px){.tuner-page{padding:8px 24px 5px}.boardWrap{padding-inline:30px}.stage{gap:38px}.string-card{padding:17px 20px}.tuner-controls{gap:16px}}
+@media(max-width:760px){.wrap{padding:calc(14px + env(safe-area-inset-top)) 18px calc(10px + env(safe-area-inset-bottom));gap:14px;grid-template-rows:58px minmax(0,1fr) 26px}header{gap:12px;padding-bottom:14px}.brand{gap:9px}.brand h1{font-size:17px;letter-spacing:2px}.brand small{font-size:8px}.tabs button{padding:8px 13px}.fullscreen{padding:9px}.fullscreen span{display:none}.stage{gap:14px;grid-template-columns:minmax(200px,.85fr) minmax(0,1.15fr)}.boardWrap{padding:10px 8px;grid-template-rows:44px minmax(0,1fr) 22px}.panel-heading{padding:0 5px}.panel-heading h2{font-size:14px}.eyebrow{font-size:8px;letter-spacing:1.5px}.pill{padding:4px 6px;font-size:9px}.tuner-page{gap:12px}.page-title h2{font-size:20px}.noteName{font-size:90px}.string-card{padding:12px 10px}.string-card strong{font-size:11px}.string-card .match-note{font-size:20px}.settings-grid{gap:14px}.control-card{padding:18px}.help-paper li{margin:6px 0}.help-paper p,.help-paper li{font-size:12px}.practice-page .control-card{padding:14px}}
+@media(max-width:540px){.wrap{grid-template-rows:51px minmax(0,1fr) 54px;gap:10px;padding-inline:12px}header{padding-bottom:10px}.brand h1{font-size:17px}.tabs{position:absolute;bottom:calc(12px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:10;justify-content:space-around;padding:4px;background:#1c2118;border-color:var(--line)}.tabs button{flex:1;font-size:12px;padding:10px 6px}footer{border:0;padding:0;align-items:start;font-size:9px}footer .footer-right{display:none}.stage{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:10px}.boardWrap{border-radius:16px;padding:8px 3px;grid-template-rows:40px minmax(0,1fr) 28px}.panel-heading{padding-inline:6px}.boardWrap .eyebrow{display:none}.boardWrap h2{font-size:13px}.boardWrap .pill{font-size:9px;padding:4px 5px}.hint{font-size:9px;line-height:1.6;white-space:normal;padding-inline:4px}.page-title h2{font-size:17px;letter-spacing:1px}.status{font-size:9px}.page-title{flex-wrap:wrap;gap:6px}.readout{gap:9px}.noteName{font-size:clamp(54px,15vw,82px);letter-spacing:-3px}.jp{font-size:17px;min-width:29px;height:38px;border-radius:8px}.cents{font-size:23px}.freqLine{font-size:10px;min-height:34px;line-height:1.7;margin-top:8px}.meter-wrap{width:90%;margin-top:22px}.meter-labels{font-size:9px}.tuneMeter{height:25px}.tuneMeter::after{height:34px}.string-matches{grid-template-columns:1fr;gap:7px}.string-card{padding:10px 11px;border-radius:10px}.string-card small{font-size:9px;margin-bottom:4px}.string-card strong{font-size:10px}.string-card .match-note{font-size:21px}.tuner-page{gap:10px}.tuner-controls{gap:9px}.big{padding:13px 3px;font-size:12px;letter-spacing:1px;border-radius:10px}.seg{gap:4px}.seg button{font-size:10px;padding:10px 2px;border-radius:7px}.levelRow{gap:5px;font-size:9px}.settings-page{gap:14px}.settings-grid{gap:10px}.settings-grid .control-card{padding:14px 12px;border-radius:14px}.control-card h3{font-size:13px;margin-bottom:6px}.control-card p{font-size:10px;line-height:1.7;margin-bottom:12px}.label{font-size:11px;margin-bottom:9px}.label em{font-size:9px}.settings-grid .label{flex-direction:column;gap:4px}.settings-note{font-size:10px}.refBtn .n{font-size:11px}.refBtn .f{font-size:10px}.practice-page{gap:10px;justify-content:space-between}.practice-page .control-card{padding:13px 10px;border-radius:13px}.practice-page .control-card p{display:none}.scaleBtn{font-size:11px;padding:14px 4px;letter-spacing:0}.tempoRow{gap:8px;margin:18px 0}.beatDots{gap:5px}.beatDots i{width:6px;height:6px}.metroSeg{flex-wrap:wrap}.metroSeg #metroBtn{flex:1 0 100%;margin-bottom:3px}.timer-display{font-size:31px;margin-bottom:10px}.help-paper{padding:18px}.help-paper h3{font-size:19px;margin-bottom:12px}.help-paper li{line-height:1.8;margin:8px 0}.help-pagination button{padding:9px 13px}.kv{max-height:230px;font-size:10px}}
+@media(max-height:700px){.wrap{gap:10px;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:calc(8px + env(safe-area-inset-bottom));grid-template-rows:48px minmax(0,1fr) 22px}header{padding-bottom:10px}.tuner-page{gap:8px}.tuner-page .page-title .eyebrow{display:none}.tuning-core{padding:0}.noteName{font-size:80px}.cents{font-size:22px;min-height:27px;margin-top:0}.freqLine{margin-top:4px}.meter-wrap{margin-top:15px}.tuneMeter{height:22px}.tuneMeter::after{height:30px}.string-card{padding:9px 12px}.string-card small{margin-bottom:3px}.big{padding:12px}.practice-page .control-card{padding:12px}.practice-page .control-card p{display:none}.scaleBtn{padding:12px 5px}.tempoRow{margin:14px 0}.timer-display{font-size:30px;margin:0 0 10px}.settings-grid .control-card{padding:14px}.settings-grid .control-card p{margin-bottom:8px}.help-paper p,.help-paper li{font-size:11px;line-height:1.7}.help-paper li{margin:5px 0}}
+@media(max-width:540px) and (max-height:700px){.wrap{grid-template-rows:42px minmax(0,1fr) 49px}.brand small{display:none}.noteName{font-size:58px}.string-card{padding:8px}.string-card .match-note{font-size:18px}.cents{font-size:20px}.tuner-controls{gap:7px}.meter-wrap{margin-top:14px}.page-title h2{font-size:15px}.settings-page{gap:10px}.control-card p{font-size:9px}.settings-grid .control-card{padding:12px}.help-paper{padding:14px}}
+@media(max-height:470px) and (min-width:541px){.wrap{grid-template-rows:40px minmax(0,1fr) 16px;gap:7px;padding:8px 20px}.brand small,.tuner-page .page-title,.freqLine,.hint{display:none}.stage{grid-template-columns:1fr 1.7fr;gap:18px}.boardWrap{grid-template-rows:25px minmax(0,1fr);padding:4px 8px}.tuner-page{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr auto;gap:10px}.tuning-core{grid-row:1/3}.noteName{font-size:70px}.string-matches{grid-template-columns:1fr;align-self:end}.tuner-controls{justify-content:end}.meter-wrap{margin-top:15px}.settings-grid{gap:10px}.settings-grid .control-card{padding:10px}.settings-grid .control-card p{display:none}.settings-note{display:none}.settings-page{gap:8px}.practice-page{display:grid;grid-template-columns:1fr 1fr;gap:10px}.practice-page .page-title{display:none}.practice-page .control-card:last-child{grid-column:1/3}.practice-page .timer-display{font-size:22px}.help-paper{padding:12px}.help-paper h3{font-size:16px;margin-bottom:6px}.help-paper li{margin:2px 0}.help-pagination button{padding:5px 12px}.help-page{gap:8px}}
 
-  /* 横幅 = 从顶部浮出的通知条：position:fixed 不占布局，
-     否则一出现就把调音面板往下挤（用户明确要求不能挤占面板空间） */
-  .banner{
-    position:fixed;left:0;right:0;top:0;z-index:60;
-    border-radius:0 0 13px 13px;border-top:none;
-    padding:12px 14px;font-size:13.5px;line-height:1.5;
-    display:flex;gap:9px;align-items:flex-start;
-    box-shadow:0 10px 26px rgba(0,0,0,.55);
-    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+/* On phones, the instrument is the main surface. Readings and controls stay compact. */
+@media (min-width:541px) and (min-height:471px) {
+  .tuner-page .noteName { font-size:clamp(60px,7vw,96px); }
+  .tuner-page .cents { min-height:29px; font-size:25px; margin-top:0; }
+  .tuner-page .meter-wrap { margin-top:16px; }
+  .tuner-page .tuneMeter { height:26px; }
+  .tuner-page .tuneMeter::after { height:36px; }
+  .tuner-page .freqLine { margin-top:8px; }
+}
+@media (max-width:540px) {
+  .settings-grid { grid-template-columns:1fr; }
+  .settings-grid .control-card:last-child { display:none; }
+  .settings-grid .control-card p { font-size:11px; margin-bottom:10px; }
+  .settings-grid .label { flex-direction:row; align-items:center; }
+  .settings-grid .seg button { font-size:12px; min-height:38px; }
+  .settings-grid .refBtn { padding:12px 8px; gap:5px; }
+  .practice-page { justify-content:flex-start; gap:18px; }
+  .practice-page .control-card { padding:20px; }
+  .practice-page .control-card p { display:block; font-size:12px; }
+  .practice-page .seg button { font-size:12px; }
+  .practice-page .metroSeg { flex-wrap:nowrap; }
+  .practice-page .metroSeg #metroBtn { flex:1.35; margin:0; }
+  .practice-page .scaleBtn { padding:16px 5px; font-size:14px; }
+  .practice-page .timer-display { font-size:40px; }
+  .stage:has(#page-tuner:not([hidden])) {
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:83px minmax(0,1fr) 43px 68px;
+    gap:8px;
   }
-  .banner .ico{flex:0 0 auto;font-size:15px;line-height:1.35;}
-  .banner.err{background:#3a1f22;border:1px solid rgba(239,68,68,.6);color:#ffd7d7;}
-  .banner.warn{background:#3a2f18;border:1px solid rgba(245,158,11,.55);color:#ffe9c2;}
-  .banner.info{background:#123330;border:1px solid rgba(45,212,191,.5);color:#c8fff6;}
-  .banner.ok{background:#123330;border:1px solid rgba(45,212,191,.5);color:#c8fff6;}
-  .banner b{color:#fff;}
-  .banner .mini{margin-top:7px;font-size:12.5px;opacity:.9;}
-  .hide{display:none !important;}
-
-  /* ---------- 读数条 ---------- */
-  .readout{
-    display:flex;align-items:center;gap:12px;
-    background:linear-gradient(180deg,var(--panel-2),var(--panel));
-    border:1px solid var(--line);border-radius:14px;padding:8px 12px;
+  .tuner-page:not([hidden]) { display:contents; }
+  .tuner-page .page-title { display:none; }
+  .stage:has(#page-tuner:not([hidden])) .boardWrap {
+    grid-row:2; grid-column:1; padding:7px 8px 4px;
+    grid-template-rows:24px minmax(0,1fr) 17px;
+    background:linear-gradient(155deg,#242b1d88,#151912);
   }
-  /* 读数 + 开始按钮 并排一行，把纵向空间让给指板面板 */
-  .topRow{display:flex;gap:8px;align-items:stretch;margin-bottom:6px;}
-  .topRow .readout{flex:1;min-width:0;display:flex;align-items:center;gap:10px;}
-  .noteName{
-    font-size:32px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;
-    min-width:2.1ch;text-align:center;color:var(--dim-2);transition:color .15s ease;
+  .stage:has(#page-tuner:not([hidden])) .panel-heading h2 { font-size:12px; margin:0; }
+  .stage:has(#page-tuner:not([hidden])) .hint { font-size:9px; white-space:nowrap; }
+  .tuner-page .tuning-core {
+    grid-row:1; grid-column:1; display:grid;
+    grid-template-columns:1fr 1fr; grid-template-rows:30px 18px 25px;
+    column-gap:16px; row-gap:3px; padding:0 5px;
+    background:none; align-items:center;
   }
-  .noteName.ok{color:var(--ok);text-shadow:0 0 22px rgba(34,197,94,.45);}
-  .noteName.live{color:var(--text);}
-  .jp{
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    min-width:38px;height:38px;border-radius:10px;background:#0d1620;border:1px solid var(--line);
-    font-size:18px;font-weight:700;color:var(--dim-2);line-height:1;
-  }
-  .jp.ok{color:var(--ok);border-color:rgba(34,197,94,.5);}
-  .jp .dt{font-size:9px;line-height:1;letter-spacing:1px;color:var(--dim-2);}
-  .mid{flex:1;min-width:0;}
-  .cents{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.05;color:var(--dim);flex:1;text-align:right;}
-  .cents.ok{color:var(--ok);} .cents.low{color:var(--flat);} .cents.high{color:var(--sharp);}
-  .cents .u{font-size:11.5px;color:var(--dim-2);font-weight:400;margin-left:3px;}
-  /* 频率行独立占满宽度，和开始按钮同宽，不会被挤到截断 */
-  .freqLine{font-size:11.5px;color:var(--dim-2);font-variant-numeric:tabular-nums;margin:-4px 4px 5px;
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .tuneMeter{position:relative;height:8px;margin:0 4px 10px;border-radius:5px;
-             background:linear-gradient(90deg,rgba(96,165,250,.55),rgba(34,197,94,.65) 50%,rgba(251,146,60,.55));}
-  .tuneMeter::after{content:"";position:absolute;left:50%;top:-3px;width:2px;height:14px;
-                    background:var(--text);opacity:.8;transform:translateX(-50%);}
-  .tuneMarker{position:absolute;top:50%;width:13px;height:13px;border:2px solid #fff;border-radius:50%;
-              background:var(--flat);box-shadow:0 1px 7px rgba(0,0,0,.65);transform:translate(-50%,-50%);z-index:1;}
-  .tuneMarker.ok{background:var(--ok);}.tuneMarker.high{background:var(--sharp);}
-
-  /* ---------- 开始按钮（与读数并排的窄条） ---------- */
-  .big{
-    flex:0 0 86px;padding:8px 4px;border-radius:14px;border:1px solid rgba(45,212,191,.5);
-    background:linear-gradient(180deg,rgba(45,212,191,.22),rgba(45,212,191,.09));
-    color:#eafffb;font-size:15px;font-weight:650;font-family:inherit;letter-spacing:.5px;
-    line-height:1.25;word-break:break-all;
-    -webkit-appearance:none;appearance:none;cursor:pointer;transition:transform .06s;
-  }
-  .big:active{transform:scale(.97);}
-  .big.stop{background:linear-gradient(180deg,rgba(239,68,68,.22),rgba(239,68,68,.08));border-color:rgba(239,68,68,.45);color:#ffe4e4;}
-  .big[disabled]{opacity:.5;}
-
-  /* ---------- 指板面板 ---------- */
-  .boardWrap{
-    position:relative;background:linear-gradient(180deg,#101923,#0c141d);
-    border:1px solid var(--line);border-radius:var(--radius);padding:6px 4px;margin-bottom:10px;
-    overflow:hidden;
-  }
-  svg#board{display:block;width:100%;height:auto;}
-  .hint{
-    position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:11.5px;
-    color:var(--dim-2);pointer-events:none;
-  }
-
-  /* ---------- 控件 ---------- */
-  .label{font-size:12px;color:var(--dim-2);margin:14px 4px 7px;letter-spacing:.4px;display:flex;justify-content:space-between;}
-  .seg{display:flex;gap:7px;}
-  .seg button,.refBtn{
-    font-family:inherit;color:var(--text);cursor:pointer;background:var(--panel);
-    border:1px solid var(--line);border-radius:11px;padding:11px 6px;font-size:14px;flex:1;
-    transition:background .15s,border-color .15s,transform .06s;-webkit-appearance:none;appearance:none;
-  }
-  .seg button:active,.refBtn:active{transform:scale(.985);}
-  button:focus-visible,input:focus-visible,svg [role="button"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
-  .seg button.on{background:rgba(45,212,191,.16);border-color:rgba(45,212,191,.55);color:#c9fff7;font-weight:600;}
-  #a4Seg button{padding:9px 2px;font-size:13px;font-variant-numeric:tabular-nums;}
-  #a4Seg button.on{background:rgba(167,139,250,.18);border-color:rgba(167,139,250,.6);color:#ddd6fe;font-weight:600;}
-  .label em{font-style:normal;color:var(--dim-2);opacity:.85;}
-  #keySeg button{flex:1;padding:10px 2px;font-size:13.5px;font-variant-numeric:tabular-nums;}
-  #keySeg button.on{background:rgba(250,204,21,.16);border-color:rgba(250,204,21,.55);color:#fde68a;}
-  .refBtn{display:flex;flex-direction:column;gap:3px;align-items:center;padding:10px 6px;}
-  .refBtn .n{font-size:14px;font-weight:600;}
-  .refBtn .f{font-size:10.5px;color:var(--dim-2);font-variant-numeric:tabular-nums;}
-  .refBtn.playing{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.55);}
-  .refBtn.playing .n{color:#ffd894;}
-
-  .levelRow{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--dim-2);margin:10px 2px 0;}
-  .levelBar{flex:1;height:5px;border-radius:4px;background:#0c141d;border:1px solid var(--line);overflow:hidden;}
-  .levelFill{height:100%;width:0%;background:linear-gradient(90deg,#2dd4bf,#22c55e 70%,#f59e0b);transition:width .06s linear;}
-
-  /* ---------- 音阶练习 ---------- */
-  .scaleBtn{
-    width:100%;margin-top:12px;padding:14px 10px;border-radius:14px;
-    border:1px solid rgba(129,140,248,.5);
-    background:linear-gradient(180deg,rgba(129,140,248,.20),rgba(129,140,248,.08));
-    color:#e8eaff;font-size:15px;font-weight:600;font-family:inherit;letter-spacing:.3px;
-    -webkit-appearance:none;appearance:none;cursor:pointer;transition:transform .06s,background .15s;
-  }
-  .scaleBtn:active{transform:scale(.99);}
-  .scaleBtn.playing{
-    background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(245,158,11,.08));
-    border-color:rgba(245,158,11,.6);color:#ffe2ac;
-  }
-
-  /* ---------- 速度 / 节拍器 ---------- */
-  .tempoRow{display:flex;align-items:center;gap:12px;margin:0 4px 8px;}
-  .bpmRange{
-    flex:1;height:5px;border-radius:3px;-webkit-appearance:none;appearance:none;
-    background:linear-gradient(90deg,#2dd4bf,#818cf8);outline:none;
-  }
-  .bpmRange::-webkit-slider-thumb{
-    -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
-    background:#e8eef6;border:3px solid #0a0e13;
-    box-shadow:0 0 0 1px rgba(45,212,191,.9),0 2px 8px rgba(0,0,0,.6);
-  }
-  .bpmRange::-moz-range-thumb{
-    width:22px;height:22px;border-radius:50%;background:#e8eef6;
-    border:3px solid #0a0e13;box-shadow:0 0 0 1px rgba(45,212,191,.9);
-  }
-  .beatDots{display:flex;gap:6px;flex:0 0 auto;}
-  .beatDots i{width:10px;height:10px;border-radius:50%;background:#243141;transition:background .08s,transform .08s;}
-  .beatDots i.on{background:#2dd4bf;transform:scale(1.4);}
-  .beatDots i.on.accent{background:#facc15;}
-  #timerSeg button{padding:10px 4px;font-size:13.5px;font-variant-numeric:tabular-nums;}
-  #timerSeg button.on{background:rgba(248,113,113,.18);border-color:rgba(248,113,113,.6);color:#fecaca;font-weight:600;}
-  #timerSeg button:disabled{opacity:.4;}
-  .metroSeg button{font-size:13px;padding:10px 4px;}
-  .metroSeg #metroBtn{flex:1.35;font-weight:600;}
-  .metroSeg #metroBtn.playing{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.55);color:#ffd894;}
-
-  details{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px 13px;font-size:13.5px;line-height:1.65;color:var(--dim);}
-  details+details{margin-top:10px;}
-  summary{cursor:pointer;color:var(--text);font-weight:600;font-size:14px;list-style:none;}
-  summary::-webkit-details-marker{display:none;}
-  summary::before{content:"▸ ";color:var(--accent);}
-  details[open] summary::before{content:"▾ ";}
-  details p{margin:9px 0 0;}
-  details ul{margin:8px 0 0;padding-left:19px;}
-  details li{margin:4px 0;}
-  details code{background:#0b131c;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px;-webkit-user-select:text;user-select:text;word-break:break-all;}
-  .kv{font-size:12px;color:var(--dim-2);-webkit-user-select:text;user-select:text;word-break:break-all;line-height:1.7;margin-top:8px;white-space:pre-wrap;}
-  footer{text-align:center;font-size:11.5px;color:#4d5d70;margin-top:18px;}
-  @media (max-width:380px){
-    .topRow{flex-wrap:wrap;}
-    .topRow .readout{flex-basis:100%;min-height:60px;}
-    .topRow .big{flex:1 0 100%;min-height:42px;word-break:normal;}
-    header .sub{font-size:11px;}
-  }
+  .tuner-page .readout { grid-column:1; grid-row:1 / 3; justify-content:flex-start; gap:12px; }
+  .tuner-page .noteName { font-size:52px; line-height:1; letter-spacing:-2px; }
+  .tuner-page .jp { height:32px; min-width:28px; font-size:17px; }
+  .tuner-page .cents { grid-column:2; grid-row:1; font-size:23px; margin:0; min-height:0; text-align:right; }
+  .tuner-page .freqLine { grid-column:2; grid-row:2; font-size:9px; min-height:0; margin:0; line-height:1.3; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tuner-page .meter-wrap { grid-column:1 / 3; grid-row:3; margin:0; width:100%; position:relative; }
+  .tuner-page .tuneMeter { height:13px; margin:0 38px; }
+  .tuner-page .tuneMeter::after { height:20px; }
+  .tuner-page .tuneMarker { top:-5px; width:9px; height:9px; }
+  .tuner-page .meter-labels { font-size:8px; margin:3px 38px 0; line-height:1; }
+  .tuner-page .string-matches { grid-row:3; grid-column:1; grid-template-columns:1fr 1fr; gap:8px; }
+  .tuner-page .string-card { padding:6px 10px; border-radius:9px; }
+  .tuner-page .string-card small { font-size:8px; margin-bottom:2px; }
+  .tuner-page .string-card strong { font-size:9px; }
+  .tuner-page .string-card .match-note { font-size:20px; }
+  .tuner-page .tuner-controls { grid-row:4; grid-column:1; display:grid; grid-template-columns:1.2fr 1fr; grid-template-rows:42px 13px; gap:8px 10px; }
+  .tuner-page .big { padding:9px 3px; height:42px; border-radius:9px; }
+  .tuner-page .seg button { padding:6px 2px; font-size:10px; }
+  .tuner-page .levelRow { grid-column:1 / 3; }
+  footer { visibility:hidden; }
+}
+@media (max-width:540px) and (max-height:700px) {
+  .settings-grid .control-card { padding:12px; }
+  .settings-grid .control-card p { font-size:10px; margin-bottom:8px; }
+  .practice-page { gap:12px; }
+  .practice-page .control-card { padding:14px; }
+  .practice-page .control-card p { display:none; }
+  .practice-page .timer-display { font-size:32px; }
+  .stage:has(#page-tuner:not([hidden])) { grid-template-rows:73px minmax(0,1fr) 39px 60px; gap:6px; }
+  .tuner-page .tuning-core { grid-template-rows:26px 15px 23px; }
+  .tuner-page .noteName { font-size:45px; }
+  .tuner-page .tuner-controls { grid-template-rows:38px 11px; gap:6px 9px; }
+  .tuner-page .big { height:38px; }
+}
 </style>
 </head>
 <body>
+
 <div class="wrap">
-
   <header>
-    <h1>二胡音准练习</h1>
-    <div class="sub" id="hdrSub">内弦 D4 · 外弦 A4</div>
+    <div class="brand"><div class="brand-mark" aria-hidden="true">弦</div><div><h1>弦外之音</h1><small>ERHU · TUNING STUDIO</small></div></div>
+    <nav class="tabs" role="tablist" aria-label="功能分页">
+      <button id="tab-tuner" role="tab" aria-controls="page-tuner" aria-selected="true" data-page="tuner">调音</button>
+      <button id="tab-practice" role="tab" aria-controls="page-practice" aria-selected="false" tabindex="-1" data-page="practice">练习</button>
+      <button id="tab-settings" role="tab" aria-controls="page-settings" aria-selected="false" tabindex="-1" data-page="settings">设置</button>
+      <button id="tab-help" role="tab" aria-controls="page-help" aria-selected="false" tabindex="-1" data-page="help">指南</button>
+    </nav>
+    <button class="fullscreen" id="fullscreenBtn" aria-label="进入全屏" aria-pressed="false" title="全屏 · F"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4"/></svg><span id="fullscreenText">全屏</span></button>
   </header>
-
-  <div id="banner" class="banner hide"></div>
-
-  <!-- 读数 + 开始按钮 并排 -->
-  <div class="topRow">
-    <div class="readout">
-      <div id="noteName" class="noteName">--</div>
-      <div id="jpBox" class="jp">–</div>
-      <div id="cents" class="cents">--<span class="u">音分</span></div>
-    </div>
-    <button class="big" id="startBtn">开始调音</button>
-  </div>
-  <div id="freqLine" class="freqLine">点击「开始调音」，允许麦克风后拉响琴弦</div>
-  <div class="tuneMeter" aria-hidden="true"><div id="tuneMarker" class="tuneMarker hide"></div></div>
-
-  <!-- 指板面板 -->
-  <div class="boardWrap">
-    <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 566" preserveAspectRatio="xMidYMid meet"></svg>
-    <div class="hint" id="boardHint">点任意音位可发声 · 箭头指到哪儿就是哪个音</div>
-  </div>
-
-  <div class="levelRow">
-    <span>输入</span>
-    <div class="levelBar"><div id="levelFill" class="levelFill"></div></div>
-    <span id="levelTxt">静音</span>
-  </div>
-
-  <div class="label"><span>检测范围</span></div>
-  <div class="seg" id="modeSeg">
-    <button data-mode="auto" class="on">两根弦</button>
-    <button data-mode="D">只看内弦</button>
-    <button data-mode="A">只看外弦</button>
-  </div>
-
-  <!-- 音阶练习：来回往复播放当前调的音阶，箭头逐个落在对应音位上 -->
-  <button class="scaleBtn" id="scaleBtn">▶ 音阶练习 · 上下行来回</button>
-
-  <!-- 速度 / 节拍器：音阶一音一拍，跟节拍器自动对齐 -->
-  <div class="label"><span>速度（节拍器与音阶共用）</span><span id="bpmTxt">80 BPM</span></div>
-  <div class="tempoRow">
-    <input type="range" id="bpmRange" class="bpmRange" min="0" max="8" step="1" value="2"
-           aria-label="速度 BPM">
-    <div class="beatDots" id="beatDots"><i></i><i></i><i></i><i></i></div>
-  </div>
-  <div class="seg metroSeg" id="metroSeg">
-    <button id="metroBtn">节拍器 关</button>
-    <button data-rate="2">2拍/音</button>
-    <button data-rate="1" class="on">1拍/音</button>
-    <button data-rate="0.5">½拍/音</button>
-  </div>
-
-  <!-- 练习计时：到点响三声。用来分段练（比如每段 3 分钟） -->
-  <div class="label"><span>练习计时<em id="timerHint">（到点响三声）</em></span></div>
-  <div class="seg timerSeg" id="timerSeg">
-    <button data-min="1">1 分钟</button>
-    <button data-min="3">3 分钟</button>
-    <button data-min="5">5 分钟</button>
-  </div>
-
-  <!-- 调 -->
-  <div class="label"><span>调（决定面板上的简谱数字）</span><span id="chordTxt">15 弦</span></div>
-  <div class="seg" id="keySeg">
-    <button data-key="D" class="on">D</button>
-    <button data-key="G">G</button>
-    <button data-key="F">F</button>
-    <button data-key="C">C</button>
-    <button data-key="A">A</button>
-    <button data-key="Bb">bB</button>
-  </div>
-
-  <!-- 参考音 -->
-  <div class="label"><span>参考音（不插麦克风也能用）</span></div>
-  <div class="seg">
-    <button class="refBtn" id="refD"><span class="n">内弦 D</span><span class="f" id="refDFreq">293.66 Hz</span></button>
-    <button class="refBtn" id="refA"><span class="n">外弦 A</span><span class="f" id="refAFreq">440.00 Hz</span></button>
-  </div>
-
-  <!-- 音准基准：跟着录音/乐团练时必须对得上，否则整首都显示偏高或偏低 -->
-  <div class="label"><span>音准基准 A4<em id="a4Hint">（跟录音练时按录音改·国内常用 442）</em></span></div>
-  <div class="seg" id="a4Seg">
-    <button data-a4="440" class="on">440</button>
-    <button data-a4="441">441</button>
-    <button data-a4="442">442</button>
-    <button data-a4="443">443</button>
-    <button data-a4="444">444</button>
-  </div>
-
-  <details open>
-    <summary>怎么用（30 秒上手）</summary>
-    <ul>
-      <li>手机离琴 20–40 cm，别贴在琴筒上（会爆音）。</li>
-      <li><b style="color:#e8eef6">点面板上任意一个音位圆圈，喇叭就会把那个音发出来</b>——听音找把位、对音准都靠它，不需要麦克风权限。再点一次停止。</li>
-      <li><b style="color:#e8eef6">「音阶练习」</b>会从内弦空弦开始，把<b>低 2 个八度</b>的音阶上行、下行来回放，箭头逐个落在对应音位上。跟着箭头练音准，或者先听熟再自己拉。换个调，音阶的音也跟着换。</li>
-      <li><b style="color:#e8eef6">速度</b>在下面调（60–140 BPM）。音阶是<b>一音一拍</b>，所以调速度就是调音阶快慢；打开节拍器，咔哒声会和音阶的每个音自动对齐——跟着咔哒练，节奏和音准一起抓。</li>
-      <li>拉响一个音，面板上会出现<b style="color:#e8eef6">箭头</b>。箭头压住哪个音位圆圈，就说明你拉的是那个音。</li>
-      <li>箭头正好停在圆圈中心 → 音准；偏上偏下都会有偏移量，<b style="color:#22c55e">变绿</b>即进入 ±5 音分。</li>
-      <li>先练一个把位，每个把位的音阶都稳了再串起来练换把。</li>
-      <li>两弦共振串音时，用「只看内弦 / 只看外弦」锁定，识别更稳。</li>
-      <li>拉弓要平稳持续，短促点一下就抬弓会让读数跳。</li>
-    </ul>
-  </details>
-
-  <details>
-    <summary>面板说明（把位 / 简谱怎么看）</summary>
-    <p>面板按<b>手指位置</b>排列：两根弦的空弦都在最上方，往下走音越来越高。</p>
-    <p><b>间距按半音等比</b>：全音的间距是半音的两倍，所以 <b>3→4</b>、<b>7→1̇</b> 这类半音会明显挨得更近，旁边有小括线标出来——这就是实际演奏时这两根手指要并拢的位置。一眼就能看出哪些音要并、哪些要分开。</p>
-    <p><b>两根弦的半音位置不一样</b>，所以两列不是完全对齐的：内弦的半音对在 3→4 和 7→1，外弦的在 7→1̇ 和 3̇→4̇。原因是——大调音阶从主音往上数 6 级是大七度（11 个半音），从属音往上数 6 级是小七度（10 个半音），指距本来就不同。面板按真实指距画，不硬对齐。</p>
-    <p><b>点音位圆圈可以听音</b>：面板上每个圆圈都能点，点了就用喇叭发出那个音的实际频率，方便你按面板找把位、或直接跟着唱。播放时圆圈变琥珀色，提示条会显示这个音的音名和频率。</p>
-    <p><b>音阶练习</b>走的是内弦这条线（低 2 个八度，15 个音），上行到顶再折返下行，来回往复。它会按当前调的音阶来放——1=D 是 D 大调音阶，1=G 放的就是 G 大调的那串音（第 7 个音会是 C 而不是 C#）。</p>
-    <p>三个把位以「1」和「5」为起点划分，每 5 个音位一个把位：</p>
-    <ul>
-      <li><b style="color:#5eead4">第一把位</b>：内弦 1–5（D4–A4）/ 外弦 5–2̇（A4–E5）</li>
-      <li><b style="color:#a5b4fc">第二把位</b>：内弦 6–3̇（B4–F#5）/ 外弦 3̇–7̇（F#5–C#6）</li>
-      <li><b style="color:#f0abfc">第三把位</b>：内弦 4̇–1̇̇（G5–D6）/ 外弦 1̇̇–5̇̇（D6–A6）</li>
-    </ul>
-    <p>数字上方的点表示高八度，下方的点表示低八度。切到 1=G 时内弦空弦就变成带下加点的「5̣」——这就是 52 弦的来历。</p>
-  </details>
-
-  <details>
-    <summary>点了音位没声音？（iPhone 最常见）</summary>
-    <ul>
-      <li><b>先看 iPhone 左侧那个静音拨片。</b>这是头号原因——iOS 默认把网页音频归到"环境"类别，静音开关一开就完全没有声音。本页已经主动把音频会话切成"播放"类别来绕开它，但个别系统版本仍会被拦。</li>
-      <li><b>再点一次音位。</b>Safari 规定音频必须由用户手势解锁：页面在你第一次触摸时会尝试解锁，如果那一下没成功，第二次点就会响。</li>
-      <li>检查是不是<b>插着耳机或连着蓝牙音箱</b>，声音跑到那边去了。</li>
-      <li>用音量键确认<b>媒体音量</b>不是 0（注意不是铃声音量）。</li>
-      <li>还是不行：把下面的「诊断信息」展开，看<b>音频上下文</b>是不是 running、<b>音频会话类别</b>是什么，截图发我最快。</li>
-    </ul>
-  </details>
-
-  <details>
-    <summary>打不开麦克风？常见原因</summary>
-    <p><b>iPhone 必须满足两个条件才能用麦克风：HTTPS 网页 + 你亲手点「允许」。</b></p>
-    <ul>
-      <li>页面不是 <code>https://</code> 开头 → Safari 会直接拒绝，没有任何弹窗。请用 HTTPS 地址打开。</li>
-      <li>点过「不允许」→ 到 <b>设置 → Safari 浏览器 → 麦克风</b> 改成「允许」，或点地址栏左侧 <b>aA → 网站设置 → 麦克风 → 允许</b>，然后刷新页面。</li>
-      <li>用微信 / QQ / 抖音内置浏览器打开 → 右上角「···」→ 在 Safari 中打开。</li>
-      <li>提示被占用 → 关掉正在录音/通话的 App（微信语音、录音机、视频会议）。</li>
-      <li>iOS 不允许网页自动开麦，做不到零授权，必须点一次按钮。</li>
-    </ul>
-  </details>
-
-  <details id="diagBox">
-    <summary>诊断信息（排障时截图给别人看）</summary>
-    <div id="diag" class="kv">—</div>
-    <button class="refBtn" id="copyBtn" style="margin-top:10px;flex-direction:row;gap:8px;padding:9px;">
-      <span class="n">复制诊断信息</span>
-    </button>
-  </details>
-
-  <footer>纯前端 · 无后端 · 无外部依赖 · YIN 基频检测</footer>
+  <div id="banner" class="banner hide" role="status" aria-live="polite"></div>
+  <main class="stage" id="stage">
+    <aside class="boardWrap" id="boardPanel" aria-label="二胡双弦指板">
+      <div class="panel-heading"><div><span class="eyebrow">THE FINGERBOARD</span><h2>双弦 · 指板</h2></div><button class="pill hide" id="stopPractice" style="background:transparent">停止音阶</button><span class="pill" id="chordTxt">15 弦</span></div>
+      <svg id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 566" preserveAspectRatio="xMidYMid meet" role="group" aria-label="可点击试听的内外弦音位"></svg>
+      <div class="hint" id="boardHint">点音位试听 · 同音双弦同时显示</div>
+    </aside>
+    <section class="page tuner-page" id="page-tuner" role="tabpanel" aria-labelledby="tab-tuner">
+      <div class="page-title"><div><span class="eyebrow">FIND YOUR RESONANCE</span><h2>让每一弦，恰到好处。</h2></div><span class="status" id="micStatus">麦克风未开启</span></div>
+      <div class="tuning-core">
+        <div class="readout"><div id="noteName" class="noteName">--</div><div id="jpBox" class="jp" aria-label="简谱">–</div></div>
+        <div id="cents" class="cents">--<span class="u">音分</span></div>
+        <div class="meter-wrap"><div class="tuneMeter" aria-label="音分刻度，中央为准确"><div id="tuneMarker" class="tuneMarker hide"></div></div><div class="meter-labels"><span>偏低 −50</span><span>准 · ±5</span><span>+50 偏高</span></div></div>
+        <div id="freqLine" class="freqLine">开启麦克风，拉响你的第一声。</div>
+      </div>
+      <div class="string-matches" aria-label="同音在双弦上的位置">
+        <div class="string-card" id="match-inner"><div><small>内弦 · D4</small><strong id="matchInnerText">等待琴声</strong></div><span class="match-note" id="matchInnerNote">—</span></div>
+        <div class="string-card" id="match-outer"><div><small>外弦 · A4</small><strong id="matchOuterText">等待琴声</strong></div><span class="match-note" id="matchOuterNote">—</span></div>
+      </div>
+      <div class="tuner-controls">
+        <div class="seg" id="modeSeg" aria-label="检测范围"><button data-mode="auto" class="on" aria-pressed="true">双弦显示</button><button data-mode="D" aria-pressed="false">仅内弦</button><button data-mode="A" aria-pressed="false">仅外弦</button></div>
+        <button class="big" id="startBtn">开始调音</button>
+        <div class="levelRow"><span>输入音量</span><div class="levelBar"><div id="levelFill" class="levelFill"></div></div><span id="levelTxt">静音</span></div>
+      </div>
+    </section>
+    <section class="page practice-page" id="page-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+      <div class="page-title"><div><span class="eyebrow">A LITTLE PRACTICE, EVERY DAY</span><h2>慢慢来，音自成章。</h2></div></div>
+      <div class="control-card"><h3>往复音阶</h3><p>跟随指板，从空弦到高八度，听见每一个音的位置。</p><button class="scaleBtn" id="scaleBtn">▶ 音阶练习 · 上下行来回</button></div>
+      <div class="control-card"><div class="label"><span>节奏与速度</span><span id="bpmTxt">80 BPM</span></div><div class="tempoRow"><input type="range" id="bpmRange" class="bpmRange" min="0" max="8" step="1" value="2" aria-label="速度 BPM"><div class="beatDots" id="beatDots" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div><div class="seg metroSeg" id="metroSeg"><button id="metroBtn">节拍器 关</button><button data-rate="2">2拍/音</button><button data-rate="1" class="on">1拍/音</button><button data-rate="0.5">½拍/音</button></div></div>
+      <div class="control-card"><div class="label"><span>专注计时</span><em id="timerHint">到点响六声</em></div><div class="timer-display" id="timerDisplay" role="timer" aria-label="练习剩余时间">00:00</div><div class="seg timerSeg" id="timerSeg"><button data-min="1">1 分钟</button><button data-min="3">3 分钟</button><button data-min="5">5 分钟</button></div></div>
+    </section>
+    <section class="page settings-page" id="page-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+      <div class="page-title"><div><span class="eyebrow">MAKE IT YOURS</span><h2>找到你的调。</h2></div><span class="pill" id="hdrSub">内弦 D4 · 外弦 A4</span></div>
+      <div class="settings-grid">
+        <div class="control-card"><h3>调式与弦式</h3><p>切换简谱与指板音位。二胡定弦始终为 D4 / A4。</p><div class="seg" id="keySeg"><button data-key="D" class="on">D</button><button data-key="G">G</button><button data-key="F">F</button><button data-key="C">C</button><button data-key="A">A</button><button data-key="Bb">♭B</button></div></div>
+        <div class="control-card"><div class="label"><span>音准基准 A4</span><em id="a4Hint">当前 440 Hz</em></div><p>与乐团或录音保持一致；设置会自动保存在这台设备。</p><div class="seg" id="a4Seg"><button data-a4="440" class="on">440</button><button data-a4="441">441</button><button data-a4="442">442</button><button data-a4="443">443</button><button data-a4="444">444</button></div></div>
+        <div class="control-card"><h3>空弦参考音</h3><p>无需开启麦克风。点击播放，再次点击停止。</p><div class="seg"><button class="refBtn" id="refD"><span class="n">内弦 D</span><span class="f" id="refDFreq">293.66 Hz</span></button><button class="refBtn" id="refA"><span class="n">外弦 A</span><span class="f" id="refAFreq">440.00 Hz</span></button></div></div>
+        <div class="control-card"><h3>安静地，专注于琴声。</h3><p>音频仅在设备上实时分析，不录制、不上传。点击右上角进入全屏，按 Esc 退出。</p><p class="settings-note">高可信度音高即时响应 · ±5 音分判准<br>建议手机距离琴筒 20–40 cm，平稳拉长弓。</p></div>
+      </div>
+      <p class="settings-note">同一个音在两根弦上都有音位时，会同时标出。相同频率无法区分实际发声的琴弦，可在调音页手动锁定。</p>
+    </section>
+    <section class="page help-page" id="page-help" role="tabpanel" aria-labelledby="tab-help" hidden>
+      <div class="page-title"><div><span class="eyebrow">A SMALL GUIDE</span><h2>从第一声开始。</h2></div><span class="pill" id="helpCount">01 / 04</span></div>
+      <article class="help-paper" id="help-0"><h3>30 秒，开始调音。</h3><ul><li>点「调音 → 开始调音」，允许麦克风。手机放在离琴 20–40 cm 的位置。</li><li>平稳拉弓，大号音名下方显示偏差：负数偏低、正数偏高，±5 音分内变绿。</li><li>指板箭头与两张弦卡同时显示对应音位；A4 等同音会在内外弦同时标出。</li><li>点击指板圆圈可以听参考音；播放期间暂停检测，避免把扬声器当成琴声。</li><li>右上角一键全屏。也可按 F 切换、Esc 退出；各功能通过底部或顶部标签切换。</li></ul></article>
+      <article class="help-paper" id="help-1" hidden><h3>读懂指板与简谱。</h3><ul><li>两根弦都从顶部空弦开始，向下音高升高。刻度按半音排列，全音间距是半音的两倍。</li><li>数字上方的点表示高八度，下方的点表示低八度。换调会同步改变数字与音位。</li><li>左侧色带标记三个把位。两弦在同一高度的简谱可能不同，半音处的小括线提示并拢手指。</li><li>自动模式显示同音的所有可用位置，无法仅凭相同音高确定发声琴弦。</li><li>音阶外的变化音仍按十二平均律显示准确音分；指板不会把它错误标到相邻音位。</li></ul></article>
+      <article class="help-paper" id="help-2" hidden><h3>让练习更有节奏。</h3><ul><li>在「设置」选择调式，再到「练习」开启音阶。音阶从内弦空弦开始，上行到高两个八度后折返。</li><li>滑块选择 60–140 BPM。每音可选半拍、一拍或两拍，节拍器与音阶使用同一速度。</li><li>选择 1、3 或 5 分钟专注计时；再次点击当前时长可取消，到点响六声。</li><li>切换分页不会打断计时或节拍器；回到调音并开始收音时，音阶会停止。</li><li>跟录音练习时，将 A4 基准调到与录音相同的值，避免整首都显示系统性偏差。</li></ul></article>
+      <article class="help-paper" id="help-3" hidden><h3>麦克风与声音排障。</h3><ul><li>需要 HTTPS 或 localhost，并在浏览器中允许麦克风。微信内置浏览器建议改用 Safari 或 Chrome。</li><li>无法收音时，检查网站麦克风权限、系统输入设备，以及是否有通话占用麦克风。</li><li>iPhone 参考音无声时，再点击一次解锁音频，并检查媒体音量、静音开关与蓝牙输出。</li><li>部分浏览器不支持网页全屏，会自动启用专注布局；手机也可添加到主屏幕使用。</li></ul><details id="diagBox"><summary>查看诊断信息</summary><div id="diag" class="kv">—</div><button class="refBtn" id="copyBtn"><span class="n">复制诊断信息</span></button></details></article>
+      <div class="help-pagination"><button id="helpPrev" aria-label="上一页指南">← 上一页</button><span>一点一点，拉得更准。</span><button id="helpNext" aria-label="下一页指南">下一页 →</button></div>
+    </section>
+  </main>
+  <footer><span><i class="footer-dot"></i>为每一次认真练习而作</span><span class="footer-right">本地音频处理 · 无需安装 · ERHU STUDIO</span></footer>
 </div>
 
 <noscript><div style="padding:20px;color:#fff">需要开启 JavaScript 才能使用。</div></noscript>
@@ -463,6 +274,8 @@
    * YIN 基频检测（de Cheveigné & Kawahara, 2002）
    *  1) 差分函数  2) 累积均值归一化 CMND  3) 绝对阈值取第一个谷  4) 抛物线插值
    */
+  // Reuse scratch buffers between frames; no per-frame typed-array allocation.
+  var yinScratch = { d: null, cm: null };
   function detectPitchYIN(frame, sampleRate, opts) {
     opts = opts || {};
     var minFreq = opts.minFreq || 90;
@@ -475,7 +288,11 @@
     var tauMax = Math.min(Math.ceil(sampleRate / minFreq), W - 1);
     if (tauMax <= tauMin + 2) return null;
 
-    var d = new Float32Array(tauMax + 2);
+    if (!yinScratch.d || yinScratch.d.length < tauMax + 2) {
+      yinScratch.d = new Float32Array(tauMax + 2);
+      yinScratch.cm = new Float32Array(tauMax + 2);
+    }
+    var d = yinScratch.d;
     for (var tau = 1; tau <= tauMax; tau++) {
       var sum = 0;
       for (var i = 0; i < W; i++) {
@@ -485,7 +302,7 @@
       d[tau] = sum;
     }
 
-    var cm = new Float32Array(tauMax + 2);
+    var cm = yinScratch.cm;
     var running = 0;
     cm[0] = 1;
     for (var t = 1; t <= tauMax; t++) {
@@ -519,7 +336,9 @@
 
     var tauRefined = tauEst;
     if (tauEst > 1 && tauEst < tauMax) {
-      var s0 = cm[tauEst - 1], s1 = cm[tauEst], s2 = cm[tauEst + 1];
+      // CMND chooses the period; refine on the raw difference curve so its
+      // changing normalization denominator cannot bias high-note interpolation.
+      var s0 = d[tauEst - 1], s1 = d[tauEst], s2 = d[tauEst + 1];
       var den = 2 * (s0 + s2 - 2 * s1);
       if (Math.abs(den) > 1e-12) {
         var off = (s0 - s2) / den;
@@ -602,9 +421,9 @@
   function bandOf(i) { return Math.floor(i / BAND_SIZE); }
 
   var BAND_STYLE = [
-    { name: '第一把位', color: '#5eead4', fill: 'rgba(45,212,191,.055)' },
-    { name: '第二把位', color: '#a5b4fc', fill: 'rgba(129,140,248,.055)' },
-    { name: '第三把位', color: '#f0abfc', fill: 'rgba(232,121,249,.055)' }
+    { name: '第一把位', color: '#c4bf91', fill: 'rgba(196,191,145,.035)' },
+    { name: '第二把位', color: '#a5bea0', fill: 'rgba(165,190,160,.035)' },
+    { name: '第三把位', color: '#b9a78c', fill: 'rgba(185,167,140,.035)' }
   ];
 
   /* =======================================================================
@@ -651,7 +470,7 @@
   resetDstat();
 
   var slotsInner = [], slotsOuter = [];
-  var boardEls = { inner: [], outer: [], arrow: null, ring: null, alt: null };
+  var boardEls = { inner: [], outer: [], arrow: null, ring: null, ringOuter: null };
   var tapBadge = null;        // 正在被"点击试听"高亮的音位（音阶练习不能用它挡箭头）
 
   function currentKey() {
@@ -778,6 +597,7 @@
   function stopTuner(silent) {
     micRequestId++;              // 让尚未返回的麦克风授权请求失效
     running = false;
+    syncMicStatus();
     stopTone();
     if (micTimer) { clearTimeout(micTimer); micTimer = null; }
     elStart.disabled = false;
@@ -877,7 +697,7 @@
     DECIMATE = 1;
     decBuf = new Float32Array(Math.floor(analyser.fftSize / DECIMATE));
 
-    running = true; smoothing = []; lastHit = 0; confirmStop = 0;
+    running = true; syncMicStatus(); smoothing = []; lastHit = 0; confirmStop = 0;
     elStart.disabled = false;
     elStart.textContent = '停止调音';
     elStart.classList.add('stop');
@@ -992,7 +812,7 @@
     slotsOuter = buildSlots(key.root, OPEN_OUTER_MIDI, SLOTS_PER_STRING, a4Cal);
 
     while (svg.firstChild) svg.removeChild(svg.firstChild);
-    boardEls = { inner: [], outer: [], arrowInner: null, arrowOuter: null, ring: null };
+    boardEls = { inner: [], outer: [], arrowInner: null, arrowOuter: null, ring: null, ringOuter: null };
 
     var gBand = mk('g', null, svg);
     var gErhu = mk('g', null, svg);
@@ -1020,23 +840,24 @@
 
     // --- 简化的二胡（琴杆 + 琴筒 + 千斤 + 弓），只做背景暗示 ---
     var bottomY = yOfSemis(slotsInner[SLOTS_PER_STRING - 1].semis);
-    mk('rect', { x: 176, y: PAD_TOP - 16, width: 8, height: bottomY - PAD_TOP + 46, rx: 4, fill: '#1b2734' }, gErhu);
-    mk('path', { d: 'M150 ' + (bottomY + 26) + ' h60 l-10 26 h-40 z', fill: '#1b2734' }, gErhu);
-    mk('rect', { x: 100, y: PAD_TOP - 20, width: 160, height: 5, rx: 2.5, fill: '#2a3a4c' }, gErhu);
-    mk('line', { x1: 96, y1: PAD_TOP + 40, x2: 268, y2: PAD_TOP + 200, stroke: '#243244', 'stroke-width': 3, 'stroke-linecap': 'round' }, gErhu);
+    mk('rect', { x: 176, y: PAD_TOP - 16, width: 8, height: bottomY - PAD_TOP + 46, rx: 4, fill: '#2b3022' }, gErhu);
+    mk('path', { d: 'M150 ' + (bottomY + 26) + ' h60 l-10 26 h-40 z', fill: '#2b3022' }, gErhu);
+    mk('rect', { x: 100, y: PAD_TOP - 20, width: 160, height: 5, rx: 2.5, fill: '#4b503c' }, gErhu);
+    mk('line', { x1: 96, y1: PAD_TOP + 40, x2: 268, y2: PAD_TOP + 200, stroke: '#363c2c', 'stroke-width': 3, 'stroke-linecap': 'round' }, gErhu);
 
     // --- 两根弦的音位 ---
     drawStringColumn(gBoard, X_INNER, slotsInner, 'inner', key);
     drawStringColumn(gBoard, X_OUTER, slotsOuter, 'outer', key);
 
     // --- 顶端弦名 ---
-    var t1 = mk('text', { x: X_INNER, y: 18, 'text-anchor': 'middle', fill: '#cbd5e1', 'font-size': 12, 'font-weight': 600, 'font-family': '-apple-system,sans-serif' }, gBoard);
+    var t1 = mk('text', { x: X_INNER, y: 18, 'text-anchor': 'middle', fill: '#d2d4c5', 'font-size': 12, 'font-weight': 600, 'font-family': '-apple-system,sans-serif' }, gBoard);
     t1.textContent = '内弦 D4';
-    var t2 = mk('text', { x: X_OUTER, y: 18, 'text-anchor': 'middle', fill: '#cbd5e1', 'font-size': 12, 'font-weight': 600, 'font-family': '-apple-system,sans-serif' }, gBoard);
+    var t2 = mk('text', { x: X_OUTER, y: 18, 'text-anchor': 'middle', fill: '#d2d4c5', 'font-size': 12, 'font-weight': 600, 'font-family': '-apple-system,sans-serif' }, gBoard);
     t2.textContent = '外弦 A4';
 
     // --- 实时指示：箭头（两根弦各一个，按需显示）+ 目标圈 ---
     boardEls.ring = mk('circle', { cx: 0, cy: 0, r: BADGE_R + 5, fill: 'none', stroke: '#38bdf8', 'stroke-width': 2, opacity: 0 }, gLive);
+    boardEls.ringOuter = mk('circle', { cx: 0, cy: 0, r: BADGE_R + 5, fill: 'none', stroke: '#38bdf8', 'stroke-width': 2, opacity: 0 }, gLive);
     boardEls.arrowInner = makeArrow(gLive, -1);
     boardEls.arrowOuter = makeArrow(gLive, 1);
 
@@ -1094,8 +915,8 @@
   function resetBadge(b) {
     b.circle.setAttribute('stroke', 'rgba(255,255,255,.20)');
     b.circle.setAttribute('stroke-width', 1.2);
-    b.circle.setAttribute('fill', '#0f1a25');
-    b.text.setAttribute('fill', '#b6c6d8');
+    b.circle.setAttribute('fill', '#1a2017');
+    b.text.setAttribute('fill', '#b5bdab');
   }
 
   function drawStringColumn(parent, x, slots, which, key) {
@@ -1135,15 +956,15 @@
       var y = yOfSemis(s.semis);
       var band = BAND_STYLE[bandOf(i)];
       var g = mk('g', null, parent);
-      var c = mk('circle', { cx: x, cy: y, r: BADGE_R, fill: '#0f1a25', stroke: 'rgba(255,255,255,.22)', 'stroke-width': 1 }, g);
+      var c = mk('circle', { cx: x, cy: y, r: BADGE_R, fill: '#1a2017', stroke: 'rgba(255,255,255,.22)', 'stroke-width': 1 }, g);
       var tx = mk('text', {
-        x: x, y: y + 4, 'text-anchor': 'middle', fill: '#c3d0de',
-        'font-size': 11.5, 'font-weight': 400, 'font-family': '-apple-system,sans-serif'
+        x: x, y: y + 4, 'text-anchor': 'middle', fill: '#c8cdbd',
+        'font-size': 14, 'font-weight': 500, 'font-family': '-apple-system,sans-serif'
       }, g);
       tx.textContent = String(s.degree);
       if (s.dots !== 0) {
         // 八度点：上加点=高八度，下加点=低八度（简谱写法）
-        var dy = s.dots > 0 ? y - 5.5 : y + 6.5;
+        var dy = s.dots > 0 ? y - 7.5 : y + 8.5;
         for (var d = 0; d < Math.abs(s.dots); d++) {
           mk('circle', { cx: x + (d - (Math.abs(s.dots) - 1) / 2) * 5, cy: dy, r: 1.7, fill: band.color }, g);
         }
@@ -1167,43 +988,62 @@
   /* =======================================================================
      面板更新
      ======================================================================= */
+  var highlightedBadges = [];
+  function clearMatches() {
+    ['inner', 'outer'].forEach(function (which) {
+      $('match-' + which).className = 'string-card';
+      $(which === 'inner' ? 'matchInnerText' : 'matchOuterText').textContent = '等待琴声';
+      $(which === 'inner' ? 'matchInnerNote' : 'matchOuterNote').textContent = '—';
+    });
+  }
   function setTarget(hit) {
-    // 只有"点击音位试听"那种高亮才需要保护，音阶练习的箭头必须照常显示
-    if (tapBadge) { boardEls.ring.setAttribute('opacity', 0); return; }
-    boardEls.inner.concat(boardEls.outer).forEach(resetBadge);
-    if (!hit) { boardEls.ring.setAttribute('opacity', 0); return; }
-    var b = boardEls[hit.which][hit.index];   // hit.list 是音位数据，图形元素在 boardEls 里
-    if (!b) { boardEls.ring.setAttribute('opacity', 0); return; }
-    var col = hit.inTune ? '#22c55e' : '#38bdf8';
-    b.circle.setAttribute('stroke', col);
-    b.circle.setAttribute('stroke-width', 2.2);
-    b.circle.setAttribute('fill', hit.inTune ? 'rgba(34,197,94,.20)' : 'rgba(56,189,248,.16)');
-    b.text.setAttribute('fill', '#ffffff');
-    boardEls.ring.setAttribute('cx', b.circle.getAttribute('cx'));
-    boardEls.ring.setAttribute('cy', b.y);
-    boardEls.ring.setAttribute('stroke', col);
-    boardEls.ring.setAttribute('opacity', 1);
+    boardEls.ring.setAttribute('opacity', 0);
+    boardEls.ringOuter.setAttribute('opacity', 0);
+    if (tapBadge) return;
+    highlightedBadges.forEach(resetBadge);
+    highlightedBadges = [];
+    clearMatches();
+    if (!hit) return;
+    var hits = hit.matches || [hit];
+    hits.forEach(function (h, i) {
+      var b = boardEls[h.which][h.index];
+      if (!b) return;
+      var text = $(h.which === 'inner' ? 'matchInnerText' : 'matchOuterText');
+      var note = $(h.which === 'inner' ? 'matchInnerNote' : 'matchOuterNote');
+      note.textContent = h.note || h.slot.name;
+      if (h.validSlot === false) { text.textContent = '变化音 · 参照半音刻度'; return; }
+      text.textContent = (h.index === 0 ? '空弦' : '第' + (bandOf(h.index) + 1) + '把位 · 第' + (h.index % BAND_SIZE + 1) + '音位');
+      $('match-' + h.which).className = 'string-card active' + (h.inTune ? ' in-tune' : '');
+      var col = h.inTune ? '#22c55e' : '#ddbd83';
+      b.circle.setAttribute('stroke', col);
+      b.circle.setAttribute('stroke-width', 2.2);
+      b.circle.setAttribute('fill', h.inTune ? 'rgba(166,213,149,.20)' : 'rgba(221,189,131,.16)');
+      b.text.setAttribute('fill', '#ffffff');
+      highlightedBadges.push(b);
+      var ring = i === 0 ? boardEls.ring : boardEls.ringOuter;
+      ring.setAttribute('cx', b.circle.getAttribute('cx'));
+      ring.setAttribute('cy', b.y);
+      ring.setAttribute('stroke', col);
+      ring.setAttribute('opacity', 1);
+    });
   }
 
   function setArrow(hit) {
-    var a = boardEls.arrowInner, b = boardEls.arrowOuter;
-    if (!hit) {
-      a.g.setAttribute('opacity', 0); b.g.setAttribute('opacity', 0);
-      elTuneMarker.classList.add('hide');
-      return;
-    }
-    var use = hit.which === 'outer' ? b : a;
-    var other = use === a ? b : a;
-    other.g.setAttribute('opacity', 0);
-
-    var y = Math.max(ARROW_MIN_Y, Math.min(ARROW_MAX_Y, hit.y + hit.cents * ARROW_GAIN));
-    var color = hit.inTune ? '#22c55e' : (hit.cents < 0 ? '#60a5fa' : '#fb923c');
-    use.g.setAttribute('transform',
-      'translate(' + use.baseX + ',' + y.toFixed(2) + ')' + (hit.inTune ? ' scale(1.3)' : ''));
-    use.g.setAttribute('opacity', 1);
-    use.tri.setAttribute('fill', color);
-    elTuneMarker.className = 'tuneMarker' + (hit.inTune ? ' ok' : (hit.cents > 0 ? ' high' : ''));
-    elTuneMarker.style.left = (50 + Math.max(-50, Math.min(50, hit.cents))) + '%';
+    boardEls.arrowInner.g.setAttribute('opacity', 0);
+    boardEls.arrowOuter.g.setAttribute('opacity', 0);
+    if (!hit) { elTuneMarker.classList.add('hide'); return; }
+    (hit.matches || [hit]).forEach(function (h) {
+      var use = h.which === 'outer' ? boardEls.arrowOuter : boardEls.arrowInner;
+      var y = Math.max(ARROW_MIN_Y, Math.min(ARROW_MAX_Y, h.y + h.cents * ARROW_GAIN));
+      var c = h.displayCents == null ? h.cents : h.displayCents;
+      var color = h.inTune ? '#22c55e' : (c < 0 ? '#60a5fa' : '#fb923c');
+      use.g.setAttribute('transform', 'translate(' + use.baseX + ',' + y.toFixed(2) + ')' + (h.inTune ? ' scale(1.3)' : ''));
+      use.g.setAttribute('opacity', 1);
+      use.tri.setAttribute('fill', color);
+    });
+    var c = hit.displayCents == null ? hit.cents : hit.displayCents;
+    elTuneMarker.className = 'tuneMarker' + (hit.inTune ? ' ok' : (c > 0 ? ' high' : ''));
+    elTuneMarker.style.left = (50 + Math.max(-50, Math.min(50, c))) + '%';
   }
 
   /* =======================================================================
@@ -1403,6 +1243,7 @@
   }
 
   function paintTimer(left) {
+    $('timerDisplay').textContent = left > 0 ? fmtLeft(left).padStart(5, '0') : '00:00';
     Array.prototype.forEach.call(timerBtns, function (b) {
       var act = (b === timerBtn);
       b.classList.toggle('on', act);
@@ -1418,7 +1259,7 @@
     var old = timerBtn;
     timerBtn = null;
     paintTimer(0);
-    if (old && elTimerHint) elTimerHint.textContent = '（到点响三声）';
+    if (old && elTimerHint) elTimerHint.textContent = '（到点响六声）';
   }
 
   function finishTimer() {
@@ -1534,6 +1375,7 @@
   var SCALE_IDLE_TEXT = '▶ 音阶练习 · 上下行来回';
 
   function stopScale() {
+    $('stopPractice').classList.add('hide');
     scaleOn = false;
     if (scaleTimer) { clearTimeout(scaleTimer); scaleTimer = null; }
     elScale.textContent = SCALE_IDLE_TEXT;
@@ -1607,27 +1449,35 @@
   }
 
   function render(freq) {
-    var hit = pickTarget(freq);
-    var cents = hit.cents;
-    var inTune = Math.abs(cents) <= TOL;
-    var s = hit.slot;
-
-    trackRefDev(cents);          // 累计偏差，供诊断里判断"是不是整首系统性偏移"
-
-    hit.inTune = inTune;
-    hit.y = boardEls[hit.which][hit.index].y;
-
-    elNoteName.textContent = freqToNote(freq, a4Cal).full;
+    if (!(freq > 0) || !isFinite(freq)) return;
+    var note = freqToNote(freq, a4Cal);
+    var cents = note.cents, inTune = Math.abs(cents) <= TOL;
+    var hits = [];
+    [['inner', slotsInner, mode !== 'A'], ['outer', slotsOuter, mode !== 'D']].forEach(function (row) {
+      if (!row[2] || freq < row[1][0].freq * Math.pow(2, -50 / 1200) ||
+          freq > row[1][row[1].length - 1].freq * Math.pow(2, 50 / 1200)) return;
+      var r = findNearestSlot(freq, row[1]);
+      hits.push({ which: row[0], list: row[1], index: r.index, slot: r.slot,
+        cents: r.cents, displayCents: cents, inTune: inTune, note: note.full,
+        validSlot: r.slot.midi === note.midi, y: boardEls[row[0]][r.index].y });
+    });
+    trackRefDev(cents);
+    elNoteName.textContent = note.full;
     elNoteName.className = 'noteName live' + (inTune ? ' ok' : '');
     elJp.className = 'jp' + (inTune ? ' ok' : '');
-    elJp.innerHTML = jpHtml(s);
+    var valid = hits.filter(function (h) { return h.validSlot; });
+    elJp.innerHTML = valid.length ? jpHtml(valid[0].slot) : '♯/♭';
     var cTxt = cents.toFixed(1);
     if (cTxt === '-0.0') cTxt = '0.0';
     elCents.className = 'cents ' + (inTune ? 'ok' : (cents < 0 ? 'low' : 'high'));
-    elCents.innerHTML = (cents >= 0 ? '+' : '') + cTxt + '<span class="u">音分</span>';
-    elFreqLine.textContent = freq.toFixed(1) + ' Hz → 目标 ' + s.freq.toFixed(2) + ' Hz · ' +
-      (hit.which === 'inner' ? '内弦' : '外弦') + ' 第' + (bandOf(hit.index) + 1) + '把位';
-
+    elCents.innerHTML = (parseFloat(cTxt) >= 0 ? '+' : '') + cTxt + '<span class="u">音分</span>';
+    var positions = valid.map(function (h) {
+      return (h.which === 'inner' ? '内弦' : '外弦') + ' 第' + (bandOf(h.index) + 1) + '把位';
+    }).join(' · ');
+    elFreqLine.textContent = freq.toFixed(2) + ' Hz → 目标 ' + midiToFreq(note.midi, a4Cal).toFixed(2) + ' Hz · ' +
+      (positions || (hits.length ? '变化音 · 参照半音刻度' : '超出当前检测弦音域'));
+    var hit = hits[0] || null;
+    if (hit) hit.matches = hits;
     setTarget(hit);
     setArrow(hit);
   }
@@ -1871,7 +1721,97 @@
   setBpm(BPM_LIST.indexOf(BPM_DEFAULT));   // 把 JS 里的速度同步到界面（默认 80 BPM）
   updateDiag();
 
+
+  // The viewport is the application shell. Each feature owns a tab, never a long page.
+  var activePage = 'tuner', helpPage = 0;
+  var pageNames = ['tuner', 'practice', 'settings', 'help'];
+  function selectPage(name) {
+    if (pageNames.indexOf(name) < 0) return;
+    activePage = name;
+    pageNames.forEach(function (n) {
+      $('page-' + n).hidden = n !== name;
+      $('tab-' + n).setAttribute('aria-selected', String(n === name));
+      $('tab-' + n).setAttribute('tabindex', n === name ? '0' : '-1');
+    });
+    var boardVisible = name === 'tuner';
+    $('boardPanel').hidden = !boardVisible;
+    $('stage').classList.toggle('solo', !boardVisible);
+  }
+  pageNames.forEach(function (name, i) {
+    $('tab-' + name).addEventListener('click', function () { selectPage(name); });
+    $('tab-' + name).addEventListener('keydown', function (ev) {
+      var next = i;
+      if (ev.key === 'ArrowRight') next = (i + 1) % pageNames.length;
+      else if (ev.key === 'ArrowLeft') next = (i + pageNames.length - 1) % pageNames.length;
+      else if (ev.key === 'Home') next = 0;
+      else if (ev.key === 'End') next = pageNames.length - 1;
+      else return;
+      ev.preventDefault(); selectPage(pageNames[next]); $('tab-' + pageNames[next]).focus();
+    });
+  });
+  function selectHelp(i) {
+    helpPage = Math.max(0, Math.min(3, i));
+    for (var n = 0; n < 4; n++) $('help-' + n).hidden = n !== helpPage;
+    $('helpCount').textContent = '0' + (helpPage + 1) + ' / 04';
+    $('helpPrev').disabled = helpPage === 0;
+    $('helpNext').disabled = helpPage === 3;
+  }
+  $('helpPrev').addEventListener('click', function () { selectHelp(helpPage - 1); });
+  $('helpNext').addEventListener('click', function () { selectHelp(helpPage + 1); });
+  elScale.addEventListener('click', function () {
+    if (scaleOn) { $('stopPractice').classList.remove('hide'); selectPage('tuner'); }
+  });
+  $('stopPractice').addEventListener('click', stopScale);
+  function syncMicStatus() {
+    $('micStatus').textContent = running ? '正在聆听' : '麦克风未开启';
+    $('micStatus').className = 'status' + (running ? ' live' : '');
+  }
+  var immersive = false;
+  function syncFullscreen() {
+    var on = !!(document.fullscreenElement || document.webkitFullscreenElement || immersive);
+    $('fullscreenBtn').setAttribute('aria-pressed', String(on));
+    $('fullscreenBtn').setAttribute('aria-label', on ? '退出全屏' : '进入全屏');
+    $('fullscreenText').textContent = on ? '退出全屏' : '全屏';
+  }
+  function focusFallback() {
+    immersive = !immersive;
+    document.body.classList.toggle('immersive', immersive);
+    syncFullscreen();
+    if (immersive) showBanner('info', '<b>已启用专注布局。</b>', '此浏览器未提供网页全屏；手机可添加到主屏幕获得更完整的体验。再次点击全屏可退出。');
+  }
+  function toggleFullscreen() {
+    if (immersive) { focusFallback(); return Promise.resolve(); }
+    var isFull = document.fullscreenElement || document.webkitFullscreenElement;
+    var target = isFull ? document : document.documentElement;
+    var fn = isFull ? (document.exitFullscreen || document.webkitExitFullscreen) :
+      (target && (target.requestFullscreen || target.webkitRequestFullscreen));
+    if (!fn) { focusFallback(); return Promise.resolve(); }
+    try { return Promise.resolve(fn.call(target)).then(syncFullscreen, function () {
+      if (!isFull) focusFallback(); else showBanner('warn', '退出全屏失败，请按 Esc 或使用浏览器退出。');
+    }); } catch (e) { if (!isFull) focusFallback(); return Promise.resolve(); }
+  }
+  $('fullscreenBtn').addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', syncFullscreen);
+  document.addEventListener('webkitfullscreenchange', syncFullscreen);
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && immersive) focusFallback();
+    var tag = ev.target && ev.target.tagName;
+    if (ev.key && ev.key.toLowerCase() === 'f' && !ev.ctrlKey && !ev.metaKey && !ev.altKey &&
+        tag !== 'INPUT' && tag !== 'TEXTAREA' && !(ev.target && ev.target.isContentEditable)) {
+      ev.preventDefault(); toggleFullscreen();
+    }
+  });
+  ['keySeg', 'modeSeg', 'a4Seg', 'metroSeg', 'timerSeg'].forEach(function (id) {
+    var group = $(id);
+    function syncPressed() {
+      Array.prototype.forEach.call(group.querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.classList.contains('on') || b.classList.contains('playing'))); });
+    }
+    group.addEventListener('click', syncPressed); syncPressed();
+  });
+  selectPage('tuner'); selectHelp(0); syncMicStatus();
+
   window.__erhu = {
+    ui: { selectPage: selectPage, selectHelp: selectHelp, toggleFullscreen: toggleFullscreen, page: function () { return activePage; } },
     detectPitchYIN: detectPitchYIN,
     freqToNote: freqToNote,
     centsBetween: centsBetween,

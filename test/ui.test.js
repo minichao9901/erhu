@@ -744,7 +744,7 @@ const isVisible = el => el.getAttribute('opacity') === '1';
   // （真发生过：A4 的 442 按钮被误改成第二个 440，桩全过、界面上却露馅）。
   {
     const grab = seg => {
-      const m = new RegExp('<div class="seg" id="' + seg + '">([\\s\\S]*?)</div>').exec(html);
+      const m = new RegExp('<div class="seg" id="' + seg + '"[^>]*>([\\s\\S]*?)</div>').exec(html);
       return m ? m[1] : '';
     };
     const vals = (chunk, name) => (chunk.match(new RegExp(name + '="[^"]+"', 'g')) || []).map(s => s.split('"')[1]);
@@ -843,5 +843,80 @@ const isVisible = el => el.getAttribute('opacity') === '1';
     ok('停止时关闭新音频流', stopped[1] === 1, String(stopped[1]));
   }
 
+  console.log('\n=== 19. 双弦同音与变化音 ===');
+  {
+    w = loadPage();
+    w.__erhu.setA4(440, true);
+    for (const k of keyButtons) {
+      k.fire('click');
+      const st = w.__erhu.state();
+      for (const outer of st.slotsOuter) {
+        const inner = st.slotsInner.find(s => s.midi === outer.midi);
+        if (!inner) continue;
+        w.__erhu.demo(outer.freq);
+        const bd = w.__erhu.board();
+        ok(`${st.keyId} ${outer.name} 双箭头与双目标圈同时显示`,
+          isVisible(bd.arrowInner.g) && isVisible(bd.arrowOuter.g) &&
+          isVisible(bd.ring) && isVisible(bd.ringOuter));
+        ok(`${st.keyId} ${outer.name} 两根弦各自落在正确音位`,
+          Math.abs(arrowY(bd.arrowInner.g) - w.__erhu.yOfSemis(inner.semis)) < .02 &&
+          Math.abs(arrowY(bd.arrowOuter.g) - w.__erhu.yOfSemis(outer.semis)) < .02);
+      }
+    }
+    keyButtons[0].fire('click');
+    w.__erhu.demo(440 * Math.pow(2, 23 / 1200));
+    ok('同音双显 +23 音分与双弦偏移一致', Math.abs(parseFloat(getEl('cents').textContent) - 23) < .01 &&
+      Math.abs(arrowY(w.__erhu.board().arrowInner.g) - (w.__erhu.yOfSemis(7) + 23 * .2)) < .02 &&
+      Math.abs(arrowY(w.__erhu.board().arrowOuter.g) - (w.__erhu.yOfSemis(0) + 23 * .2)) < .02);
+    modeButtons[1].fire('click'); w.__erhu.demo(440);
+    ok('锁内弦后，外弦箭头与卡片同时清除', !isVisible(w.__erhu.board().arrowOuter.g) && !getEl('match-outer').classList.contains('active'));
+    modeButtons[2].fire('click'); w.__erhu.demo(293.66);
+    ok('锁外弦时不把低于空弦的 D4 伪装成 A4 音位', !isVisible(w.__erhu.board().arrowOuter.g) && !getEl('match-outer').classList.contains('active'));
+    modeButtons[0].fire('click');
+    const ds4 = 440 * Math.pow(2, (63 - 69) / 12);
+    w.__erhu.demo(ds4);
+    ok('D#4 变化音按真实半音判准', Math.abs(parseFloat(getEl('cents').textContent)) < .01 && getEl('noteName').classList.contains('ok'));
+    ok('变化音不高亮错误的 D4/E4 音位', !isVisible(w.__erhu.board().ring) && !getEl('match-inner').classList.contains('active'));
+    w.__erhu.setA4(442, true); w.__erhu.demo(442);
+    ok('A4=442 校准后两弦同音仍同时判准', isVisible(w.__erhu.board().ring) && isVisible(w.__erhu.board().ringOuter) && Math.abs(parseFloat(getEl('cents').textContent)) < .01);
+    getEl('startBtn').fire('click'); await tick();
+    getEl('startBtn').fire('click');
+    ok('停止收音清除双弦卡片', !getEl('match-inner').classList.contains('active') && !getEl('match-outer').classList.contains('active'));
+  }
+
+  console.log('\n=== 20. 分页、键盘与全屏 ===');
+  {
+    w = loadPage();
+    for (const page of ['practice', 'settings', 'help', 'tuner']) {
+      getEl('tab-' + page).fire('click');
+      ok(`${page} 页面与标签同步`, w.__erhu.ui.page() === page && getEl('page-' + page).hidden === false && getEl('tab-' + page).getAttribute('aria-selected') === 'true');
+      ok(`${page} 只有一个功能面板可见`, ['practice','settings','help','tuner'].filter(n => !getEl('page-' + n).hidden).length === 1);
+    }
+    getEl('tab-tuner').fire('keydown', { key: 'ArrowRight', preventDefault() {} });
+    ok('方向键切换功能分页', w.__erhu.ui.page() === 'practice');
+    getEl('helpNext').fire('click');
+    ok('指南独立分页，无需长页滚动', getEl('help-0').hidden && !getEl('help-1').hidden && getEl('helpCount').textContent === '02 / 04');
+    getEl('helpPrev').fire('click');
+    ok('指南首页禁用上一页', getEl('helpPrev').disabled);
+    w.__erhu.timer.start(1, w.__erhu.timer.buttons()[0]);
+    w.__erhu.ui.selectPage('settings'); advance(1000);
+    ok('切页后计时继续且剩余时间可见', w.__erhu.timer.left() <= 59000 && w.__erhu.timer.left() > 58000 && getEl('timerDisplay').textContent === '00:59');
+    w.__erhu.timer.stop();
+    await w.__erhu.ui.toggleFullscreen();
+    ok('不支持全屏时启用专注布局', documentStub.body.classList.contains('immersive') && getEl('fullscreenBtn').getAttribute('aria-pressed') === 'true');
+    await w.__erhu.ui.toggleFullscreen();
+    ok('专注布局可以退出', !documentStub.body.classList.contains('immersive'));
+    documentStub.documentElement = { requestFullscreen() { documentStub.fullscreenElement = this; return Promise.resolve(); } };
+    documentStub.exitFullscreen = () => { documentStub.fullscreenElement = null; return Promise.resolve(); };
+    await w.__erhu.ui.toggleFullscreen();
+    ok('原生全屏进入成功后同步按钮', !!documentStub.fullscreenElement && getEl('fullscreenBtn').getAttribute('aria-pressed') === 'true');
+    await w.__erhu.ui.toggleFullscreen();
+    ok('原生全屏退出成功后同步按钮', !documentStub.fullscreenElement && getEl('fullscreenBtn').getAttribute('aria-pressed') === 'false');
+    documentStub.documentElement.requestFullscreen = () => Promise.reject(new Error('denied'));
+    await w.__erhu.ui.toggleFullscreen();
+    ok('全屏请求被浏览器拒绝时仍可进入专注布局', documentStub.body.classList.contains('immersive'));
+    await w.__erhu.ui.toggleFullscreen();
+    delete documentStub.documentElement; delete documentStub.exitFullscreen;
+  }
   console.log(`\n================ 结果: ${pass} 通过 / ${fail} 失败 ================\n`);  process.exit(fail ? 1 : 0);
 })().catch(e => { console.error('\n测试崩溃:', e); process.exit(1); });

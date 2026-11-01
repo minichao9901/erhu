@@ -251,5 +251,29 @@ console.log('\n=== 11. 半音间距模型（面板排布依据）===');
      EXPECT.D.i.join() !== EXPECT.G.i.join() && EXPECT.D.o.join() !== EXPECT.A.o.join());
 }
 
+console.log('\n=== 13. 全音域、实际采样率与不同起始相位 ===');
+{
+  let worst = 0;
+  for (const sr of [44100, 48000, 96000]) {
+    for (const partials of [[[1, 1]], [[1, .35], [2, 1], [3, .25], [4, .1]]]) {
+      let max = 0, count = 0;
+      for (let midi = 62; midi <= 93; midi++) {
+        for (const phase of [0, .41, 1.7]) {
+          const freq = api.midiToFreq(midi, 442);
+          const buf = new Float32Array(4096);
+          for (let i = 0; i < buf.length; i++) {
+            for (const [n, amp] of partials) buf[i] += .25 * amp * Math.sin(2 * Math.PI * n * freq * i / sr + phase * n);
+          }
+          const r = detectPitchYIN(buf, sr, { minFreq: 260, maxFreq: 2100, threshold: .15 });
+          if (r) { max = Math.max(max, Math.abs(centsOff(r.freq, freq))); count++; }
+        }
+      }
+      worst = Math.max(worst, max);
+      ok(`${sr} Hz / ${partials.length} 谐波：96 个音与相位均检出`, count === 96);
+      ok(`${sr} Hz / ${partials.length} 谐波：全音域最大误差 < 0.3 音分`, max < .3, max.toFixed(4));
+    }
+  }
+  console.log(`  全音域最坏合成误差：${worst.toFixed(4)} 音分（不代表真机声学误差）`);
+}
 console.log(`\n================ 结果: ${pass} 通过 / ${fail} 失败 ================\n`);
 process.exit(fail ? 1 : 0);
